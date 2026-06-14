@@ -1,0 +1,30 @@
+{
+  "name": "informe360-ai-agent-xprize",
+  "version": "4.0.0-premium-reports",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint . --max-warnings=0",
+    "typecheck": "tsc --noEmit",
+    "test:structure": "node scripts/check-structure.mjs",
+    "evidence:init": "node scripts/init-evidence.mjs",
+    "qa": "npm run test:structure && npm run typecheck && npm run lint && npm run build"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.45.4",
+    "next": "^16.2.7",
+    "react": "^19.2.1",
+    "react-dom": "^19.2.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.10",
+    "@types/react": "^19.2.16",
+    "@types/react-dom": "^19.2.3",
+    "eslint": "^9.39.4",
+    "eslint-config-next": "^16.2.7",
+    "postcss": "^8.5.10",
+    "typescript": "^5.5.4"
+  }
+}

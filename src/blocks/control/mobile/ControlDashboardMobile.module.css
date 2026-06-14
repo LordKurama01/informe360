@@ -1,0 +1,8 @@
+.wrap { width:min(100% - 24px, 520px); margin:0 auto; padding:18px 0 80px; }
+.header { display:flex; justify-content:space-between; align-items:center; margin-bottom:26px; }
+.header strong { color:#fff; }
+.header a, .wrap > span { color:var(--gold); font-weight:600; }
+.wrap h1 { margin:8px 0 8px; font-size:38px; line-height:1; letter-spacing:-.05em; }
+.wrap p { color:var(--muted); line-height:1.55; }
+.cards { display:grid; gap:12px; margin-top:20px; }
+.cards strong { display:block; font-size:30px; margin-top:8px; }

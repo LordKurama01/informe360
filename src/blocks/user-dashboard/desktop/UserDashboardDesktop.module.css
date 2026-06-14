@@ -1,0 +1,58 @@
+.wrap { width:min(1280px, calc(100% - 44px)); margin:0 auto; padding:24px 0 80px; }
+.nav { display:flex; align-items:center; justify-content:space-between; gap:18px; margin-bottom:18px; color:#b9c7ef; }
+.nav > a { color:#fff; font-weight:600; }
+.nav div { display:flex; gap:16px; align-items:center; font-size:14px; }
+.topGrid { display:grid; grid-template-columns:1.35fr .65fr; gap:14px; margin-bottom:14px; }
+.heroCard { min-height:260px; display:flex; flex-direction:column; justify-content:center; background:radial-gradient(circle at 8% 12%, rgba(47,125,255,.2), transparent 35%), linear-gradient(145deg, rgba(255,255,255,.095), rgba(255,255,255,.04))!important; }
+.eyebrow { color:var(--gold); font-size:12px; letter-spacing:.1em; text-transform:uppercase; font-weight:600; }
+.heroCard h1 { margin:10px 0 12px; max-width:760px; font-size:50px; line-height:.96; letter-spacing:-.05em; font-weight:620; }
+.heroCard p, .continueCard p, .deliveryCard p { max-width:760px; margin:0; color:var(--muted); line-height:1.58; font-size:15px; }
+.heroActions, .cardActions { display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin-top:18px; }
+.todayCard { display:flex; flex-direction:column; justify-content:space-between; }
+.cardHead { display:flex; align-items:flex-start; justify-content:space-between; gap:14px; margin-bottom:14px; }
+.todayCard h2, .continueCard h2, .flowCard h3, .deliveryCard h3, .actionsPanel h3, .duePanel h3, .reportsSection h3 { margin:8px 0 0; color:#fff; font-size:24px; line-height:1.08; letter-spacing:-.03em; font-weight:600; }
+.todayList { display:grid; gap:10px; }
+.todayList div { display:flex; align-items:center; gap:12px; border:1px solid rgba(255,255,255,.1); background:rgba(255,255,255,.055); border-radius:17px; padding:12px; }
+.todayList b { width:34px; height:34px; display:grid; place-items:center; border-radius:50%; background:linear-gradient(135deg,#1f7bff,#7b4dff); color:#fff; }
+.todayList span { color:#dce5ff; font-size:14px; }
+.metrics { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:14px; }
+.metric { min-height:108px; }
+.metric span { color:#91a2cf; font-size:13px; }
+.metric strong { display:block; color:#fff; font-size:30px; line-height:1; letter-spacing:-.04em; margin:8px 0 7px; font-weight:620; }
+.metric small { color:#96e9b0; line-height:1.45; }
+.workGrid { display:grid; grid-template-columns:1.05fr 1.25fr .7fr; gap:12px; margin-bottom:14px; }
+.continueCard, .flowCard, .deliveryCard { display:flex; flex-direction:column; }
+.nextBox { margin:16px 0 0; padding:13px; border:1px solid rgba(126,227,160,.22); background:rgba(126,227,160,.08); border-radius:17px; display:grid; gap:5px; }
+.nextBox b { color:#eafff0; font-weight:600; }
+.nextBox span { color:#9ce9b6; }
+.workflow { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-top:auto; }
+.workflow div { min-height:86px; display:grid; align-content:space-between; border:1px solid rgba(255,255,255,.1); background:rgba(255,255,255,.055); border-radius:17px; padding:12px; }
+.workflow b { width:30px; height:30px; border-radius:50%; display:grid; place-items:center; background:linear-gradient(135deg,#1f7bff,#7b4dff); color:#fff; }
+.workflow span { color:#e8eeff; font-size:13px; line-height:1.35; }
+.deliveryPills { display:flex; flex-wrap:wrap; gap:8px; margin:14px 0 18px; }
+.deliveryPills span { border:1px solid rgba(242,195,107,.24); background:rgba(242,195,107,.08); color:#ffe8b0; border-radius:999px; padding:8px 10px; font-size:12px; }
+.deliveryCard a { margin-top:auto; }
+.operationsGrid { display:grid; grid-template-columns:1.32fr .68fr; gap:12px; margin-bottom:18px; }
+.actionList { display:grid; gap:10px; }
+.actionRow { display:grid; grid-template-columns:84px 1fr 150px 150px; gap:12px; align-items:center; border:1px solid rgba(255,255,255,.09); background:rgba(255,255,255,.045); border-radius:18px; padding:14px; }
+.actionRow b { color:#fff; font-weight:560; line-height:1.35; }
+.actionRow small { color:#c6d1f1; }
+.actionRow strong { color:#f7f8ff; font-size:13px; font-weight:560; }
+.high, .medium { justify-self:start; border-radius:999px; padding:7px 10px; font-size:12px; border:1px solid rgba(255,255,255,.1); }
+.high { color:#ffd1d1; background:rgba(255,123,123,.13); border-color:rgba(255,123,123,.24); }
+.medium { color:#ffe8ad; background:rgba(242,195,107,.12); border-color:rgba(242,195,107,.26); }
+.dueList { display:grid; gap:12px; margin:14px 0 18px; }
+.dueList div { position:relative; padding-left:24px; display:grid; gap:4px; }
+.dueList div::before { content:""; position:absolute; left:0; top:5px; width:10px; height:10px; border-radius:50%; background:var(--gold); box-shadow:0 0 0 5px rgba(242,195,107,.12); }
+.dueList b { color:#ffe8aa; font-weight:600; }
+.dueList span { color:#fff; }
+.dueList small { color:#94a3ce; }
+.reportsGrid { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; }
+.reportCard { min-height:232px; display:flex; flex-direction:column; }
+.reportCard > span { color:#96e9b0; font-size:13px; font-weight:600; }
+.reportCard h4 { margin:12px 0 8px; color:#fff; font-size:22px; line-height:1.08; letter-spacing:-.03em; font-weight:600; }
+.reportCard p { margin:0 0 8px; color:#d7e0ff; }
+.reportCard small { color:#91a0c7; line-height:1.45; }
+.reportCard .cardActions { margin-top:auto; }
+@media(max-width:1180px){ .topGrid,.operationsGrid{grid-template-columns:1fr}.workGrid{grid-template-columns:1fr 1fr}.continueCard{grid-column:1/-1}.metrics{grid-template-columns:repeat(2,1fr)}.reportsGrid{grid-template-columns:1fr 1fr}.actionRow{grid-template-columns:84px 1fr}.actionRow strong{grid-column:2} }
+@media(max-width:760px){ .wrap{width:min(100% - 24px,520px);padding:18px 0 92px}.nav div{display:none}.heroCard h1{font-size:36px}.workGrid,.reportsGrid,.metrics{grid-template-columns:1fr}.workflow{grid-template-columns:1fr 1fr}.cardHead{display:grid}.actionRow{grid-template-columns:1fr}.actionRow strong{grid-column:auto}.cardActions a,.heroActions a{width:100%} }

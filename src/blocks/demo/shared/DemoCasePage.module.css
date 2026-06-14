@@ -1,0 +1,5 @@
+.wrap { width:min(1020px, calc(100% - 28px)); margin:0 auto; padding:28px 0 80px; }
+.wrap nav { display:flex; justify-content:space-between; color:#b8c3e8; }
+.wrap h1 { font-size:52px; letter-spacing:-.055em; line-height:.95; }
+.grid { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin:24px 0; }
+@media(max-width:760px){ .grid { grid-template-columns:1fr; } .wrap h1{font-size:38px;} }

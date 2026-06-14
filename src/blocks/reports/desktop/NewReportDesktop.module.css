@@ -1,0 +1,13 @@
+.wrap { width:min(1380px, calc(100% - 48px)); margin:0 auto; padding:24px 0 76px; }
+.nav { display:flex; justify-content:space-between; align-items:center; color:#b9c7ef; margin-bottom:22px; }
+.nav strong { color:#fff; }
+.header { max-width:900px; margin-bottom:20px; }
+.header span { color:var(--gold); font-weight:650; letter-spacing:.04em; text-transform:uppercase; font-size:13px; }
+.header h1 { margin:8px 0 10px; font-size:46px; line-height:1; letter-spacing:-.045em; }
+.header p { color:var(--muted); line-height:1.55; font-size:16px; max-width:760px; }
+.pills { display:flex; flex-wrap:wrap; gap:8px; margin-top:14px; }
+.pills b { border:1px solid rgba(255,255,255,.12); background:rgba(255,255,255,.06); border-radius:999px; padding:9px 12px; color:#dce5ff; font-size:13px; }
+@media(max-width:760px){.wrap{width:min(100% - 24px, 520px);padding:18px 0 90px}.header h1{font-size:38px}.nav{margin-bottom:24px}.header p{font-size:15px}.pills{display:none}}
+.header h1 { font-weight:650; }
+.nav strong { font-weight:600; }
+.pills b { font-weight:500; }

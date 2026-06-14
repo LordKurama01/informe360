@@ -1,0 +1,8 @@
+﻿node_modules
+.next
+.netlify
+.env
+.env.local
+.DS_Store
+CHECKPOINT_INFORME360.txt
+NETLIFY_DEPLOY_CHECK.txt

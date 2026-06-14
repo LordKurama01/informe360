@@ -1,0 +1,384 @@
+.wrap {
+  width: min(1280px, calc(100% - 40px));
+  margin: 0 auto;
+  padding: 24px 0 84px;
+}
+
+.nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 18px;
+  color: #b9c7ef;
+}
+
+.nav strong {
+  color: #fff;
+  font-weight: 600;
+}
+
+.hero {
+  display: grid;
+  grid-template-columns: 1fr 420px;
+  gap: 18px;
+  align-items: stretch;
+  margin-bottom: 16px;
+}
+
+.hero > div:first-child,
+.toolbar,
+.tableShell {
+  border: 1px solid rgba(255,255,255,.1);
+  border-radius: 28px;
+  background:
+    radial-gradient(circle at 12% 16%, rgba(47,125,255,.16), transparent 34%),
+    linear-gradient(145deg, rgba(255,255,255,.078), rgba(255,255,255,.036));
+  box-shadow: 0 24px 70px rgba(0,0,0,.22);
+}
+
+.hero > div:first-child {
+  padding: 28px;
+}
+
+.eyebrow {
+  color: var(--gold);
+  font-size: 12px;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
+.hero h1 {
+  margin: 10px 0 12px;
+  font-size: 46px;
+  line-height: .98;
+  letter-spacing: -.045em;
+  font-weight: 620;
+}
+
+.hero p,
+.toolbarFoot p,
+.normaCell p,
+.normaCell em,
+.row small {
+  color: var(--muted);
+  line-height: 1.55;
+}
+
+.hero p {
+  max-width: 760px;
+  margin: 0;
+  font-size: 15px;
+}
+
+.heroStats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.heroStats div {
+  border: 1px solid rgba(255,255,255,.1);
+  border-radius: 22px;
+  background: rgba(255,255,255,.06);
+  padding: 18px;
+  display: grid;
+  align-content: center;
+  gap: 6px;
+}
+
+.heroStats b {
+  color: #fff;
+  font-size: 34px;
+  line-height: 1;
+  letter-spacing: -.04em;
+  font-weight: 620;
+}
+
+.heroStats span {
+  color: #94a3ce;
+  font-size: 13px;
+}
+
+.toolbar {
+  padding: 18px;
+  margin-bottom: 16px;
+}
+
+.searchBox,
+.filterGrid label {
+  display: grid;
+  gap: 7px;
+  color: #d7e0ff;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.searchBox input,
+.filterGrid input,
+.filterGrid select {
+  width: 100%;
+  min-height: 43px;
+  border: 1px solid rgba(255,255,255,.12);
+  background: rgba(2,6,18,.42);
+  color: #fff;
+  border-radius: 15px;
+  padding: 0 13px;
+  outline: none;
+}
+
+.searchBox input:focus,
+.filterGrid input:focus,
+.filterGrid select:focus {
+  border-color: rgba(47,125,255,.56);
+  box-shadow: 0 0 0 4px rgba(47,125,255,.12);
+}
+
+.filterGrid {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.filterGrid select option {
+  background: #11172a;
+  color: #fff;
+}
+
+.toolbarFoot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  margin-top: 14px;
+}
+
+.toolbarFoot p {
+  margin: 0;
+  font-size: 13px;
+}
+
+.tableShell {
+  padding: 12px;
+  overflow: hidden;
+}
+
+.tableHeader,
+.row {
+  display: grid;
+  grid-template-columns: minmax(280px, 1.35fr) minmax(170px, .7fr) minmax(180px, .75fr) 110px minmax(155px, .65fr) 220px;
+  gap: 12px;
+  align-items: center;
+}
+
+.tableHeader {
+  padding: 10px 14px 12px;
+  color: #8fa0cb;
+  font-size: 12px;
+  letter-spacing: .07em;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
+.rows {
+  display: grid;
+  gap: 10px;
+}
+
+.row {
+  border: 1px solid rgba(255,255,255,.1);
+  background: rgba(255,255,255,.052);
+  border-radius: 20px;
+  padding: 14px;
+}
+
+.rowSelected {
+  border-color: rgba(126,227,160,.34);
+  background: linear-gradient(145deg, rgba(126,227,160,.09), rgba(47,125,255,.045));
+}
+
+.normaCell small {
+  display: block;
+  color: var(--gold);
+  font-size: 12px;
+  margin-bottom: 6px;
+}
+
+.normaCell h2 {
+  margin: 0 0 6px;
+  color: #fff;
+  font-size: 22px;
+  line-height: 1.05;
+  letter-spacing: -.025em;
+  font-weight: 620;
+}
+
+.normaCell p {
+  margin: 0 0 7px;
+  color: #d9e2ff;
+}
+
+.normaCell em {
+  display: block;
+  font-style: normal;
+  font-size: 13px;
+}
+
+.row b {
+  display: block;
+  color: #fff;
+  font-weight: 560;
+  line-height: 1.35;
+}
+
+.row small {
+  display: block;
+  font-size: 12px;
+  margin-top: 4px;
+}
+
+.topicCell {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
+.topicCell span,
+.status {
+  display: inline-flex;
+  width: fit-content;
+  border: 1px solid rgba(255,255,255,.11);
+  background: rgba(255,255,255,.06);
+  color: #dce5ff;
+  border-radius: 999px;
+  padding: 7px 9px;
+  font-size: 12px;
+  line-height: 1;
+}
+
+.status {
+  border-color: rgba(126,227,160,.25);
+  background: rgba(126,227,160,.1);
+  color: #dfffe9;
+}
+
+.actions {
+  display: grid;
+  gap: 7px;
+}
+
+.actions a,
+.actions button {
+  min-height: 34px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,.12);
+  background: rgba(255,255,255,.065);
+  color: #f6f8ff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 11px;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 540;
+  cursor: pointer;
+}
+
+.actions a:last-child,
+.actions button:last-child {
+  border-color: rgba(242,195,107,.28);
+  background: rgba(242,195,107,.1);
+  color: #ffe8b0;
+}
+
+.actions button:disabled {
+  cursor: not-allowed;
+  opacity: .55;
+}
+
+.emptyState {
+  padding: 42px;
+  text-align: center;
+  color: var(--muted);
+}
+
+.emptyState h3 {
+  color: #fff;
+  margin: 0 0 8px;
+}
+
+@media (max-width: 1180px) {
+  .hero {
+    grid-template-columns: 1fr;
+  }
+
+  .filterGrid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .tableHeader {
+    display: none;
+  }
+
+  .row {
+    grid-template-columns: 1fr 1fr;
+    align-items: start;
+  }
+
+  .normaCell {
+    grid-column: 1 / -1;
+  }
+
+  .actions {
+    grid-column: 1 / -1;
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 760px) {
+  .wrap {
+    width: min(100% - 24px, 520px);
+    padding: 18px 0 92px;
+  }
+
+  .nav {
+    align-items: flex-start;
+    gap: 8px;
+    font-size: 14px;
+  }
+
+  .hero > div:first-child,
+  .toolbar,
+  .tableShell {
+    border-radius: 24px;
+  }
+
+  .hero > div:first-child {
+    padding: 20px;
+  }
+
+  .hero h1 {
+    font-size: 34px;
+  }
+
+  .heroStats,
+  .filterGrid,
+  .row,
+  .actions {
+    grid-template-columns: 1fr;
+  }
+
+  .toolbarFoot {
+    display: grid;
+  }
+
+  .row {
+    padding: 13px;
+  }
+
+  .normaCell h2 {
+    font-size: 20px;
+  }
+}

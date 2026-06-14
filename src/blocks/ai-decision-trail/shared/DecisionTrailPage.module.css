@@ -1,0 +1,8 @@
+.wrap { min-height:100vh; padding:32px; }
+.nav { display:flex; justify-content:space-between; color:#b8c3e8; margin-bottom:28px; }
+.header span { color:var(--gold); font-weight:600; }
+.header h1 { margin:8px 0; font-size:46px; letter-spacing:-.05em; }
+.header p { color:var(--muted); max-width:760px; }
+.timeline { display:grid; gap:14px; margin-top:24px; max-width:880px; }
+.timeline p { color:#dce4ff; margin-bottom:0; }
+@media(max-width:760px){.wrap{padding:20px}.header h1{font-size:34px}}

@@ -1,0 +1,4 @@
+.metric { border-radius: 20px; padding: 18px; background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.1); }
+.metric span { display:block; color:#93a1c6; font-size: 13px; }
+.metric strong { display:block; margin-top: 6px; color:#fff; font-size: 26px; letter-spacing: -.04em; }
+.metric small { display:block; color:#8ce9b0; margin-top: 6px; }

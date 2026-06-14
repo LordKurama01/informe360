@@ -1,0 +1,66 @@
+.wrap { display:grid; grid-template-columns: minmax(520px,.95fr) minmax(520px,1.05fr); gap:24px; align-items:start; }
+.compact { display:grid; gap:18px; }
+.formShell, .previewShell { border:1px solid rgba(255,255,255,.1); background:linear-gradient(145deg, rgba(255,255,255,.075), rgba(47,125,255,.045), rgba(242,195,107,.025)); border-radius:28px; padding:22px; box-shadow:0 24px 80px rgba(0,0,0,.22); }
+.formHeader { display:flex; justify-content:space-between; gap:18px; margin-bottom:18px; }
+.formHeader h2 { margin:6px 0 8px; font-size:34px; letter-spacing:-.045em; }
+.formHeader p { margin:0; color:var(--muted); line-height:1.55; }
+.eyebrow { color:var(--gold); font-weight:600; font-size:13px; letter-spacing:.04em; text-transform:uppercase; }
+.progress { min-width:98px; height:98px; border-radius:26px; display:grid; place-items:center; text-align:center; border:1px solid rgba(126,227,160,.24); background:rgba(126,227,160,.08); }
+.progress b { display:block; color:#eafff0; font-size:28px; line-height:1; }
+.progress span { color:#90e9ad; font-size:12px; }
+.stepper { display:grid; grid-template-columns: repeat(5, 1fr); gap:8px; margin-bottom:18px; }
+.stepper button { border:1px solid rgba(255,255,255,.1); background:rgba(255,255,255,.05); color:#aebbe5; border-radius:16px; padding:10px 8px; cursor:pointer; display:grid; gap:4px; font-weight:600; }
+.stepper b { margin:auto; width:26px; height:26px; display:grid; place-items:center; border-radius:50%; background:rgba(255,255,255,.08); color:#fff; }
+.activeStep { border-color:rgba(242,195,107,.48)!important; background:rgba(242,195,107,.12)!important; color:#fff!important; }
+.activeStep b { background:var(--gold); color:#11172a; }
+.form { display:grid; gap:14px; }
+.panel { display:grid; gap:13px; }
+.panelTitle { display:flex; justify-content:space-between; align-items:center; gap:12px; }
+.panel h3 { margin:0 0 4px; font-size:22px; letter-spacing:-.025em; }
+.form label { display:grid; gap:7px; color:#d7e0ff; font-size:13px; font-weight:600; }
+.form input, .form textarea, .form select { width:100%; border:1px solid rgba(255,255,255,.13); background:rgba(2,6,18,.45); color:#fff; border-radius:16px; padding:13px 14px; outline:none; box-shadow: inset 0 0 0 1px rgba(255,255,255,.015); }
+.form select option { background:#11172a; color:#fff; }
+.form input:focus, .form textarea:focus, .form select:focus { border-color:rgba(47,125,255,.55); box-shadow:0 0 0 4px rgba(47,125,255,.12); }
+.form textarea { min-height:104px; resize:vertical; }
+.row { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+.actions { display:flex; justify-content:flex-end; gap:10px; margin-top:4px; flex-wrap:wrap; }
+.helper { color:#9facd0; line-height:1.6; margin:0; }
+.checklistShell { display:grid; gap:12px; border:1px solid rgba(255,255,255,.1); background:rgba(255,255,255,.04); border-radius:20px; padding:14px; }
+.checklistHead { display:flex; justify-content:space-between; gap:12px; align-items:flex-start; }
+.checklistHead b { display:block; color:#fff; margin-bottom:4px; }
+.checklistHead span { color:#9facd0; font-size:13px; line-height:1.45; }
+.checklistList { display:grid; gap:12px; }
+.checklistItem { display:grid; gap:11px; border:1px solid rgba(255,255,255,.09); background:rgba(2,6,18,.24); border-radius:18px; padding:13px; }
+.checklistGrid { display:grid; grid-template-columns:1fr 1fr 1.25fr; gap:10px; }
+.checklistItem textarea { min-height:72px; }
+.reviewChecklist { display:grid; gap:10px; }
+.reviewChecklist div { display:grid; gap:4px; border:1px solid rgba(255,255,255,.1); background:rgba(255,255,255,.045); border-radius:16px; padding:12px; }
+.reviewChecklist b { color:#fff; }
+.reviewChecklist span { color:#ffe2a1; font-size:13px; }
+.reviewChecklist small { color:#9facd0; line-height:1.45; }
+.uploadBox { display:grid; gap:12px; padding:16px; border:1px dashed rgba(47,125,255,.35); background:rgba(47,125,255,.07); border-radius:22px; }
+.uploadBox b { display:block; color:#fff; margin-bottom:5px; }
+.uploadBox span { color:#aebbe5; font-size:13px; }
+.uploadBox input { background:rgba(0,0,0,.22); }
+.fileList { display:flex; flex-wrap:wrap; gap:8px; }
+.fileList span { border:1px solid rgba(255,255,255,.12); background:rgba(255,255,255,.07); padding:8px 10px; border-radius:999px; color:#eaf0ff; font-size:12px; }
+.styleGrid { display:grid; grid-template-columns:repeat(2,1fr); gap:10px; }
+.styleCard, .styleCardActive { text-align:left; border:1px solid rgba(255,255,255,.12); border-radius:18px; background:rgba(255,255,255,.045); color:#fff; padding:14px; cursor:pointer; display:grid; gap:6px; }
+.styleCard span, .styleCardActive span { color:#9facd0; font-size:13px; line-height:1.45; }
+.styleCardActive { border-color:rgba(242,195,107,.58); background:linear-gradient(145deg, rgba(242,195,107,.16), rgba(47,125,255,.08)); }
+.summaryBox { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; }
+.summaryBox div { border:1px solid rgba(255,255,255,.1); background:rgba(255,255,255,.055); border-radius:18px; padding:14px; }
+.summaryBox span { display:block; color:#92a1ca; font-size:12px; margin-bottom:6px; }
+.summaryBox b { color:#fff; }
+.empty { min-height:620px; border:1px dashed rgba(255,255,255,.16); border-radius:26px; display:grid; align-content:center; justify-items:center; padding:34px; color:#8f9dc4; text-align:center; background:radial-gradient(circle at 50% 20%, rgba(47,125,255,.18), transparent 36%); }
+.empty span { color:var(--gold); font-weight:600; text-transform:uppercase; letter-spacing:.08em; font-size:12px; }
+.empty h3 { color:#fff; font-size:30px; margin:12px 0; }
+.empty p { max-width:440px; line-height:1.65; margin:0; }
+.error { color:#ff9c9c; }
+@media(max-width:1120px){ .wrap { grid-template-columns:1fr; } .previewShell { order:2; } }
+@media(max-width:760px){ .formShell,.previewShell{padding:14px;border-radius:22px}.formHeader{display:grid}.progress{width:92px;height:76px}.row,.styleGrid,.summaryBox,.checklistGrid{grid-template-columns:1fr}.stepper{grid-template-columns:repeat(5,minmax(58px,1fr));overflow-x:auto}.stepper button{font-size:12px}.empty{min-height:280px}.actions{justify-content:stretch}.actions button{flex:1}.panelTitle,.checklistHead{display:grid}.checklistHead button{width:100%} }
+.formHeader h2, .panel h3 { font-weight:600; }
+.form label { font-weight:500; }
+.stepper button { font-weight:500; }
+.stepper b { font-weight:600; }
+.uploadBox b, .summaryBox b { font-weight:500; }
