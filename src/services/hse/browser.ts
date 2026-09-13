@@ -6,6 +6,11 @@ export type HseWorkspace = { organizationId: string; organizationName: string; s
 export type HseFinding = { id: string; code: string; title: string; description: string | null; severity: 'low'|'medium'|'high'|'critical'; priority: 'low'|'medium'|'high'|'urgent'; status: 'open'|'in_progress'|'closed'|'cancelled'; due_at: string | null; closed_at: string | null; location_text: string | null; element_text: string | null; responsible_text: string | null; category: string | null; closure_comment: string | null; created_at: string };
 export type HseSummary = { open: number; overdue: number; dueNext7Days: number; closed: number; closedOnTime: number; closureCompliancePct: number; criticalOpen: number };
 
+export async function getCurrentHseUser() {
+  const { data } = await getBrowserSupabase().auth.getUser();
+  return data.user;
+}
+
 export async function hseSignIn(email: string, password: string) {
   const { error } = await getBrowserSupabase().auth.signInWithPassword({ email: email.trim(), password });
   if (error) throw error;
@@ -88,5 +93,5 @@ export async function getHseReport(reportId: string) {
   ]);
   if (reportError) throw reportError;
   if (linksError) throw linksError;
-  return { report, findings: (links || []).map((link: any) => link.findings).filter(Boolean) as HseFinding[] };
+  return { report, findings: (links || []).map(link => link.findings).filter(Boolean).flat() as unknown as HseFinding[] };
 }
