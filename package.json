@@ -1,6 +1,6 @@
 {
   "name": "informe360-ai-agent-xprize",
-  "version": "4.0.0-premium-reports",
+  "version": "4.1.0-hse-copilot",
   "private": true,
   "scripts": {
     "dev": "next dev",
@@ -9,8 +9,9 @@
     "lint": "eslint . --max-warnings=0",
     "typecheck": "tsc --noEmit",
     "test:structure": "node scripts/check-structure.mjs",
+    "test:hse": "node --test src/shared/hse/*.test.mjs src/services/ai/hse/*.test.mjs",
     "evidence:init": "node scripts/init-evidence.mjs",
-    "qa": "npm run test:structure && npm run typecheck && npm run lint && npm run build"
+    "qa": "npm run test:structure && npm run test:hse && npm run typecheck && npm run lint && npm run build"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.45.4",
