@@ -27,6 +27,7 @@ assert.match(adapter, /createHmac\(['"]sha256['"]/, 'Meta adapter must verify SH
 assert.match(adapter, /messageType === ['"]audio['"]|['"]audio['"]/, 'Meta adapter must support WhatsApp audio');
 assert.match(adapter, /messageType === ['"]image['"]|['"]image['"]/, 'Meta adapter must support WhatsApp images');
 assert.match(adapter, /graph\.facebook\.com/, 'Meta adapter must use the official Graph API transport');
+assert.match(adapter, /sendWhatsAppReminder/, 'Meta adapter must support scheduled reminder delivery');
 
 const processor = await readFile('src/services/hse/assistant/processor.ts', 'utf8');
 assert.match(processor, /awaiting_confirmation/, 'Official finding creation must use an explicit confirmation state');
@@ -35,6 +36,10 @@ assert.match(processor, /provider_message_id|idempotency/i, 'Inbound WhatsApp me
 assert.match(processor, /transcribeAudio/, 'Audio messages must reuse the existing HSE transcription core');
 assert.match(processor, /structureFieldEntry|analyzeImage/, 'WhatsApp findings must reuse the existing HSE AI core');
 assert.match(processor, /close_channel_finding/, 'Conversational closure must use a service-only transactional close RPC');
+for (const intent of ['RESCHEDULE_REMINDER', 'ADD_EVIDENCE', 'DAILY_SUMMARY']) {
+  assert.match(processor, new RegExp(`case ['"]${intent}['"]`), `Processor must execute ${intent}`);
+}
+assert.match(processor, /phase:\s*['"]closure['"]|phase:\s*['"]supporting['"]/, 'WhatsApp evidence must use the existing finding evidence phases');
 
 const remindersJob = await readFile('src/app/api/hse/jobs/whatsapp-reminders/route.ts', 'utf8');
 assert.match(remindersJob, /HSE_JOBS_SECRET/, 'Reminder job must be protected by a server-only secret');
