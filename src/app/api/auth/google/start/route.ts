@@ -6,15 +6,17 @@ export async function GET(request: NextRequest) {
   const requestUrl = new URL(request.url);
   const appUrl = process.env.NEXT_PUBLIC_APP_URL || requestUrl.origin;
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const anon = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  const publishableKey =
+    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ||
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
   await trackServerEvent({ name: 'google_login_started', path: '/api/auth/google/start' });
 
-  if (!url || !anon) {
+  if (!url || !publishableKey) {
     return NextResponse.redirect(new URL('/app?auth=demo-google&mode=missing-supabase', requestUrl.origin));
   }
 
-  const supabase = createClient(url, anon, { auth: { persistSession: false } });
+  const supabase = createClient(url, publishableKey, { auth: { persistSession: false } });
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: 'google',
     options: { redirectTo: `${appUrl}/app?auth=google` }
