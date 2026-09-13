@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { FormEvent, useCallback, useEffect, useMemo, useState } from 'react';
+import { FormEvent, useEffect, useMemo, useState } from 'react';
 import { Card } from '@/shared/components/Card';
 import { Button, ButtonLink } from '@/shared/components/Button';
 import {
@@ -18,6 +18,12 @@ const formatter = new Intl.DateTimeFormat('es-AR', {
   dateStyle: 'medium',
   timeStyle: 'short',
 });
+
+async function fetchAgenda() {
+  const workspace = await getHseWorkspace();
+  const reminders = workspace ? await getHseReminders(workspace) : [];
+  return { workspace, reminders };
+}
 
 function reminderState(reminder: HseReminder) {
   if (reminder.status === 'completed') return { label: 'Hecho', tone: 'done' };
@@ -44,23 +50,35 @@ export function CalendarPage() {
   const [notes, setNotes] = useState('');
   const [scheduledFor, setScheduledFor] = useState('');
 
-  const load = useCallback(async () => {
+  useEffect(() => {
+    let active = true;
+    void fetchAgenda()
+      .then(result => {
+        if (!active) return;
+        setWorkspace(result.workspace);
+        setReminders(result.reminders);
+      })
+      .catch(cause => {
+        if (!active) return;
+        setError(cause instanceof Error ? cause.message : 'No se pudo cargar la agenda HSE.');
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+    return () => { active = false; };
+  }, []);
+
+  async function load() {
     try {
-      const nextWorkspace = await getHseWorkspace();
-      setWorkspace(nextWorkspace);
-      if (!nextWorkspace) {
-        setReminders([]);
-        return;
-      }
-      setReminders(await getHseReminders(nextWorkspace));
+      const result = await fetchAgenda();
+      setWorkspace(result.workspace);
+      setReminders(result.reminders);
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : 'No se pudo cargar la agenda HSE.');
     } finally {
       setLoading(false);
     }
-  }, []);
-
-  useEffect(() => { void load(); }, [load]);
+  }
 
   const pending = useMemo(
     () => reminders.filter(reminder => reminder.status === 'pending'),
