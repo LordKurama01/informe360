@@ -3,11 +3,13 @@ import { access, readFile } from 'node:fs/promises';
 
 const requiredFiles = [
   'src/app/api/hse/channels/whatsapp/route.ts',
+  'src/app/api/hse/jobs/whatsapp-reminders/route.ts',
   'src/services/hse/channels/meta-whatsapp.ts',
   'src/services/hse/channels/types.ts',
   'src/services/hse/assistant/intent-router.ts',
   'src/services/hse/assistant/processor.ts',
   'src/services/hse/assistant/types.ts',
+  'scripts/link-hse-whatsapp-identity.mjs',
   'database/supabase/migrations/20260913160000_hse_whatsapp_field_copilot.sql',
 ];
 
@@ -31,6 +33,13 @@ assert.match(processor, /hse_channel_identities/, 'Channel commands must resolve
 assert.match(processor, /provider_message_id|idempotency/i, 'Inbound WhatsApp messages must be idempotent');
 assert.match(processor, /transcribeAudio/, 'Audio messages must reuse the existing HSE transcription core');
 assert.match(processor, /structureFieldEntry|analyzeImage/, 'WhatsApp findings must reuse the existing HSE AI core');
+assert.match(processor, /close_channel_finding/, 'Conversational closure must use a service-only transactional close RPC');
+
+const remindersJob = await readFile('src/app/api/hse/jobs/whatsapp-reminders/route.ts', 'utf8');
+assert.match(remindersJob, /HSE_JOBS_SECRET/, 'Reminder job must be protected by a server-only secret');
+assert.match(remindersJob, /channel[^\n]*whatsapp|\.eq\(['"]channel['"], ['"]whatsapp['"]\)/i, 'Reminder job must only send WhatsApp reminders');
+assert.match(remindersJob, /sendWhatsApp/, 'Reminder job must use the Meta WhatsApp adapter');
+assert.match(remindersJob, /status[^\n]*sent|sent_at/i, 'Reminder job must persist delivery state');
 
 const migration = await readFile('database/supabase/migrations/20260913160000_hse_whatsapp_field_copilot.sql', 'utf8');
 for (const table of ['hse_channel_identities', 'hse_channel_messages', 'hse_assistant_commands', 'hse_conversation_contexts']) {
@@ -38,10 +47,17 @@ for (const table of ['hse_channel_identities', 'hse_channel_messages', 'hse_assi
 }
 assert.match(migration, /enable row level security/gi, 'New public channel tables must enable RLS');
 assert.match(migration, /'whatsapp'/i, 'Reminder channel contract must include WhatsApp');
-assert.match(migration, /grant execute[\s\S]*service_role/i, 'Channel finding RPC must be service-role only');
+assert.match(migration, /create or replace function public\.close_channel_finding/i, 'Migration must provide service-only channel close RPC');
+assert.match(migration, /grant execute[\s\S]*service_role/i, 'Channel finding RPCs must be service-role only');
+
+const linkScript = await readFile('scripts/link-hse-whatsapp-identity.mjs', 'utf8');
+assert.match(linkScript, /HSE_LINK_USER_EMAIL/, 'Identity linker must resolve an explicit HSE user');
+assert.match(linkScript, /HSE_LINK_WHATSAPP_ID/, 'Identity linker must require the explicit WhatsApp user id');
+assert.match(linkScript, /META_WHATSAPP_PHONE_NUMBER_ID/, 'Identity linker must scope identity to the Meta phone-number account');
+assert.doesNotMatch(linkScript, /\+549\d{6,}/, 'Identity linker must not hardcode a personal phone number');
 
 const env = await readFile('.env.example', 'utf8');
-for (const name of ['META_APP_SECRET', 'META_WHATSAPP_VERIFY_TOKEN', 'META_WHATSAPP_ACCESS_TOKEN', 'META_WHATSAPP_PHONE_NUMBER_ID', 'META_GRAPH_API_VERSION']) {
+for (const name of ['META_APP_SECRET', 'META_WHATSAPP_VERIFY_TOKEN', 'META_WHATSAPP_ACCESS_TOKEN', 'META_WHATSAPP_PHONE_NUMBER_ID', 'META_GRAPH_API_VERSION', 'HSE_JOBS_SECRET']) {
   assert.match(env, new RegExp(`^${name}=`, 'm'), `.env.example must document ${name}`);
 }
 
