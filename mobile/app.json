@@ -6,13 +6,23 @@
     "orientation": "portrait",
     "scheme": "hsecopilot",
     "userInterfaceStyle": "light",
+    "icon": "./assets/brand/app-icon.png",
+    "splash": {
+      "image": "./assets/brand/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#0B1110"
+    },
     "ios": {
       "bundleIdentifier": "com.informe360.hsecopilot",
       "supportsTablet": false
     },
     "android": {
       "package": "com.informe360.hsecopilot",
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/brand/adaptive-icon.png",
+        "backgroundColor": "#0B1110"
+      }
     },
     "plugins": [
       "expo-router",
