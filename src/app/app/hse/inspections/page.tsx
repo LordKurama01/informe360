@@ -9,7 +9,7 @@ import { getBrowserSupabase } from '@/services/supabase/browser';
 export default function HseInspectionsPage(){
   const[workspace,setWorkspace]=useState<HseWorkspace|null>(null);const[templates,setTemplates]=useState<HseFormTemplate[]>([]);const[runs,setRuns]=useState<HseFormRunRow[]>([]);const[busy,setBusy]=useState(false);const[error,setError]=useState<string|null>(null);
   const load=useCallback(async()=>{setError(null);const ws=await getHseWorkspace();setWorkspace(ws);if(!ws)return;const all=await listFormTemplates(ws);const inspections=all.filter(item=>item.category==='inspection');setTemplates(inspections);const recent=await listFormRuns(ws);setRuns(recent.filter(row=>inspections.some(template=>template.id===row.template_id)));},[]);
-  useEffect(()=>{void load().catch(e=>setError(e instanceof Error?e.message:'Error'));},[load]);
+  useEffect(()=>{const timer=setTimeout(()=>void load().catch(e=>setError(e instanceof Error?e.message:'Error')),0);return()=>clearTimeout(timer);},[load]);
   async function seed(){if(!workspace)return;setBusy(true);try{const{data,error:rpcError}=await getBrowserSupabase().rpc('seed_hse_inspection_templates',{p_organization_id:workspace.organizationId});if(rpcError)throw rpcError;await load();alert(Number(data||0)?`Se agregaron ${data} checklists.`:'La biblioteca estándar ya estaba cargada.');}catch(e){setError(e instanceof Error?e.message:'No se pudo preparar la biblioteca');}finally{setBusy(false);}}
   const names=new Map(templates.map(item=>[item.id,item.name]));
   return <main style={{minHeight:'100vh',background:'#f4f7f6',padding:'36px 24px',color:'#102a2a'}}><div style={{maxWidth:1100,margin:'0 auto',display:'grid',gap:18}}>
