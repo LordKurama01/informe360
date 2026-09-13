@@ -5,7 +5,7 @@ import { resolveUserDueText } from '../../../shared/hse/date-resolution.mjs';
 import { downloadMetaMedia, sendWhatsAppText } from '../channels/meta-whatsapp';
 import type { HseChannelIdentity, NormalizedWhatsAppMessage } from '../channels/types';
 import { classifyHseIntent, extractContextLabel, isConfirmationText, isRejectionText, reminderTitleFromText } from './intent-router';
-import type { HseAssistantIntent, HseConversationContext, ProposedFindingPayload } from './types';
+import type { HseAssistantIntent, HseConversationContext, ProposedClosePayload, ProposedFindingPayload } from './types';
 import type { StructuredFindingDraft } from '../../ai/hse/contract.mjs';
 
 type ProcessedMedia = {
@@ -24,6 +24,12 @@ type FindingRpcRow = {
   finding_code: string;
   action_id: string | null;
   reminder_id: string | null;
+};
+
+type CloseRpcRow = {
+  finding_id: string;
+  finding_code: string;
+  next_version: number;
 };
 
 function priorityFromSeverity(severity: StructuredFindingDraft['severity']): ProposedFindingPayload['priority'] {
@@ -99,6 +105,21 @@ async function currentContext(admin: SupabaseClient, identity: HseChannelIdentit
     activeLocationText: (data?.active_location_text as string | null | undefined) ?? null,
     activeFindingId: (data?.active_finding_id as string | null | undefined) ?? null,
   };
+}
+
+async function updateConversationContext(
+  admin: SupabaseClient,
+  identity: HseChannelIdentity,
+  patch: { active_site_id?: string | null; active_location_text?: string | null; active_finding_id?: string | null },
+): Promise<void> {
+  const { error } = await admin.from('hse_conversation_contexts').upsert({
+    identity_id: identity.id,
+    organization_id: identity.organization_id,
+    user_id: identity.user_id,
+    ...patch,
+    updated_at: new Date().toISOString(),
+  }, { onConflict: 'identity_id' });
+  if (error) throw error;
 }
 
 async function insertInboundMessage(admin: SupabaseClient, identity: HseChannelIdentity, message: NormalizedWhatsAppMessage): Promise<ChannelMessageRow | null> {
@@ -306,34 +327,14 @@ function isProposedFinding(value: unknown): value is ProposedFindingPayload {
   return payload.kind === 'finding' && typeof payload.fieldEntryId === 'string' && Boolean(payload.draft) && typeof payload.originalText === 'string';
 }
 
-async function executePendingConfirmation(admin: SupabaseClient, identity: HseChannelIdentity, sourceMessageId: string, text: string): Promise<boolean> {
-  if (!isConfirmationText(text) && !isRejectionText(text)) return false;
-  const { data: pending, error } = await admin
-    .from('hse_assistant_commands')
-    .select('id,intent,payload,confirmation_expires_at')
-    .eq('identity_id', identity.id)
-    .eq('status', 'awaiting_confirmation')
-    .gte('confirmation_expires_at', new Date().toISOString())
-    .order('created_at', { ascending: false })
-    .limit(1)
-    .maybeSingle();
-  if (error) throw error;
-  if (!pending) return false;
+function isProposedClose(value: unknown): value is ProposedClosePayload {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return false;
+  const payload = value as Partial<ProposedClosePayload>;
+  return payload.kind === 'close_finding' && typeof payload.findingId === 'string' && typeof payload.findingCode === 'string' && typeof payload.findingTitle === 'string';
+}
 
-  if (isRejectionText(text)) {
-    await admin.from('hse_assistant_commands').update({ status: 'rejected', result: { reason: 'user_rejected' } }).eq('id', pending.id);
-    await auditCommand(admin, identity, sourceMessageId, 'CREATE_FINDING', 'executed', { confirmation_for: pending.id, decision: 'reject' }, { rejected: true });
-    await reply(admin, identity, 'Descartado. No se creó ningún hallazgo.');
-    return true;
-  }
-
-  if (pending.intent !== 'CREATE_FINDING' || !isProposedFinding(pending.payload)) {
-    await reply(admin, identity, 'Ese comando pendiente todavía no tiene un ejecutor seguro. No hice cambios.');
-    return true;
-  }
-
-  const payload = pending.payload;
-  await admin.from('hse_assistant_commands').update({ status: 'confirmed' }).eq('id', pending.id);
+async function executeFindingConfirmation(admin: SupabaseClient, identity: HseChannelIdentity, pendingId: string, payload: ProposedFindingPayload, sourceMessageId: string): Promise<void> {
+  await admin.from('hse_assistant_commands').update({ status: 'confirmed' }).eq('id', pendingId);
   const { data, error: rpcError } = await admin.rpc('create_channel_finding_bundle', {
     p_actor_id: identity.user_id,
     p_organization_id: identity.organization_id,
@@ -350,7 +351,7 @@ async function executePendingConfirmation(admin: SupabaseClient, identity: HseCh
     p_ai_confidence: payload.draft.confidence,
   });
   if (rpcError) {
-    await admin.from('hse_assistant_commands').update({ status: 'failed', error_message: rpcError.message }).eq('id', pending.id);
+    await admin.from('hse_assistant_commands').update({ status: 'failed', error_message: rpcError.message }).eq('id', pendingId);
     throw rpcError;
   }
   const row = Array.isArray(data) ? data[0] as FindingRpcRow | undefined : undefined;
@@ -373,11 +374,71 @@ async function executePendingConfirmation(admin: SupabaseClient, identity: HseCh
     status: 'executed',
     executed_at: new Date().toISOString(),
     result: { finding_id: row.finding_id, finding_code: row.finding_code, action_id: row.action_id, reminder_id: row.reminder_id },
-  }).eq('id', pending.id);
-  await auditCommand(admin, identity, sourceMessageId, 'CREATE_FINDING', 'executed', { confirmation_for: pending.id, decision: 'confirm' }, { finding_id: row.finding_id, finding_code: row.finding_code });
+  }).eq('id', pendingId);
+  await updateConversationContext(admin, identity, { active_finding_id: row.finding_id });
+  await auditCommand(admin, identity, sourceMessageId, 'CREATE_FINDING', 'executed', { confirmation_for: pendingId, decision: 'confirm' }, { finding_id: row.finding_id, finding_code: row.finding_code });
 
   const reminderLine = payload.dueAt ? `\n⏰ Seguimiento: ${formatDate(payload.dueAt)}` : '';
-  await reply(admin, identity, `✅ ${row.finding_code || 'Hallazgo'} registrado.${reminderLine}\nYa aparece en HSE Copilot.`);
+  await reply(admin, identity, `✅ ${row.finding_code || 'Hallazgo'} registrado.${reminderLine}\nYa aparece en HSE Copilot y queda como hallazgo activo de esta conversación.`);
+}
+
+async function executeCloseConfirmation(admin: SupabaseClient, identity: HseChannelIdentity, pendingId: string, payload: ProposedClosePayload, sourceMessageId: string): Promise<void> {
+  await admin.from('hse_assistant_commands').update({ status: 'confirmed' }).eq('id', pendingId);
+  const { data, error } = await admin.rpc('close_channel_finding', {
+    p_actor_id: identity.user_id,
+    p_organization_id: identity.organization_id,
+    p_finding_id: payload.findingId,
+    p_comment: payload.comment,
+  });
+  if (error) {
+    await admin.from('hse_assistant_commands').update({ status: 'failed', error_message: error.message }).eq('id', pendingId);
+    throw error;
+  }
+  const row = Array.isArray(data) ? data[0] as CloseRpcRow | undefined : undefined;
+  if (!row?.finding_id) throw new Error('Close RPC returned no finding');
+
+  await admin.from('hse_assistant_commands').update({
+    status: 'executed',
+    executed_at: new Date().toISOString(),
+    result: { finding_id: row.finding_id, finding_code: row.finding_code, version: row.next_version },
+  }).eq('id', pendingId);
+  await updateConversationContext(admin, identity, { active_finding_id: null });
+  await auditCommand(admin, identity, sourceMessageId, 'CLOSE_FINDING', 'executed', { confirmation_for: pendingId, decision: 'confirm' }, { finding_id: row.finding_id, finding_code: row.finding_code });
+  await reply(admin, identity, `✅ ${row.finding_code || payload.findingCode} cerrado. Las acciones pendientes quedaron completadas y los recordatorios futuros fueron cancelados.`);
+}
+
+async function executePendingConfirmation(admin: SupabaseClient, identity: HseChannelIdentity, sourceMessageId: string, text: string): Promise<boolean> {
+  if (!isConfirmationText(text) && !isRejectionText(text)) return false;
+  const { data: pending, error } = await admin
+    .from('hse_assistant_commands')
+    .select('id,intent,payload,confirmation_expires_at')
+    .eq('identity_id', identity.id)
+    .eq('status', 'awaiting_confirmation')
+    .gte('confirmation_expires_at', new Date().toISOString())
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  if (error) throw error;
+  if (!pending) return false;
+
+  if (isRejectionText(text)) {
+    await admin.from('hse_assistant_commands').update({ status: 'rejected', result: { reason: 'user_rejected' } }).eq('id', pending.id);
+    await auditCommand(admin, identity, sourceMessageId, pending.intent as HseAssistantIntent, 'executed', { confirmation_for: pending.id, decision: 'reject' }, { rejected: true });
+    await reply(admin, identity, pending.intent === 'CLOSE_FINDING' ? 'Cierre cancelado. El hallazgo sigue abierto.' : 'Descartado. No se creó ningún hallazgo.');
+    return true;
+  }
+
+  if (pending.intent === 'CREATE_FINDING' && isProposedFinding(pending.payload)) {
+    await executeFindingConfirmation(admin, identity, String(pending.id), pending.payload, sourceMessageId);
+    return true;
+  }
+
+  if (pending.intent === 'CLOSE_FINDING' && isProposedClose(pending.payload)) {
+    await executeCloseConfirmation(admin, identity, String(pending.id), pending.payload, sourceMessageId);
+    return true;
+  }
+
+  await reply(admin, identity, 'Ese comando pendiente todavía no tiene un ejecutor seguro. No hice cambios.');
   return true;
 }
 
@@ -395,15 +456,7 @@ async function setContext(admin: SupabaseClient, identity: HseChannelIdentity, s
     .limit(2);
   if (error) throw error;
   const matchedSiteId = sites?.length === 1 ? String(sites[0].id) : identity.site_id;
-  const { error: contextError } = await admin.from('hse_conversation_contexts').upsert({
-    identity_id: identity.id,
-    organization_id: identity.organization_id,
-    user_id: identity.user_id,
-    active_site_id: matchedSiteId,
-    active_location_text: label,
-    updated_at: new Date().toISOString(),
-  }, { onConflict: 'identity_id' });
-  if (contextError) throw contextError;
+  await updateConversationContext(admin, identity, { active_site_id: matchedSiteId, active_location_text: label });
   await auditCommand(admin, identity, sourceMessageId, 'SET_CONTEXT', 'executed', { label }, { active_site_id: matchedSiteId, active_location_text: label });
   await reply(admin, identity, `📍 Contexto activo: *${label}*.\nLo voy a usar en los próximos registros hasta que me indiques otro lugar.`);
 }
@@ -475,6 +528,51 @@ async function queryPending(admin: SupabaseClient, identity: HseChannelIdentity,
   await reply(admin, identity, lines.join('\n'));
 }
 
+function explicitFindingCode(text: string): string | null {
+  return text.match(/\bHSE-\d+\b/i)?.[0]?.toUpperCase() || null;
+}
+
+async function closeFindingProposal(admin: SupabaseClient, identity: HseChannelIdentity, sourceMessageId: string, text: string, context: HseConversationContext): Promise<void> {
+  const code = explicitFindingCode(text);
+  let query = admin
+    .from('findings')
+    .select('id,code,title,status')
+    .eq('organization_id', identity.organization_id)
+    .in('status', ['open', 'in_progress']);
+
+  if (code) query = query.eq('code', code);
+  else if (context.activeFindingId) query = query.eq('id', context.activeFindingId);
+  else if (context.activeSiteId) query = query.eq('site_id', context.activeSiteId);
+  else {
+    await reply(admin, identity, 'Decime qué hallazgo querés cerrar usando su código, por ejemplo “cerrá HSE-1042”.');
+    return;
+  }
+
+  const { data, error } = await query.order('updated_at', { ascending: false }).limit(2);
+  if (error) throw error;
+  if (!data?.length) {
+    await reply(admin, identity, 'No encontré un hallazgo abierto que coincida con ese contexto. No hice cambios.');
+    return;
+  }
+  if (data.length > 1) {
+    const options = data.map(item => `${item.code} · ${item.title}`).join('\n');
+    await reply(admin, identity, `Encontré más de uno. Decime el código exacto:\n${options}`);
+    return;
+  }
+
+  const finding = data[0];
+  const payload: ProposedClosePayload = {
+    kind: 'close_finding',
+    findingId: String(finding.id),
+    findingCode: String(finding.code),
+    findingTitle: String(finding.title),
+    comment: text.trim(),
+  };
+  const expiresAt = new Date(Date.now() + 30 * 60_000).toISOString();
+  await auditCommand(admin, identity, sourceMessageId, 'CLOSE_FINDING', 'awaiting_confirmation', payload as unknown as Record<string, unknown>, {}, expiresAt);
+  await reply(admin, identity, `⚠️ *Confirmar cierre*\n${payload.findingCode} · ${payload.findingTitle}\n\nRespondé *SI* para cerrarlo o *NO* para cancelar. Si corresponde evidencia fotográfica de cierre, podés enviarla antes de cerrar desde la app o por WhatsApp cuando quede vinculada explícitamente.`);
+}
+
 async function updateInboundAudit(admin: SupabaseClient, sourceMessageId: string, transcript: string, media: ProcessedMedia[]): Promise<void> {
   const { error } = await admin.from('hse_channel_messages').update({
     transcript: transcript || null,
@@ -533,6 +631,9 @@ export async function processWhatsAppMessage(message: NormalizedWhatsAppMessage)
         break;
       case 'CREATE_FINDING':
         await createFindingProposal(admin, identity, message, inbound.id, transcript, context, mediaResult.processed, mediaResult.imageDraft, mediaResult.provider, mediaResult.model);
+        break;
+      case 'CLOSE_FINDING':
+        await closeFindingProposal(admin, identity, inbound.id, transcript, context);
         break;
       default:
         await auditCommand(admin, identity, inbound.id, classification.intent, 'proposed', { text: transcript, confidence: classification.confidence }, { supported: false });
