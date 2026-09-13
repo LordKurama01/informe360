@@ -11,7 +11,11 @@ export function AuthProvider({ children }: PropsWithChildren) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => { setSession(data.session); setLoading(false); });
+    void supabase.auth.getSession()
+      .then(({ data }) => setSession(data.session))
+      .catch(() => setSession(null))
+      .finally(() => setLoading(false));
+
     const { data } = supabase.auth.onAuthStateChange((_event, next) => setSession(next));
     const app = AppState.addEventListener('change', (state) => state === 'active' ? supabase.auth.startAutoRefresh() : supabase.auth.stopAutoRefresh());
     return () => { data.subscription.unsubscribe(); app.remove(); };
