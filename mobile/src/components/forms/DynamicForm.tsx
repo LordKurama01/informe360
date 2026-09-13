@@ -24,13 +24,32 @@ export function DynamicForm({ schema, initialAnswers = {}, submitLabel = 'Guarda
   }, [watch, onChange]);
 
   return <View style={styles.form}>
-    {schema.description ? <Text style={styles.description}>{schema.description}</Text> : null}
-    {schema.sections.map(section => <View key={section.id} style={styles.section}>
-      <View style={styles.sectionHead}><Text style={styles.sectionTitle}>{section.title}</Text>{section.description ? <Text style={styles.sectionDescription}>{section.description}</Text> : null}</View>
-      {section.fields.map(field => <Controller key={field.id} name={field.id} control={control} rules={{ validate: value => requiredValid(field, value) || 'Este campo es obligatorio' }} render={({ field: controllerField }) => <View pointerEvents={readOnly ? 'none' : 'auto'}><FormField field={field} value={controllerField.value} onChange={controllerField.onChange} error={errors[field.id]?.message as string | undefined}/></View>}/>) }
+    {schema.description ? <View style={styles.descriptionBox}><View style={styles.descriptionDot}/><Text style={styles.description}>{schema.description}</Text></View> : null}
+    {schema.sections.map((section, sectionIndex) => <View key={section.id} style={styles.section}>
+      <View style={styles.sectionHead}>
+        <View style={styles.sectionNumber}><Text style={styles.sectionNumberText}>{sectionIndex + 1}</Text></View>
+        <View style={styles.sectionHeadCopy}><Text style={styles.sectionTitle}>{section.title}</Text>{section.description ? <Text style={styles.sectionDescription}>{section.description}</Text> : null}</View>
+      </View>
+      <View style={styles.fields}>{section.fields.map(field => <Controller key={field.id} name={field.id} control={control} rules={{ validate: value => requiredValid(field, value) || 'Este campo es obligatorio' }} render={({ field: controllerField }) => <View pointerEvents={readOnly ? 'none' : 'auto'}><FormField field={field} value={controllerField.value} onChange={controllerField.onChange} error={errors[field.id]?.message as string | undefined}/></View>}/>)}</View>
     </View>)}
-    {!readOnly ? <Pressable disabled={isSubmitting} onPress={handleSubmit(async answers => onSubmit(answers))} style={[styles.submit,isSubmitting&&styles.submitDisabled]}><Text style={styles.submitText}>{isSubmitting ? 'Guardando…' : submitLabel}</Text></Pressable> : null}
+    {!readOnly ? <Pressable accessibilityRole="button" disabled={isSubmitting} onPress={handleSubmit(async answers => onSubmit(answers))} style={({ pressed }) => [styles.submit, (isSubmitting || pressed) && styles.submitDisabled]}><Text style={styles.submitText}>{isSubmitting ? 'Guardando…' : submitLabel}</Text></Pressable> : null}
   </View>;
 }
 
-const styles=StyleSheet.create({form:{gap:16},description:{color:theme.colors.muted,lineHeight:19},section:{backgroundColor:'#fff',borderRadius:18,borderWidth:1,borderColor:theme.colors.line,padding:15,gap:16},sectionHead:{gap:3},sectionTitle:{fontSize:17,fontWeight:'900',color:theme.colors.ink},sectionDescription:{fontSize:11,color:theme.colors.muted,lineHeight:16},submit:{backgroundColor:theme.colors.primary,borderRadius:14,minHeight:50,alignItems:'center',justifyContent:'center'},submitDisabled:{opacity:.55},submitText:{color:'#fff',fontWeight:'900',fontSize:14}});
+const styles = StyleSheet.create({
+  form: { gap: theme.spacing.md },
+  descriptionBox: { flexDirection: 'row', alignItems: 'flex-start', gap: theme.spacing.sm, backgroundColor: theme.colors.surfaceMuted, borderRadius: theme.radius.md, padding: theme.spacing.md },
+  descriptionDot: { width: 7, height: 7, borderRadius: 4, backgroundColor: theme.colors.primary, marginTop: 5 },
+  description: { flex: 1, color: theme.colors.muted, lineHeight: 18, fontSize: 11 },
+  section: { backgroundColor: theme.colors.surface, borderRadius: theme.radius.lg, borderWidth: 1, borderColor: theme.colors.line, padding: theme.spacing.lg, gap: theme.spacing.lg, ...theme.shadow.card },
+  sectionHead: { flexDirection: 'row', alignItems: 'flex-start', gap: theme.spacing.md },
+  sectionNumber: { width: 30, height: 30, borderRadius: 10, backgroundColor: theme.colors.primarySoft, alignItems: 'center', justifyContent: 'center' },
+  sectionNumberText: { color: theme.colors.primary, fontSize: 11, fontWeight: '900' },
+  sectionHeadCopy: { flex: 1, gap: 3 },
+  sectionTitle: { fontSize: 17, lineHeight: 21, fontWeight: '900', color: theme.colors.ink },
+  sectionDescription: { fontSize: 11, color: theme.colors.muted, lineHeight: 16 },
+  fields: { gap: theme.spacing.lg },
+  submit: { backgroundColor: theme.colors.primary, borderRadius: theme.radius.md, minHeight: 54, alignItems: 'center', justifyContent: 'center', ...theme.shadow.raised },
+  submitDisabled: { opacity: 0.58 },
+  submitText: { color: theme.colors.white, fontWeight: '900', fontSize: 14 },
+});
