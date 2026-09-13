@@ -13,8 +13,9 @@
     "test:forms": "node scripts/check-dynamic-forms.mjs",
     "test:inspections": "node scripts/check-inspections.mjs",
     "test:mobile:structure": "node scripts/check-mobile-p0.mjs",
+    "test:mobile:ui": "node scripts/check-mobile-premium-ui.mjs",
     "evidence:init": "node scripts/init-evidence.mjs",
-    "qa": "npm run test:structure && npm run test:hse && npm run test:forms && npm run test:inspections && npm run test:mobile:structure && npm run typecheck && npm run lint && npm run build"
+    "qa": "npm run test:structure && npm run test:hse && npm run test:forms && npm run test:inspections && npm run test:mobile:structure && npm run test:mobile:ui && npm run typecheck && npm run lint && npm run build"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.45.4",
