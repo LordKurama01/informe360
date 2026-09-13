@@ -10,8 +10,9 @@
     "typecheck": "tsc --noEmit",
     "test:structure": "node scripts/check-structure.mjs",
     "test:hse": "node --test src/shared/hse/*.test.mjs src/services/ai/hse/*.test.mjs",
+    "test:mobile:structure": "node scripts/check-mobile-p0.mjs",
     "evidence:init": "node scripts/init-evidence.mjs",
-    "qa": "npm run test:structure && npm run test:hse && npm run typecheck && npm run lint && npm run build"
+    "qa": "npm run test:structure && npm run test:hse && npm run test:mobile:structure && npm run typecheck && npm run lint && npm run build"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.45.4",
