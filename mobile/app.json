@@ -1,0 +1,26 @@
+{
+  "expo": {
+    "name": "HSE Copilot",
+    "slug": "hse-copilot",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "scheme": "hsecopilot",
+    "userInterfaceStyle": "light",
+    "ios": {
+      "bundleIdentifier": "com.informe360.hsecopilot",
+      "supportsTablet": false
+    },
+    "android": {
+      "package": "com.informe360.hsecopilot",
+      "predictiveBackGestureEnabled": false
+    },
+    "plugins": [
+      "expo-router",
+      ["expo-camera", { "cameraPermission": "HSE Copilot necesita la cámara para registrar evidencia de campo." }],
+      ["expo-audio", { "microphonePermission": "HSE Copilot necesita el micrófono para registrar hallazgos por voz." }],
+      ["expo-image-picker", { "photosPermission": "HSE Copilot necesita acceso a fotos para adjuntar evidencia." }],
+      "expo-notifications",
+      "expo-secure-store"
+    ]
+  }
+}
