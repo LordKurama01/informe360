@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { createHseReport, getCurrentHseUser, getHseFindings, getHseSummary, getHseWorkspace, hseSignIn, hseSignOut, hseSignUp, seedHseDemo, type HseFinding, type HseSummary, type HseWorkspace } from '@/services/hse/browser';
 import styles from './HseControl.module.css';
@@ -79,11 +80,11 @@ export function HseControl() {
     finally{setBusy(false);}
   }
 
-  if(booting)return <main className={styles.authShell}><section className={styles.authVisual}><Brand/><div className={styles.authPitch}><span className={styles.eyebrowLight}>HSE COPILOT</span><h1>Preparando tu espacio operativo.</h1><p>Sincronizando organización, hallazgos y permisos.</p></div></section><section className={styles.authPanel}><div className={styles.loadingCard}><div className={styles.loadingLine}/><div className={styles.loadingLineShort}/><span>Conectando con Informe360…</span></div></section></main>;
+  if(booting)return <main className={styles.authShell}><section className={styles.authVisual}><Brand variant="onDark"/><div className={styles.authPitch}><span className={styles.eyebrowLight}>HSE COPILOT</span><h1>Preparando tu espacio operativo.</h1><p>Sincronizando organización, hallazgos y permisos.</p></div></section><section className={styles.authPanel}><div className={styles.loadingCard}><div className={styles.loadingLine}/><div className={styles.loadingLineShort}/><span>Conectando con Informe360…</span></div></section></main>;
 
   if(!signedIn)return <main className={styles.authShell}>
     <section className={styles.authVisual}>
-      <Brand/>
+      <Brand variant="onDark"/>
       <div className={styles.authPitch}>
         <span className={styles.eyebrowLight}>HSE COPILOT · CAMPO PRIMERO</span>
         <h1>Ves algo.<br/>Lo decís.<br/><em>HSE Copilot hace el resto.</em></h1>
@@ -94,7 +95,7 @@ export function HseControl() {
     </section>
     <section className={styles.authPanel}>
       <div className={styles.authCard}>
-        <div className={styles.authMobileBrand}><Brand/></div>
+        <div className={styles.authMobileBrand}><Brand variant="onLight"/></div>
         <span className={styles.eyebrow}>ACCESO SEGURO</span>
         <h2>{authMode==='signin'?'Entrá a HSE Copilot':'Creá tu acceso'}</h2>
         <p>Usá la misma cuenta en celular y escritorio.</p>
@@ -110,11 +111,11 @@ export function HseControl() {
     </section>
   </main>;
 
-  if(!workspace)return <main className={styles.authShell}><section className={styles.authVisual}><Brand/><div className={styles.authPitch}><span className={styles.eyebrowLight}>CUENTA CONECTADA</span><h1>Falta vincular tu organización HSE.</h1><p>Podés crear la organización real desde la app móvil o cargar una demo para recorrer el producto.</p></div></section><section className={styles.authPanel}><div className={styles.authCard}>{error?<div className={styles.error}>{error}</div>:null}<button className={styles.primary} disabled={busy} onClick={()=>void demo()}>{busy?'Preparando demo…':'Cargar demo comercial'}</button><button className={styles.secondary} onClick={()=>void signOut()}>Cerrar sesión</button></div></section></main>;
+  if(!workspace)return <main className={styles.authShell}><section className={styles.authVisual}><Brand variant="onDark"/><div className={styles.authPitch}><span className={styles.eyebrowLight}>CUENTA CONECTADA</span><h1>Falta vincular tu organización HSE.</h1><p>Podés crear la organización real desde la app móvil o cargar una demo para recorrer el producto.</p></div></section><section className={styles.authPanel}><div className={styles.authCard}>{error?<div className={styles.error}>{error}</div>:null}<button className={styles.primary} disabled={busy} onClick={()=>void demo()}>{busy?'Preparando demo…':'Cargar demo comercial'}</button><button className={styles.secondary} onClick={()=>void signOut()}>Cerrar sesión</button></div></section></main>;
 
   return <main className={styles.appShell}>
     <aside className={styles.sideNav}>
-      <div className={styles.sideBrand}><Brand/></div>
+      <div className={styles.sideBrand}><Brand variant="onDark"/></div>
       <nav className={styles.navList}>
         <Link className={`${styles.navItem} ${styles.navItemActive}`} href="/app/hse"><span>01</span>Inicio</Link>
         <button className={styles.navItem} onClick={()=>setFilter('open')}><span>02</span>Hallazgos</button>
@@ -135,6 +136,7 @@ export function HseControl() {
 
       <div className={styles.workspace}>
         <section className={styles.hero}>
+          <Image className={styles.heroMark} src="/brand/informe360-hse/mark-light.png" alt="" aria-hidden="true" width={512} height={512}/>
           <div><span className={styles.eyebrowLight}>ESTADO OPERATIVO</span><h2>Lo importante, primero.</h2><p>Hallazgos, acciones y vencimientos sincronizados con el trabajo de campo.</p></div>
           <div className={styles.heroSummary}><strong>{summary.open}</strong><span>hallazgos abiertos</span><small>{summary.criticalOpen} críticos · {summary.overdue} vencidos</small></div>
         </section>
@@ -164,10 +166,13 @@ export function HseControl() {
     </section>
 
     <nav className={styles.mobileDock} aria-label="Navegación HSE móvil">
-      <Link href="/app/hse">Inicio</Link><Link href="/app/hse/inspections">Inspecciones</Link><Link className={styles.mobileDockPrimary} href="/app/hse">HSE</Link><Link href="/app/calendar">Agenda</Link><Link href="/app/reports">Informes</Link>
+      <Link href="/app/hse">Inicio</Link><Link href="/app/hse/inspections">Inspecciones</Link><Link className={styles.mobileDockPrimary} href="/app/hse"><Image src="/brand/informe360-hse/mark.png" alt="HSE" width={512} height={512}/></Link><Link href="/app/calendar">Agenda</Link><Link href="/app/reports">Informes</Link>
     </nav>
   </main>;
 }
 
-function Brand(){return <div className={styles.brandLockup}><div className={styles.brandMark}><span>HSE</span></div><div><b>INFORME360</b><small>HSE COPILOT</small></div></div>}
+function Brand({variant='onDark'}:{variant?:'onDark'|'onLight'}){
+  const src=variant==='onDark'?'/brand/informe360-hse/logo-dark.png':'/brand/informe360-hse/logo-light.png';
+  return <div className={styles.brandLockup}><Image className={styles.brandLogo} src={src} alt="Informe360 HSE" width={900} height={300} priority/></div>;
+}
 function Metric({label,value,tone,onClick}:{label:string;value:number|string;tone:'primary'|'danger'|'warn'|'good';onClick:()=>void}){return <button className={`${styles.metric} ${styles[tone]}`} onClick={onClick}><strong>{value}</strong><span>{label}</span></button>}
