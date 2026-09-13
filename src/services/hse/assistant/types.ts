@@ -47,6 +47,14 @@ export type ProposedFindingPayload = {
   mediaPaths: string[];
 };
 
+export type ProposedClosePayload = {
+  kind: 'close_finding';
+  findingId: string;
+  findingCode: string;
+  findingTitle: string;
+  comment: string;
+};
+
 export type AssistantProcessingContext = {
   identity: HseChannelIdentity;
   message: NormalizedWhatsAppMessage;
