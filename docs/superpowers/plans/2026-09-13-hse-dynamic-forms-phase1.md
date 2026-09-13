@@ -1,0 +1,600 @@
+# HSE Dynamic Forms Phase 1 Implementation Plan
+
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+
+**Goal:** Build a versioned dynamic-form engine that powers future checklists, inspections, IPCR, PTW and incident forms without creating a custom screen per template.
+
+**Architecture:** Supabase remains the single source of truth. Published form-template versions are immutable JSON schemas; executions reference a specific version. Mobile Expo renders and stores field responses, while Next.js desktop manages templates and reviews runs. The first consumer will be inspection/checklist flows.
+
+**Tech Stack:** PostgreSQL/Supabase/RLS, Next.js 16, React 19, Expo SDK 57, React Native 0.86, TypeScript, React Hook Form, existing Supabase clients and SQLite offline layer.
+
+**Spec:** `docs/HSE_COPILOT_PLAN_MAESTRO_V2_2026-09-13.md`
+
+## Global Constraints
+
+- Keep `main` untouched until PR review.
+- Continue from `feat/hse-copilot-mobile-p0` or a child feature branch.
+- Supabase project: `wvjmsltqrztlvgmayicr`.
+- One backend only; no secondary database or auth system.
+- Every tenant-owned table must enforce RLS by `organization_id`/membership.
+- Published template versions are immutable.
+- Historical form runs must never change when a template is edited.
+- Dynamic forms must work without AI.
+- AI may suggest values but never approve, sign or create normative obligations.
+- Mobile offline writes must be idempotent.
+- A failed/non-conforming checklist answer may create a `finding`, but only by explicit user action.
+- Use TDD and small commits.
+
+---
+
+## File Map
+
+### Database
+
+- Create: `database/supabase/migrations/<timestamp>_dynamic_forms_phase1.sql`
+
+### Shared domain
+
+- Create: `src/shared/hse/forms/types.ts`
+- Create: `src/shared/hse/forms/schema.ts`
+- Create: `src/shared/hse/forms/validation.ts`
+- Create: `src/shared/hse/forms/validation.test.mjs`
+
+### Web/Desktop
+
+- Create: `src/services/hse/forms-browser.ts`
+- Create: `src/blocks/hse-forms/FormTemplateList.tsx`
+- Create: `src/blocks/hse-forms/FormTemplateEditor.tsx`
+- Create: `src/blocks/hse-forms/FormRunReview.tsx`
+- Create: `src/app/app/hse/forms/page.tsx`
+- Create: `src/app/app/hse/forms/[templateId]/page.tsx`
+- Create: `src/app/app/hse/form-runs/[runId]/page.tsx`
+
+### Mobile
+
+- Modify: `mobile/package.json`
+- Create: `mobile/src/types/forms.ts`
+- Create: `mobile/src/services/forms.ts`
+- Create: `mobile/src/services/form-offline.ts`
+- Create: `mobile/src/components/forms/DynamicForm.tsx`
+- Create: `mobile/src/components/forms/FormField.tsx`
+- Create: `mobile/src/components/forms/RiskMatrixField.tsx`
+- Create: `mobile/app/forms/index.tsx`
+- Create: `mobile/app/forms/[templateId].tsx`
+- Create: `mobile/app/form-run/[runId].tsx`
+- Modify: `mobile/app/(tabs)/index.tsx`
+
+### QA
+
+- Modify: `scripts/check-mobile-p0.mjs`
+- Modify: `package.json`
+- Create: `scripts/check-dynamic-forms.mjs`
+
+---
+
+### Task 1: Define the shared form contract
+
+**Files:**
+- Create: `src/shared/hse/forms/types.ts`
+- Create: `src/shared/hse/forms/schema.ts`
+- Create: `src/shared/hse/forms/validation.ts`
+- Test: `src/shared/hse/forms/validation.test.mjs`
+
+**Interfaces:**
+- Produces: `HseFormSchema`, `HseFormSection`, `HseFormField`, `validateFormSchema(schema)`, `evaluateRequiredFields(schema, answers)`.
+
+- [ ] **Step 1: Write the failing contract test**
+
+```js
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { validateFormSchema } from './validation.mjs';
+
+test('published checklist schema accepts supported field types', () => {
+  const result = validateFormSchema({
+    version: 1,
+    title: 'Trabajo en altura',
+    sections: [{
+      id: 'arnes',
+      title: 'Arnés',
+      fields: [{ id: 'costuras', type: 'compliance', label: 'Costuras íntegras', required: true }]
+    }]
+  });
+  assert.equal(result.ok, true);
+});
+```
+
+- [ ] **Step 2: Run the test and confirm RED**
+
+Run: `node --test src/shared/hse/forms/validation.test.mjs`
+
+Expected: FAIL because the validator does not exist.
+
+- [ ] **Step 3: Implement exact initial field union**
+
+```ts
+export type HseFormField =
+  | { id: string; type: 'text'; label: string; required?: boolean; multiline?: boolean }
+  | { id: string; type: 'number'; label: string; required?: boolean; min?: number; max?: number }
+  | { id: string; type: 'date'; label: string; required?: boolean }
+  | { id: string; type: 'yes_no'; label: string; required?: boolean }
+  | { id: string; type: 'compliance'; label: string; required?: boolean; createFindingOnFail?: boolean }
+  | { id: string; type: 'select'; label: string; required?: boolean; options: { value: string; label: string }[] }
+  | { id: string; type: 'photo'; label: string; required?: boolean }
+  | { id: string; type: 'risk_matrix'; label: string; required?: boolean }
+  | { id: string; type: 'repeater'; label: string; required?: boolean; fields: HseFormField[] };
+```
+
+`compliance` answer values are fixed to `complies | non_compliant | na`.
+
+- [ ] **Step 4: Implement schema validation**
+
+Reject:
+- duplicate section IDs;
+- duplicate field IDs;
+- missing labels;
+- unsupported types;
+- select fields with zero options;
+- repeater nesting deeper than one level in Phase 1.
+
+- [ ] **Step 5: Run tests GREEN**
+
+Run: `node --test src/shared/hse/forms/validation.test.mjs`
+
+Expected: PASS.
+
+- [ ] **Step 6: Commit**
+
+```bash
+git add src/shared/hse/forms
+git commit -m "feat: define HSE dynamic form contract"
+```
+
+---
+
+### Task 2: Add versioned form tables and RLS
+
+**Files:**
+- Create: `database/supabase/migrations/<timestamp>_dynamic_forms_phase1.sql`
+
+**Consumes:** `HseFormSchema` JSON structure from Task 1.
+
+**Produces:** tables and RPCs for templates, versions and runs.
+
+- [ ] **Step 1: Write database expectations in a migration contract note/test**
+
+Required tables:
+
+```text
+form_templates
+form_template_versions
+form_runs
+form_answers
+```
+
+- [ ] **Step 2: Implement schema**
+
+Minimum columns:
+
+```sql
+form_templates(
+  id uuid pk,
+  organization_id uuid not null,
+  name text not null,
+  category text not null,
+  status text not null check (status in ('draft','active','archived')),
+  created_by uuid not null,
+  created_at timestamptz not null,
+  updated_at timestamptz not null
+)
+```
+
+```sql
+form_template_versions(
+  id uuid pk,
+  organization_id uuid not null,
+  template_id uuid not null,
+  version integer not null,
+  schema_json jsonb not null,
+  status text not null check (status in ('draft','published','retired')),
+  published_at timestamptz,
+  created_by uuid not null,
+  created_at timestamptz not null,
+  unique(template_id, version)
+)
+```
+
+```sql
+form_runs(
+  id uuid pk,
+  organization_id uuid not null,
+  site_id uuid,
+  template_id uuid not null,
+  template_version_id uuid not null,
+  status text not null check (status in ('draft','in_progress','submitted','reviewed','cancelled')),
+  client_run_id uuid,
+  started_by uuid not null,
+  started_at timestamptz not null,
+  submitted_at timestamptz,
+  reviewed_at timestamptz,
+  unique(organization_id, client_run_id)
+)
+```
+
+```sql
+form_answers(
+  id uuid pk,
+  organization_id uuid not null,
+  form_run_id uuid not null,
+  field_id text not null,
+  value_json jsonb,
+  created_at timestamptz not null,
+  updated_at timestamptz not null,
+  unique(form_run_id, field_id)
+)
+```
+
+- [ ] **Step 3: Add immutability guard**
+
+Create a trigger that rejects `UPDATE schema_json` on a `published` version.
+
+- [ ] **Step 4: Add RLS**
+
+Authenticated users may access only records whose `organization_id` belongs to one of their memberships. Anonymous access is denied.
+
+- [ ] **Step 5: Add idempotent run RPC**
+
+Create `create_form_run(p_template_version_id uuid, p_site_id uuid, p_client_run_id uuid)` returning the existing run when `client_run_id` already exists for the organization.
+
+- [ ] **Step 6: Apply migration and verify**
+
+Verify:
+
+```sql
+select relname, relrowsecurity
+from pg_class
+where relname in ('form_templates','form_template_versions','form_runs','form_answers');
+```
+
+Expected: four rows with `relrowsecurity = true`.
+
+- [ ] **Step 7: Commit exact migration filename matching Supabase history**
+
+---
+
+### Task 3: Add form services for desktop
+
+**Files:**
+- Create: `src/services/hse/forms-browser.ts`
+
+**Produces:**
+
+```ts
+listFormTemplates(workspace)
+getFormTemplate(templateId)
+createFormTemplate(input)
+createDraftVersion(templateId, schema)
+publishFormVersion(versionId)
+listFormRuns(workspace, filters)
+getFormRun(runId)
+```
+
+- [ ] **Step 1: Add failing service shape test or compile contract**
+- [ ] **Step 2: Implement all reads via existing browser Supabase client**
+- [ ] **Step 3: Implement mutations with explicit organization scoping**
+- [ ] **Step 4: Reject publish when `validateFormSchema()` fails**
+- [ ] **Step 5: Run root typecheck**
+
+Run: `npm run typecheck`
+
+Expected: PASS.
+
+- [ ] **Step 6: Commit**
+
+---
+
+### Task 4: Build desktop template manager
+
+**Files:**
+- Create: `src/blocks/hse-forms/FormTemplateList.tsx`
+- Create: `src/blocks/hse-forms/FormTemplateEditor.tsx`
+- Create: `src/app/app/hse/forms/page.tsx`
+- Create: `src/app/app/hse/forms/[templateId]/page.tsx`
+
+**Produces:** administrator UI for templates and versions.
+
+- [ ] **Step 1: Create list page**
+
+Show name, category, current published version and status.
+
+- [ ] **Step 2: Create editor using React Hook Form**
+
+Editor supports adding/reordering sections and fields from the Phase 1 union.
+
+- [ ] **Step 3: Add preview mode**
+
+Preview uses the same `HseFormSchema` contract without saving responses.
+
+- [ ] **Step 4: Add publish confirmation**
+
+Message must explain that published versions are immutable and future edits create a new version.
+
+- [ ] **Step 5: Add navigation from `/app/hse`**
+
+- [ ] **Step 6: Run lint + build**
+
+```bash
+npm run lint
+npm run build
+```
+
+Expected: PASS.
+
+- [ ] **Step 7: Commit**
+
+---
+
+### Task 5: Add mobile dependencies and domain types
+
+**Files:**
+- Modify: `mobile/package.json`
+- Create: `mobile/src/types/forms.ts`
+
+- [ ] **Step 1: Add `react-hook-form`**
+
+Use a version compatible with React 19/React Native 0.86 at implementation time and pin it in `mobile/package.json`.
+
+- [ ] **Step 2: Mirror shared form contract in mobile**
+
+Do not invent alternate field names. Match `HseFormSchema` exactly.
+
+- [ ] **Step 3: Run install/typecheck**
+
+```bash
+cd mobile
+npm install
+npm run typecheck
+```
+
+Expected: PASS.
+
+- [ ] **Step 4: Commit**
+
+---
+
+### Task 6: Build mobile dynamic renderer
+
+**Files:**
+- Create: `mobile/src/components/forms/DynamicForm.tsx`
+- Create: `mobile/src/components/forms/FormField.tsx`
+- Create: `mobile/src/components/forms/RiskMatrixField.tsx`
+
+**Consumes:** `HseFormSchema`.
+
+**Produces:**
+
+```ts
+<DynamicForm
+  schema={schema}
+  initialAnswers={answers}
+  onChange={setAnswers}
+  onSubmit={submit}
+/>
+```
+
+- [ ] **Step 1: Render text, number, date, yes/no, compliance and select**
+- [ ] **Step 2: Render photo field using existing image/evidence helpers**
+- [ ] **Step 3: Render risk matrix result as calculated UI, not free text**
+- [ ] **Step 4: Render one-level repeater for IPCR-style steps**
+- [ ] **Step 5: Enforce required fields before submit**
+- [ ] **Step 6: Run mobile typecheck**
+
+```bash
+cd mobile && npm run typecheck
+```
+
+Expected: PASS.
+
+- [ ] **Step 7: Commit**
+
+---
+
+### Task 7: Add run lifecycle and persistence
+
+**Files:**
+- Create: `mobile/src/services/forms.ts`
+- Create: `mobile/app/forms/index.tsx`
+- Create: `mobile/app/forms/[templateId].tsx`
+- Create: `mobile/app/form-run/[runId].tsx`
+
+**Produces:** list/start/save/resume/submit form runs.
+
+- [ ] **Step 1: List active templates for current organization**
+- [ ] **Step 2: Start run through idempotent RPC using a generated `client_run_id`**
+- [ ] **Step 3: Upsert answers by `(form_run_id, field_id)`**
+- [ ] **Step 4: Resume draft/in-progress run**
+- [ ] **Step 5: Submit only after local required-field validation**
+- [ ] **Step 6: Add Home entry “Inspeccionar”**
+- [ ] **Step 7: Run mobile typecheck**
+- [ ] **Step 8: Commit**
+
+---
+
+### Task 8: Add offline form outbox
+
+**Files:**
+- Create: `mobile/src/services/form-offline.ts`
+- Modify: existing sync provider/service files only where required.
+
+**Produces:** local run/answer persistence and retry.
+
+- [ ] **Step 1: Create SQLite tables**
+
+```text
+pending_form_runs
+pending_form_answers
+```
+
+Each queued run stores stable `client_run_id`.
+
+- [ ] **Step 2: Save answers locally before remote upload**
+- [ ] **Step 3: Sync run idempotently, then answers**
+- [ ] **Step 4: Mark local rows synced only after server confirmation**
+- [ ] **Step 5: Do not auto-submit on reconnect**
+
+User must still confirm/submit a completed form.
+
+- [ ] **Step 6: Test airplane-mode scenario manually**
+
+Expected: close app → reopen → answers remain → reconnect → no duplicates.
+
+- [ ] **Step 7: Commit**
+
+---
+
+### Task 9: Connect non-compliance to findings
+
+**Files:**
+- Modify: `mobile/app/form-run/[runId].tsx`
+- Modify/Create service RPC in migration if required.
+
+**Produces:** explicit “Crear hallazgo” action from a failed checklist item.
+
+- [ ] **Step 1: Detect `compliance = non_compliant` answers where `createFindingOnFail = true`**
+- [ ] **Step 2: Show explicit CTA, never auto-create**
+- [ ] **Step 3: Pre-fill finding draft with**
+
+```text
+source = inspection/form run
+question label
+answer
+site
+attached photo
+form run id
+field id
+```
+
+- [ ] **Step 4: Use existing finding confirmation screen**
+- [ ] **Step 5: Persist source linkage for auditability**
+- [ ] **Step 6: Verify a closed finding does not rewrite the inspection answer**
+- [ ] **Step 7: Commit**
+
+---
+
+### Task 10: Desktop form-run review
+
+**Files:**
+- Create: `src/blocks/hse-forms/FormRunReview.tsx`
+- Create: `src/app/app/hse/form-runs/[runId]/page.tsx`
+
+- [ ] **Step 1: Show template/version/site/operator/status**
+- [ ] **Step 2: Render answers read-only by section**
+- [ ] **Step 3: Highlight non-compliant answers**
+- [ ] **Step 4: Link generated findings**
+- [ ] **Step 5: Add print-friendly review**
+- [ ] **Step 6: Run root QA**
+
+```bash
+npm run qa
+```
+
+Expected: PASS.
+
+- [ ] **Step 7: Commit**
+
+---
+
+### Task 11: Seed first real HSE templates
+
+**Files:**
+- Create migration/seed script under existing database/scripts conventions.
+
+**Templates:**
+
+1. `Trabajo en altura — inspección básica`
+2. `Sistema anticaídas en escalera`
+3. `Pirosalva — inspección preuso`
+4. `Espacio confinado — preingreso`
+
+- [ ] **Step 1: Encode only questions backed by source material already available/approved**
+- [ ] **Step 2: Mark uncertain/normative periodicity questions as manual/reference-required**
+- [ ] **Step 3: Publish version 1 for demo organization only**
+- [ ] **Step 4: Run a complete checklist and create one finding from a failure**
+- [ ] **Step 5: Commit**
+
+---
+
+### Task 12: Final verification and release gate
+
+**Files:**
+- Modify: `scripts/check-mobile-p0.mjs`
+- Create: `scripts/check-dynamic-forms.mjs`
+- Modify: `package.json`
+
+- [ ] **Step 1: Add structure checks for all form-engine files**
+- [ ] **Step 2: Add root script `test:forms`**
+- [ ] **Step 3: Add `test:forms` into `qa`**
+- [ ] **Step 4: Run clean root QA**
+
+```bash
+npm ci --no-audit --no-fund
+npm run qa
+```
+
+Expected: PASS.
+
+- [ ] **Step 5: Run clean mobile QA**
+
+```bash
+cd mobile
+npm ci --no-audit --no-fund
+npm run typecheck
+npx expo export --platform android --output-dir dist
+```
+
+Expected: PASS.
+
+- [ ] **Step 6: Manual acceptance**
+
+From a physical/emulated mobile session:
+
+```text
+login
+→ choose site
+→ Inspeccionar
+→ Trabajo en altura
+→ complete form
+→ mark one item No cumple
+→ attach photo
+→ save offline/reconnect
+→ submit
+→ create finding
+→ see finding in HSE Control desktop
+→ close finding with evidence
+→ original inspection remains unchanged
+```
+
+- [ ] **Step 7: Security acceptance**
+
+Organization A cannot list/read/update templates, versions, runs or answers from Organization B.
+
+- [ ] **Step 8: Commit final verification docs/results**
+
+---
+
+## Phase 1 Exit Criteria
+
+Phase 1 is complete only when:
+
+- admins can create/version/publish a form template;
+- mobile can render it without a custom screen;
+- field users can start/save/resume/submit;
+- responses survive offline/reconnect;
+- published versions cannot mutate;
+- non-compliance can explicitly create a finding;
+- the finding keeps source traceability;
+- desktop can review the original run;
+- multi-tenant isolation is tested;
+- web and Android builds pass.
+
+After this exit, implement Phase 2 from the Master Plan: **Inspections/Checklists as a first-class domain**, followed by IPCR and PTW.
