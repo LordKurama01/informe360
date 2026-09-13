@@ -24,7 +24,6 @@ function reminderState(reminder: HseReminder) {
   if (reminder.status === 'cancelled') return { label: 'Cancelado', tone: 'muted' };
   if (reminder.status === 'sent') return { label: 'Aviso enviado', tone: 'sent' };
   if (reminder.status === 'failed') return { label: 'Error de envío', tone: 'danger' };
-  if (new Date(reminder.scheduled_for).getTime() < Date.now()) return { label: 'Vencido', tone: 'danger' };
   return { label: 'Pendiente', tone: 'pending' };
 }
 
@@ -46,8 +45,6 @@ export function CalendarPage() {
   const [scheduledFor, setScheduledFor] = useState('');
 
   const load = useCallback(async () => {
-    setLoading(true);
-    setError('');
     try {
       const nextWorkspace = await getHseWorkspace();
       setWorkspace(nextWorkspace);
@@ -72,10 +69,6 @@ export function CalendarPage() {
   const history = useMemo(
     () => reminders.filter(reminder => reminder.status !== 'pending').slice(-30).reverse(),
     [reminders],
-  );
-  const overdue = useMemo(
-    () => pending.filter(reminder => new Date(reminder.scheduled_for).getTime() < Date.now()).length,
-    [pending],
   );
   const whatsapp = useMemo(
     () => reminders.filter(reminder => reminder.channel === 'whatsapp').length,
@@ -110,6 +103,12 @@ export function CalendarPage() {
     }
   }
 
+  function refresh() {
+    setLoading(true);
+    setError('');
+    void load();
+  }
+
   return (
     <main className={styles.wrap}>
       <nav><Link href="/app/hse">← HSE Copilot</Link><strong>Agenda HSE</strong></nav>
@@ -134,7 +133,7 @@ export function CalendarPage() {
         <>
           <section className={styles.metrics} aria-label="Resumen de agenda">
             <Card><span>Pendientes</span><strong>{pending.length}</strong><small>{workspace.siteName || workspace.organizationName}</small></Card>
-            <Card><span>Vencidos</span><strong>{overdue}</strong><small>requieren atención</small></Card>
+            <Card><span>Total agenda</span><strong>{reminders.length}</strong><small>recordatorios visibles</small></Card>
             <Card><span>Desde WhatsApp</span><strong>{whatsapp}</strong><small>misma agenda, otro canal</small></Card>
           </section>
 
@@ -142,7 +141,7 @@ export function CalendarPage() {
             <Card className={styles.calendar}>
               <div className={styles.sectionHeading}>
                 <div><span className={styles.eyebrow}>Próximos</span><h3>Agenda operativa</h3></div>
-                <button type="button" className={styles.refresh} onClick={() => void load()}>Actualizar</button>
+                <button type="button" className={styles.refresh} onClick={refresh}>Actualizar</button>
               </div>
 
               {pending.length === 0 ? (
