@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Alert, Pressable, RefreshControl, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams } from 'expo-router';
+import { FieldHeader } from '../../src/components/FieldHeader';
 import { FindingCard } from '../../src/components/FindingCard';
 import { PrimaryButton } from '../../src/components/PrimaryButton';
 import { useWorkspace } from '../../src/providers/workspace-provider';
@@ -73,21 +75,74 @@ export default function Findings() {
     finally { setReportBusy(false); }
   }
 
-  return <View style={styles.safe}><ScrollView refreshControl={<RefreshControl refreshing={busy} onRefresh={load}/>} contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
-    <View style={styles.header}><View><Text style={styles.kicker}>MEMORIA OPERATIVA</Text><Text style={styles.title}>Hallazgos</Text></View><Pressable onPress={toggleSelectionMode} style={[styles.reportMode, selecting && styles.reportModeActive]}><Text style={[styles.reportModeText, selecting && styles.reportModeTextActive]}>{selecting ? 'Cancelar' : 'Armar informe'}</Text></Pressable></View>
-    <View style={styles.searchWrap}><Text style={styles.searchIcon}>⌕</Text><TextInput value={query} onChangeText={setQuery} placeholder="Código, hallazgo, sector, equipo, responsable…" style={styles.search}/>{query ? <Pressable onPress={() => setQuery('')}><Text style={styles.clear}>×</Text></Pressable> : null}</View>
-    <View style={styles.filters}>{filters.map(item => <Pressable key={item.key} onPress={() => setFilter(item.key)} style={[styles.filter, filter === item.key && styles.active]}><Text style={[styles.filterText, filter === item.key && styles.activeText]}>{item.label}</Text></Pressable>)}</View>
-    {selecting ? <Text style={styles.selectionHint}>Seleccioná los hallazgos que querés incluir. El informe guarda vínculos; no copia ni altera el registro original.</Text> : null}
-    {visible.map(finding => <View key={finding.id} style={selected.has(finding.id) ? styles.selectedWrap : undefined}>{selecting ? <Pressable onPress={() => toggle(finding.id)} style={styles.selectRow}><View style={[styles.checkbox, selected.has(finding.id) && styles.checkboxOn]}><Text style={styles.check}>{selected.has(finding.id) ? '✓' : ''}</Text></View><Text style={styles.selectLabel}>{selected.has(finding.id) ? 'Incluido' : 'Incluir'}</Text></Pressable> : null}<FindingCard finding={finding} onPress={() => toggle(finding.id)}/></View>)}
-    {!visible.length && !busy ? <Text style={styles.empty}>{query ? 'No encontramos coincidencias en esta vista.' : 'No hay registros en esta vista.'}</Text> : null}
-    {selecting ? <View style={styles.reportFooter}><Text style={styles.selectedCount}>{selected.size} seleccionado{selected.size === 1 ? '' : 's'}</Text><PrimaryButton title={`Crear informe${selected.size ? ` (${selected.size})` : ''}`} busy={reportBusy} onPress={() => void createReport()}/></View> : null}
-  </ScrollView></View>;
+  const action = <Pressable accessibilityRole="button" onPress={toggleSelectionMode} style={[styles.reportMode, selecting && styles.reportModeActive]}><Text style={[styles.reportModeText, selecting && styles.reportModeTextActive]}>{selecting ? 'Cancelar' : 'Informe'}</Text></Pressable>;
+
+  return <SafeAreaView edges={['top', 'left', 'right']} style={styles.safe}>
+    <ScrollView showsVerticalScrollIndicator={false} refreshControl={<RefreshControl refreshing={busy} onRefresh={load}/>} contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+      <FieldHeader kicker="MEMORIA OPERATIVA" title="Hallazgos" subtitle="Buscá, priorizá y seguí cada observación desde el campo." action={action}/>
+
+      <View style={styles.searchWrap}>
+        <Text style={styles.searchIcon}>⌕</Text>
+        <TextInput value={query} onChangeText={setQuery} placeholder="Código, sector, equipo, responsable…" placeholderTextColor={theme.colors.muted} style={styles.search}/>
+        {query ? <Pressable accessibilityRole="button" onPress={() => setQuery('')} style={styles.clearButton}><Text style={styles.clear}>×</Text></Pressable> : null}
+      </View>
+
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filters}>
+        {filters.map(item => <Pressable accessibilityRole="button" key={item.key} onPress={() => setFilter(item.key)} style={[styles.filter, filter === item.key && styles.active]}><Text style={[styles.filterText, filter === item.key && styles.activeText]}>{item.label}</Text></Pressable>)}
+      </ScrollView>
+
+      <View style={styles.resultRow}><Text style={styles.resultCount}>{visible.length} resultado{visible.length === 1 ? '' : 's'}</Text>{query.trim().length >= 2 ? <Text style={styles.resultContext}>Búsqueda activa</Text> : null}</View>
+
+      {selecting ? <View style={styles.selectionHint}><View style={styles.selectionMark}><Text style={styles.selectionMarkText}>✓</Text></View><Text style={styles.selectionHintText}>Seleccioná los hallazgos para vincularlos a un informe. El registro original no se modifica.</Text></View> : null}
+
+      <View style={styles.list}>{visible.map(finding => <View key={finding.id} style={selected.has(finding.id) ? styles.selectedWrap : undefined}>
+        {selecting ? <Pressable accessibilityRole="checkbox" accessibilityState={{ checked: selected.has(finding.id) }} onPress={() => toggle(finding.id)} style={styles.selectRow}><View style={[styles.checkbox, selected.has(finding.id) && styles.checkboxOn]}><Text style={styles.check}>{selected.has(finding.id) ? '✓' : ''}</Text></View><Text style={styles.selectLabel}>{selected.has(finding.id) ? 'Incluido en el informe' : 'Incluir en el informe'}</Text></Pressable> : null}
+        <FindingCard finding={finding} onPress={() => toggle(finding.id)}/>
+      </View>)}</View>
+
+      {!visible.length && !busy ? <View style={styles.empty}><View style={styles.emptyMark}><Text style={styles.emptyMarkText}>⌕</Text></View><Text style={styles.emptyTitle}>{query ? 'Sin coincidencias' : 'No hay hallazgos en esta vista'}</Text><Text style={styles.emptyText}>{query ? 'Probá con otro código, sector, equipo o responsable.' : 'Cambiá el filtro o registrá una nueva observación desde Capturar.'}</Text></View> : null}
+
+      {selecting ? <View style={styles.reportFooter}><Text style={styles.selectedCount}>{selected.size} seleccionado{selected.size === 1 ? '' : 's'}</Text><PrimaryButton title={`Crear informe${selected.size ? ` (${selected.size})` : ''}`} busy={reportBusy} disabled={!selected.size} onPress={() => void createReport()}/></View> : null}
+    </ScrollView>
+  </SafeAreaView>;
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: theme.colors.bg }, content: { paddingTop: 58, paddingHorizontal: 18, paddingBottom: 38, gap: 12 }, header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: 10 }, kicker: { color: theme.colors.primary, fontWeight: '900', letterSpacing: 1.4, fontSize: 10 }, title: { fontSize: 30, fontWeight: '900', color: theme.colors.ink }, reportMode: { backgroundColor: '#fff', borderWidth: 1, borderColor: theme.colors.line, paddingHorizontal: 12, paddingVertical: 9, borderRadius: 12 }, reportModeActive: { backgroundColor: theme.colors.ink, borderColor: theme.colors.ink }, reportModeText: { color: theme.colors.ink, fontSize: 11, fontWeight: '900' }, reportModeTextActive: { color: '#fff' },
-  searchWrap: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#fff', borderWidth: 1, borderColor: theme.colors.line, borderRadius: 15, paddingHorizontal: 12 }, searchIcon: { fontSize: 20, color: theme.colors.muted }, search: { flex: 1, minHeight: 50, paddingHorizontal: 9, color: theme.colors.ink }, clear: { fontSize: 24, color: theme.colors.muted, paddingHorizontal: 4 },
-  filters: { flexDirection: 'row', gap: 7, flexWrap: 'wrap' }, filter: { paddingHorizontal: 11, paddingVertical: 8, borderRadius: 999, backgroundColor: '#fff', borderWidth: 1, borderColor: theme.colors.line }, active: { backgroundColor: theme.colors.primary, borderColor: theme.colors.primary }, filterText: { fontSize: 11, fontWeight: '800', color: theme.colors.muted }, activeText: { color: '#fff' },
-  selectionHint: { backgroundColor: '#EFF6FF', color: '#1D4ED8', padding: 12, borderRadius: 13, lineHeight: 18, fontSize: 11 }, selectedWrap: { borderRadius: 20, padding: 3, backgroundColor: '#DBEAFE' }, selectRow: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 8, paddingVertical: 5 }, checkbox: { width: 20, height: 20, borderRadius: 6, borderWidth: 1.5, borderColor: '#93C5FD', backgroundColor: '#fff', alignItems: 'center', justifyContent: 'center' }, checkboxOn: { backgroundColor: theme.colors.primary, borderColor: theme.colors.primary }, check: { color: '#fff', fontSize: 12, fontWeight: '900' }, selectLabel: { color: '#1D4ED8', fontSize: 10, fontWeight: '900' },
-  empty: { textAlign: 'center', color: theme.colors.muted, padding: 30 }, reportFooter: { backgroundColor: '#fff', borderWidth: 1, borderColor: theme.colors.line, borderRadius: 18, padding: 14, gap: 9, marginTop: 4 }, selectedCount: { color: theme.colors.ink, textAlign: 'center', fontWeight: '900' },
+  safe: { flex: 1, backgroundColor: theme.colors.bg },
+  content: { paddingHorizontal: theme.spacing.lg, paddingTop: theme.spacing.lg, paddingBottom: 112, gap: theme.spacing.md },
+  reportMode: { minHeight: 42, minWidth: 68, alignItems: 'center', justifyContent: 'center', backgroundColor: theme.colors.surface, borderWidth: 1, borderColor: theme.colors.line, paddingHorizontal: 12, borderRadius: theme.radius.md },
+  reportModeActive: { backgroundColor: theme.colors.dark, borderColor: theme.colors.dark },
+  reportModeText: { color: theme.colors.ink, fontSize: 11, fontWeight: '900' },
+  reportModeTextActive: { color: theme.colors.white },
+  searchWrap: { minHeight: 52, flexDirection: 'row', alignItems: 'center', backgroundColor: theme.colors.surface, borderWidth: 1, borderColor: theme.colors.line, borderRadius: theme.radius.md, paddingHorizontal: theme.spacing.md },
+  searchIcon: { fontSize: 20, color: theme.colors.muted },
+  search: { flex: 1, minHeight: 50, paddingHorizontal: 9, color: theme.colors.ink, fontSize: 14 },
+  clearButton: { width: 36, height: 36, alignItems: 'center', justifyContent: 'center' },
+  clear: { fontSize: 23, color: theme.colors.muted },
+  filters: { gap: 7, paddingRight: theme.spacing.lg },
+  filter: { minHeight: 38, justifyContent: 'center', paddingHorizontal: 13, borderRadius: theme.radius.pill, backgroundColor: theme.colors.surface, borderWidth: 1, borderColor: theme.colors.line },
+  active: { backgroundColor: theme.colors.primary, borderColor: theme.colors.primary },
+  filterText: { fontSize: 11, fontWeight: '800', color: theme.colors.muted },
+  activeText: { color: theme.colors.white },
+  resultRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  resultCount: { color: theme.colors.inkSoft, fontSize: 11, fontWeight: '900' },
+  resultContext: { color: theme.colors.primary, fontSize: 10, fontWeight: '800' },
+  selectionHint: { flexDirection: 'row', gap: theme.spacing.sm, alignItems: 'flex-start', backgroundColor: theme.colors.infoSoft, padding: theme.spacing.md, borderRadius: theme.radius.md },
+  selectionMark: { width: 28, height: 28, borderRadius: 10, backgroundColor: 'rgba(37,87,167,0.1)', alignItems: 'center', justifyContent: 'center' },
+  selectionMarkText: { color: theme.colors.info, fontWeight: '900' },
+  selectionHintText: { flex: 1, color: theme.colors.info, lineHeight: 17, fontSize: 11 },
+  list: { gap: theme.spacing.sm },
+  selectedWrap: { borderRadius: theme.radius.lg, padding: 3, backgroundColor: theme.colors.infoSoft },
+  selectRow: { minHeight: 42, flexDirection: 'row', alignItems: 'center', gap: 7, paddingHorizontal: 8 },
+  checkbox: { width: 22, height: 22, borderRadius: 7, borderWidth: 1.5, borderColor: '#8FA9D5', backgroundColor: theme.colors.surface, alignItems: 'center', justifyContent: 'center' },
+  checkboxOn: { backgroundColor: theme.colors.primary, borderColor: theme.colors.primary },
+  check: { color: theme.colors.white, fontSize: 12, fontWeight: '900' },
+  selectLabel: { color: theme.colors.info, fontSize: 10, fontWeight: '900' },
+  empty: { minHeight: 220, alignItems: 'center', justifyContent: 'center', backgroundColor: theme.colors.surface, borderWidth: 1, borderColor: theme.colors.line, borderRadius: theme.radius.lg, padding: theme.spacing.xxl },
+  emptyMark: { width: 48, height: 48, borderRadius: 16, backgroundColor: theme.colors.surfaceMuted, alignItems: 'center', justifyContent: 'center', marginBottom: 8 },
+  emptyMarkText: { color: theme.colors.primary, fontSize: 22 },
+  emptyTitle: { color: theme.colors.ink, fontSize: 16, fontWeight: '900', textAlign: 'center' },
+  emptyText: { color: theme.colors.muted, fontSize: 11, lineHeight: 17, textAlign: 'center', marginTop: 5 },
+  reportFooter: { backgroundColor: theme.colors.surface, borderWidth: 1, borderColor: theme.colors.line, borderRadius: theme.radius.lg, padding: theme.spacing.md, gap: theme.spacing.sm, marginTop: 4 },
+  selectedCount: { color: theme.colors.ink, textAlign: 'center', fontWeight: '900', fontSize: 12 },
 });
