@@ -23,6 +23,7 @@ export function HseControl() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string|null>(null);
   const [reportTitle, setReportTitle] = useState('');
+  const [nowMs, setNowMs] = useState(0);
 
   const loadWorkspace = useCallback(async () => {
     setError(null);
@@ -33,7 +34,9 @@ export function HseControl() {
     setWorkspace(nextWorkspace);
     if (nextWorkspace) {
       const [nextSummary, nextFindings] = await Promise.all([getHseSummary(nextWorkspace), getHseFindings(nextWorkspace, query)]);
-      setSummary(nextSummary); setFindings(nextFindings);
+      setSummary(nextSummary);
+      setFindings(nextFindings);
+      setNowMs(new Date().getTime());
     }
     setBooting(false);
   }, [query]);
@@ -41,14 +44,14 @@ export function HseControl() {
   useEffect(() => { const timer=setTimeout(() => void loadWorkspace().catch(e => { setError(e instanceof Error?e.message:'Error'); setBooting(false); }), query ? 250 : 0); return () => clearTimeout(timer); }, [loadWorkspace, query]);
 
   const visible = useMemo(() => {
-    const now=Date.now(), next7=now+7*86400000;
+    const next7=nowMs+7*86400000;
     if(filter==='closed') return findings.filter(f=>f.status==='closed');
-    if(filter==='overdue') return findings.filter(f=>!['closed','cancelled'].includes(f.status)&&!!f.due_at&&new Date(f.due_at).getTime()<now);
-    if(filter==='upcoming') return findings.filter(f=>!['closed','cancelled'].includes(f.status)&&!!f.due_at&&new Date(f.due_at).getTime()>=now&&new Date(f.due_at).getTime()<=next7);
+    if(filter==='overdue') return findings.filter(f=>!['closed','cancelled'].includes(f.status)&&!!f.due_at&&new Date(f.due_at).getTime()<nowMs);
+    if(filter==='upcoming') return findings.filter(f=>!['closed','cancelled'].includes(f.status)&&!!f.due_at&&new Date(f.due_at).getTime()>=nowMs&&new Date(f.due_at).getTime()<=next7);
     if(filter==='critical') return findings.filter(f=>!['closed','cancelled'].includes(f.status)&&f.severity==='critical');
     if(filter==='open') return findings.filter(f=>!['closed','cancelled'].includes(f.status));
     return findings;
-  },[findings,filter]);
+  },[findings,filter,nowMs]);
 
   async function auth() {
     if(!email.trim()||password.length<6){setError('Ingresá un email y una contraseña de al menos 6 caracteres.');return;}
@@ -95,7 +98,7 @@ export function HseControl() {
       </section>
       <section className={styles.toolbar}><input className={styles.search} value={query} onChange={e=>setQuery(e.target.value)} placeholder="Buscar código, hallazgo, sector, equipo o responsable…"/>{(['open','overdue','upcoming','critical','closed','all'] as Filter[]).map(item=><button key={item} className={`${styles.filter} ${filter===item?styles.filterActive:''}`} onClick={()=>setFilter(item)}>{({open:'Abiertos',overdue:'Vencidos',upcoming:'Próx. 7 días',critical:'Críticos',closed:'Cerrados',all:'Todos'} as const)[item]}</button>)}</section>
       {error?<div className={styles.error}>{error}</div>:null}
-      <section className={styles.panel}><div className={styles.list}>{visible.map(finding=>{const overdue=!['closed','cancelled'].includes(finding.status)&&!!finding.due_at&&new Date(finding.due_at).getTime()<Date.now();const checked=selected.has(finding.id);return <article key={finding.id} className={`${styles.finding} ${checked?styles.findingSelected:''}`}><button className={`${styles.check} ${checked?styles.checkOn:''}`} onClick={()=>toggle(finding.id)}>{checked?'✓':''}</button><div><div className={styles.code}>{finding.code} · {finding.priority.toUpperCase()}</div><h3>{finding.title}</h3><div className={styles.meta}>{finding.location_text||finding.element_text||finding.category||'Sin ubicación'} · {finding.responsible_text||'Sin responsable'}{finding.due_at?` · ${new Date(finding.due_at).toLocaleDateString('es-AR')}`:''}</div></div><span className={`${styles.status} ${overdue?styles.overdue:''}`}>{overdue?'VENCIDO':finding.status==='closed'?'CERRADO':finding.status==='in_progress'?'EN CURSO':'ABIERTO'}</span></article>})}{!visible.length?<div className={styles.empty}>No hay hallazgos para esta vista.</div>:null}</div>
+      <section className={styles.panel}><div className={styles.list}>{visible.map(finding=>{const overdue=!['closed','cancelled'].includes(finding.status)&&!!finding.due_at&&new Date(finding.due_at).getTime()<nowMs;const checked=selected.has(finding.id);return <article key={finding.id} className={`${styles.finding} ${checked?styles.findingSelected:''}`}><button className={`${styles.check} ${checked?styles.checkOn:''}`} onClick={()=>toggle(finding.id)}>{checked?'✓':''}</button><div><div className={styles.code}>{finding.code} · {finding.priority.toUpperCase()}</div><h3>{finding.title}</h3><div className={styles.meta}>{finding.location_text||finding.element_text||finding.category||'Sin ubicación'} · {finding.responsible_text||'Sin responsable'}{finding.due_at?` · ${new Date(finding.due_at).toLocaleDateString('es-AR')}`:''}</div></div><span className={`${styles.status} ${overdue?styles.overdue:''}`}>{overdue?'VENCIDO':finding.status==='closed'?'CERRADO':finding.status==='in_progress'?'EN CURSO':'ABIERTO'}</span></article>})}{!visible.length?<div className={styles.empty}>No hay hallazgos para esta vista.</div>:null}</div>
         <aside className={styles.side}><span className={styles.eyebrow}>INFORME DESDE HALLAZGOS</span><div className={styles.selection}>{selected.size}</div><h3>hallazgo{selected.size===1?'':'s'} seleccionado{selected.size===1?'':'s'}</h3><p>El informe queda vinculado a los registros originales. No duplica ni reescribe evidencia operacional.</p><input value={reportTitle} onChange={e=>setReportTitle(e.target.value)} placeholder={`Informe HSE · ${workspace.siteName||workspace.organizationName}`}/><button className={styles.primary} disabled={busy||!selected.size} onClick={()=>void createReport()}>{busy?'Generando…':'Crear informe técnico'}</button><button className={styles.ghost} onClick={()=>setSelected(new Set())}>Limpiar selección</button></aside>
       </section>
     </div>
