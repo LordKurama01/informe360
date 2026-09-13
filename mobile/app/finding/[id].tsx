@@ -4,6 +4,7 @@ import { router, useLocalSearchParams } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
 import { Screen } from '../../src/components/Screen';
 import { PrimaryButton } from '../../src/components/PrimaryButton';
+import { SectionHeader } from '../../src/components/SectionHeader';
 import { useWorkspace } from '../../src/providers/workspace-provider';
 import { addEvidence, closeFinding, getFindingBundle, reopenFinding, signedEvidenceUrl } from '../../src/services/findings';
 import { compressEvidenceImage } from '../../src/services/media';
@@ -76,56 +77,129 @@ export default function FindingDetail() {
     finally { setBusy(false); }
   }
 
-  if (!data) return <Screen><Text>Cargando…</Text></Screen>;
+  if (!data) return <Screen style={styles.loading}><Text style={styles.loadingText}>Cargando hallazgo…</Text></Screen>;
   const finding = data.finding;
   const overdue = !['closed', 'cancelled'].includes(finding.status) && Boolean(finding.due_at && new Date(finding.due_at).getTime() < Date.now());
+  const stateLabel = overdue ? 'VENCIDO' : finding.status === 'closed' ? 'CERRADO' : finding.status === 'in_progress' ? 'EN CURSO' : 'ABIERTO';
+  const priorityTone = finding.priority === 'urgent' ? theme.colors.danger : finding.priority === 'high' ? theme.colors.warning : theme.colors.primary;
 
   return <Screen>
-    <Pressable onPress={() => router.back()}><Text style={styles.back}>‹ Volver</Text></Pressable>
-    <View style={styles.identityRow}><Text style={styles.code}>{finding.code}</Text><Text style={[styles.state, overdue && styles.stateDanger]}>{overdue ? 'VENCIDO' : finding.status === 'closed' ? 'CERRADO' : finding.status === 'in_progress' ? 'EN CURSO' : 'ABIERTO'}</Text></View>
-    <Text style={styles.kicker}>{finding.priority.toUpperCase()} · {finding.severity.toUpperCase()}</Text>
-    <Text style={styles.title}>{finding.title}</Text>
-    {finding.description ? <Text style={styles.description}>{finding.description}</Text> : null}
+    <Pressable accessibilityRole="button" onPress={() => router.back()} style={styles.backButton}><Text style={styles.back}>‹ Volver</Text></Pressable>
 
-    <View style={styles.info}>
-      <Info label="Ubicación" value={finding.location_text}/><Info label="Elemento" value={finding.element_text}/><Info label="Responsable" value={finding.responsible_text}/><Info label="Vencimiento" value={finding.due_at ? new Date(finding.due_at).toLocaleString('es-AR') : null}/><Info label="Detectado" value={new Date(finding.created_at).toLocaleString('es-AR')}/>
+    <View style={styles.hero}>
+      <View style={styles.identityRow}><Text style={styles.code}>{finding.code}</Text><Text style={[styles.state, overdue && styles.stateDanger, finding.status === 'closed' && styles.stateClosed]}>{stateLabel}</Text></View>
+      <Text style={[styles.kicker, { color: priorityTone }]}>{finding.priority.toUpperCase()} · {finding.severity.toUpperCase()}</Text>
+      <Text style={styles.title}>{finding.title}</Text>
+      {finding.description ? <Text style={styles.description}>{finding.description}</Text> : null}
+      <View style={styles.heroMeta}><InfoCompact label="Ubicación" value={finding.location_text}/><InfoCompact label="Responsable" value={finding.responsible_text}/></View>
     </View>
 
-    <Text style={styles.section}>Acciones</Text>
-    {data.actions.map(action => <View key={action.id} style={styles.card}><View style={styles.cardTop}><Text style={styles.cardTitle}>{action.action}</Text><Text style={styles.actionState}>{action.status.toUpperCase()}</Text></View><Text style={styles.meta}>{action.responsible_text || 'Sin responsable'}{action.due_at ? ` · ${new Date(action.due_at).toLocaleDateString('es-AR')}` : ''}</Text></View>)}
-    {!data.actions.length ? <Text style={styles.empty}>Sin acciones asociadas.</Text> : null}
+    <View style={styles.info}>
+      <Info label="Elemento" value={finding.element_text}/>
+      <Info label="Vencimiento" value={finding.due_at ? new Date(finding.due_at).toLocaleString('es-AR') : null} danger={overdue}/>
+      <Info label="Detectado" value={new Date(finding.created_at).toLocaleString('es-AR')}/>
+    </View>
+
+    <SectionHeader title="Acciones" meta={`${data.actions.length} asociada${data.actions.length === 1 ? '' : 's'}`}/>
+    <View style={styles.stack}>{data.actions.map(action => <View key={action.id} style={styles.actionCard}><View style={styles.actionTop}><Text style={styles.actionTitle}>{action.action}</Text><Text style={styles.actionState}>{action.status.toUpperCase()}</Text></View><Text style={styles.meta}>{action.responsible_text || 'Sin responsable'}{action.due_at ? ` · ${new Date(action.due_at).toLocaleDateString('es-AR')}` : ''}</Text></View>)}</View>
+    {!data.actions.length ? <EmptyLine text="Sin acciones asociadas."/> : null}
 
     <EvidenceSection title="Antes / detección" description="Conserva el estado observado originalmente." items={grouped.initial} previews={previews}/>
-    {finding.status !== 'closed' ? <PrimaryButton title="📷 Agregar evidencia inicial" tone="neutral" busy={busy} onPress={() => void photo('initial')}/> : null}
+    {finding.status !== 'closed' ? <PrimaryButton title="Agregar evidencia inicial" tone="neutral" busy={busy} onPress={() => void photo('initial')}/> : null}
 
     <EvidenceSection title="Seguimiento" description="Evidencias intermedias sin alterar la captura original." items={grouped.supporting} previews={previews}/>
-    {finding.status !== 'closed' ? <PrimaryButton title="📷 Agregar seguimiento" tone="neutral" busy={busy} onPress={() => void photo('supporting')}/> : null}
+    {finding.status !== 'closed' ? <PrimaryButton title="Agregar seguimiento" tone="neutral" busy={busy} onPress={() => void photo('supporting')}/> : null}
 
     <EvidenceSection title="Después / cierre" description="Muestra la condición corregida y deja trazabilidad visual." items={grouped.closure} previews={previews}/>
-    {finding.status !== 'closed' ? <PrimaryButton title="📷 Agregar evidencia de cierre" tone="neutral" busy={busy} onPress={() => void photo('closure')}/> : null}
+    {finding.status !== 'closed' ? <PrimaryButton title="Agregar evidencia de cierre" tone="neutral" busy={busy} onPress={() => void photo('closure')}/> : null}
 
     {finding.status !== 'closed' ? <View style={styles.closeBox}>
-      <Text style={styles.section}>Cerrar hallazgo</Text>
-      <Text style={styles.helper}>El cierre completa acciones pendientes y cancela alertas futuras. La evidencia fotográfica es recomendable cuando aplica.</Text>
-      <TextInput placeholder="Qué se corrigió y cómo quedó" multiline value={comment} onChangeText={setComment} style={styles.input}/>
+      <View style={styles.closeHead}><View style={styles.closeMark}><Text style={styles.closeMarkText}>✓</Text></View><View style={styles.closeHeadCopy}><Text style={styles.closeTitle}>Cerrar hallazgo</Text><Text style={styles.helper}>El cierre completa acciones pendientes y cancela alertas futuras.</Text></View></View>
+      <TextInput placeholder="Qué se corrigió y cómo quedó" placeholderTextColor={theme.colors.muted} multiline value={comment} onChangeText={setComment} style={styles.input}/>
       <PrimaryButton title="Cerrar hallazgo" tone="danger" busy={busy} onPress={() => void close()}/>
-    </View> : <View style={styles.closedBox}><Text style={styles.closedTitle}>✓ Hallazgo cerrado</Text><Text style={styles.closedText}>{finding.closure_comment || 'Sin comentario de cierre.'}</Text><Text style={styles.closedMeta}>{finding.closed_at ? new Date(finding.closed_at).toLocaleString('es-AR') : ''}</Text><PrimaryButton title="Reabrir hallazgo" tone="neutral" busy={busy} onPress={() => void reopen()}/></View>}
+    </View> : <View style={styles.closedBox}>
+      <View style={styles.closedHead}><View style={styles.closedMark}><Text style={styles.closedMarkText}>✓</Text></View><Text style={styles.closedTitle}>Hallazgo cerrado</Text></View>
+      <Text style={styles.closedText}>{finding.closure_comment || 'Sin comentario de cierre.'}</Text>
+      <Text style={styles.closedMeta}>{finding.closed_at ? new Date(finding.closed_at).toLocaleString('es-AR') : ''}</Text>
+      <PrimaryButton title="Reabrir hallazgo" tone="neutral" busy={busy} onPress={() => void reopen()}/>
+    </View>}
 
-    <Text style={styles.section}>Trazabilidad</Text>
-    {data.events.map(event => <View key={event.id} style={styles.event}><View style={styles.eventDot}/><View style={styles.eventBody}><Text style={styles.eventType}>{event.event_type === 'created' ? 'Creado' : event.event_type === 'status_changed' ? 'Cambio de estado' : 'Actualizado'}</Text><Text style={styles.meta}>{new Date(event.created_at).toLocaleString('es-AR')}{event.from_status ? ` · ${event.from_status} → ${event.to_status}` : ''}</Text>{event.note ? <Text style={styles.eventNote}>{event.note}</Text> : null}</View></View>)}
+    <SectionHeader title="Trazabilidad" meta="Historial auditable del registro"/>
+    <View style={styles.timeline}>{data.events.map((event, index) => <View key={event.id} style={styles.event}>
+      <View style={styles.eventRail}><View style={styles.eventDot}/>{index < data.events.length - 1 ? <View style={styles.eventLine}/> : null}</View>
+      <View style={styles.eventBody}><Text style={styles.eventType}>{event.event_type === 'created' ? 'Creado' : event.event_type === 'status_changed' ? 'Cambio de estado' : 'Actualizado'}</Text><Text style={styles.meta}>{new Date(event.created_at).toLocaleString('es-AR')}{event.from_status ? ` · ${event.from_status} → ${event.to_status}` : ''}</Text>{event.note ? <Text style={styles.eventNote}>{event.note}</Text> : null}</View>
+    </View>)}</View>
   </Screen>;
 }
 
 function EvidenceSection({ title, description, items, previews }: { title: string; description: string; items: FindingBundle['evidence']; previews: PreviewMap }) {
-  return <View style={styles.evidenceSection}><View><Text style={styles.section}>{title}</Text><Text style={styles.helper}>{description}</Text></View>{items.length ? <View style={styles.gallery}>{items.map(item => <View key={item.id} style={styles.evidenceCard}>{previews[item.id] ? <Image source={{ uri: previews[item.id] }} style={styles.image}/> : <View style={styles.fileFallback}><Text style={styles.fileIcon}>▣</Text></View>}<Text numberOfLines={1} style={styles.fileName}>{item.file_name}</Text><Text style={styles.meta}>{phaseLabel[item.phase]} · {new Date(item.created_at).toLocaleDateString('es-AR')}</Text></View>)}</View> : <Text style={styles.empty}>Sin evidencia en esta etapa.</Text>}</View>;
+  return <View style={styles.evidenceSection}><SectionHeader title={title} meta={description}/>{items.length ? <View style={styles.gallery}>{items.map(item => <View key={item.id} style={styles.evidenceCard}>{previews[item.id] ? <Image source={{ uri: previews[item.id] }} style={styles.image}/> : <View style={styles.fileFallback}><Text style={styles.fileIcon}>▣</Text></View>}<View style={styles.fileCopy}><Text numberOfLines={1} style={styles.fileName}>{item.file_name}</Text><Text style={styles.meta}>{phaseLabel[item.phase]} · {new Date(item.created_at).toLocaleDateString('es-AR')}</Text></View></View>)}</View> : <EmptyLine text="Sin evidencia en esta etapa."/>}</View>;
 }
-function Info({ label, value }: { label: string; value: string | null }) { return <View style={styles.infoRow}><Text style={styles.meta}>{label}</Text><Text style={styles.infoValue}>{value || '—'}</Text></View>; }
+
+function Info({ label, value, danger = false }: { label: string; value: string | null; danger?: boolean }) { return <View style={styles.infoRow}><Text style={styles.infoLabel}>{label}</Text><Text style={[styles.infoValue, danger && styles.infoDanger]}>{value || '—'}</Text></View>; }
+function InfoCompact({ label, value }: { label: string; value: string | null }) { return <View style={styles.infoCompact}><Text style={styles.infoCompactLabel}>{label}</Text><Text numberOfLines={1} style={styles.infoCompactValue}>{value || '—'}</Text></View>; }
+function EmptyLine({ text }: { text: string }) { return <View style={styles.emptyLine}><Text style={styles.emptyLineText}>{text}</Text></View>; }
 
 const styles = StyleSheet.create({
-  back: { color: theme.colors.primary, fontWeight: '800' }, identityRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }, code: { color: theme.colors.ink, fontWeight: '900', fontSize: 12, letterSpacing: 0.7 }, state: { color: theme.colors.primary, backgroundColor: '#CCFBF1', fontWeight: '900', fontSize: 9, paddingHorizontal: 9, paddingVertical: 5, borderRadius: 999 }, stateDanger: { color: theme.colors.danger, backgroundColor: '#FEE2E2' }, kicker: { color: theme.colors.primary, fontWeight: '900', letterSpacing: 1, fontSize: 10 }, title: { fontSize: 29, lineHeight: 34, fontWeight: '900', color: theme.colors.ink }, description: { fontSize: 15, lineHeight: 22, color: theme.colors.ink },
-  info: { backgroundColor: '#fff', padding: 15, borderRadius: 17, borderWidth: 1, borderColor: theme.colors.line, gap: 10 }, infoRow: { flexDirection: 'row', justifyContent: 'space-between', gap: 14 }, infoValue: { flex: 1, textAlign: 'right', fontWeight: '800', color: theme.colors.ink, fontSize: 12 }, section: { fontSize: 18, fontWeight: '900', color: theme.colors.ink, marginTop: 4 }, helper: { color: theme.colors.muted, fontSize: 11, lineHeight: 16, marginTop: 2 },
-  card: { backgroundColor: '#fff', padding: 14, borderRadius: 14, borderWidth: 1, borderColor: theme.colors.line }, cardTop: { flexDirection: 'row', justifyContent: 'space-between', gap: 8 }, cardTitle: { flex: 1, fontWeight: '800', color: theme.colors.ink }, actionState: { color: theme.colors.primary, fontSize: 9, fontWeight: '900' }, meta: { color: theme.colors.muted, fontSize: 11 }, empty: { color: theme.colors.muted, fontSize: 12, paddingVertical: 3 },
-  evidenceSection: { gap: 8 }, gallery: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 }, evidenceCard: { width: '48.5%', backgroundColor: '#fff', borderWidth: 1, borderColor: theme.colors.line, borderRadius: 14, overflow: 'hidden', paddingBottom: 9 }, image: { width: '100%', aspectRatio: 1.2, backgroundColor: '#E2E8F0' }, fileFallback: { width: '100%', aspectRatio: 1.2, backgroundColor: '#F1F5F9', alignItems: 'center', justifyContent: 'center' }, fileIcon: { fontSize: 30, color: theme.colors.muted }, fileName: { color: theme.colors.ink, fontWeight: '800', fontSize: 11, marginHorizontal: 9, marginTop: 8 },
-  closeBox: { backgroundColor: '#fff', borderRadius: 18, borderWidth: 1, borderColor: theme.colors.line, padding: 14, gap: 9 }, input: { minHeight: 90, backgroundColor: theme.colors.bg, borderWidth: 1, borderColor: theme.colors.line, borderRadius: 14, padding: 12, textAlignVertical: 'top' }, closedBox: { backgroundColor: '#ECFDF5', borderRadius: 18, borderWidth: 1, borderColor: '#BBF7D0', padding: 15, gap: 7 }, closedTitle: { color: '#166534', fontWeight: '900', fontSize: 17 }, closedText: { color: '#166534', lineHeight: 20 }, closedMeta: { color: '#15803D', fontSize: 11 },
-  event: { flexDirection: 'row', gap: 10, paddingVertical: 5 }, eventDot: { width: 9, height: 9, borderRadius: 5, backgroundColor: theme.colors.primary, marginTop: 4 }, eventBody: { flex: 1, paddingBottom: 8, borderBottomWidth: 1, borderBottomColor: theme.colors.line }, eventType: { fontWeight: '900', color: theme.colors.ink }, eventNote: { color: theme.colors.ink, marginTop: 4, fontSize: 12, lineHeight: 17 },
+  loading: { justifyContent: 'center', alignItems: 'center' },
+  loadingText: { color: theme.colors.muted, fontWeight: '800' },
+  backButton: { alignSelf: 'flex-start', minHeight: 42, justifyContent: 'center' },
+  back: { color: theme.colors.primary, fontWeight: '900' },
+  hero: { backgroundColor: theme.colors.surface, borderRadius: theme.radius.xl, borderWidth: 1, borderColor: theme.colors.line, padding: theme.spacing.xl, gap: 7, ...theme.shadow.card },
+  identityRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  code: { color: theme.colors.inkSoft, fontWeight: '900', fontSize: 10, letterSpacing: 0.7 },
+  state: { color: theme.colors.primary, backgroundColor: theme.colors.primarySoft, fontWeight: '900', fontSize: 9, paddingHorizontal: 9, paddingVertical: 5, borderRadius: theme.radius.pill },
+  stateDanger: { color: theme.colors.danger, backgroundColor: theme.colors.dangerSoft },
+  stateClosed: { color: theme.colors.success, backgroundColor: theme.colors.successSoft },
+  kicker: { fontWeight: '900', letterSpacing: 1.1, fontSize: 9 },
+  title: { fontSize: 28, lineHeight: 33, fontWeight: '900', color: theme.colors.ink, letterSpacing: -0.5 },
+  description: { fontSize: 13, lineHeight: 19, color: theme.colors.inkSoft },
+  heroMeta: { flexDirection: 'row', gap: theme.spacing.sm, borderTopWidth: 1, borderTopColor: theme.colors.line, paddingTop: theme.spacing.md, marginTop: 3 },
+  infoCompact: { flex: 1, minWidth: 0 },
+  infoCompactLabel: { color: theme.colors.muted, fontSize: 8, fontWeight: '900', letterSpacing: 0.6 },
+  infoCompactValue: { color: theme.colors.ink, fontSize: 11, fontWeight: '800', marginTop: 2 },
+  info: { backgroundColor: theme.colors.surfaceMuted, padding: theme.spacing.md, borderRadius: theme.radius.lg, gap: 10 },
+  infoRow: { flexDirection: 'row', justifyContent: 'space-between', gap: 14 },
+  infoLabel: { color: theme.colors.muted, fontSize: 10, fontWeight: '800' },
+  infoValue: { flex: 1, textAlign: 'right', fontWeight: '800', color: theme.colors.ink, fontSize: 11 },
+  infoDanger: { color: theme.colors.danger },
+  stack: { gap: theme.spacing.sm },
+  actionCard: { backgroundColor: theme.colors.surface, padding: theme.spacing.md, borderRadius: theme.radius.md, borderWidth: 1, borderColor: theme.colors.line },
+  actionTop: { flexDirection: 'row', justifyContent: 'space-between', gap: 8 },
+  actionTitle: { flex: 1, fontWeight: '900', color: theme.colors.ink, fontSize: 13, lineHeight: 18 },
+  actionState: { color: theme.colors.primary, fontSize: 8, fontWeight: '900' },
+  meta: { color: theme.colors.muted, fontSize: 9, lineHeight: 14 },
+  emptyLine: { minHeight: 52, borderRadius: theme.radius.md, borderWidth: 1, borderStyle: 'dashed', borderColor: theme.colors.line, alignItems: 'center', justifyContent: 'center', padding: theme.spacing.md },
+  emptyLineText: { color: theme.colors.muted, fontSize: 10 },
+  evidenceSection: { gap: theme.spacing.sm },
+  gallery: { flexDirection: 'row', flexWrap: 'wrap', gap: theme.spacing.sm },
+  evidenceCard: { width: '48.5%', backgroundColor: theme.colors.surface, borderWidth: 1, borderColor: theme.colors.line, borderRadius: theme.radius.md, overflow: 'hidden' },
+  image: { width: '100%', aspectRatio: 1.25, backgroundColor: theme.colors.surfaceStrong },
+  fileFallback: { width: '100%', aspectRatio: 1.25, backgroundColor: theme.colors.surfaceMuted, alignItems: 'center', justifyContent: 'center' },
+  fileIcon: { fontSize: 27, color: theme.colors.muted },
+  fileCopy: { padding: 9, gap: 2 },
+  fileName: { color: theme.colors.ink, fontWeight: '800', fontSize: 10 },
+  closeBox: { backgroundColor: theme.colors.surface, borderRadius: theme.radius.lg, borderWidth: 1, borderColor: '#F0CBC8', padding: theme.spacing.lg, gap: theme.spacing.md },
+  closeHead: { flexDirection: 'row', gap: theme.spacing.md, alignItems: 'flex-start' },
+  closeMark: { width: 38, height: 38, borderRadius: 13, backgroundColor: theme.colors.dangerSoft, alignItems: 'center', justifyContent: 'center' },
+  closeMarkText: { color: theme.colors.danger, fontWeight: '900' },
+  closeHeadCopy: { flex: 1 },
+  closeTitle: { color: theme.colors.ink, fontSize: 17, fontWeight: '900' },
+  helper: { color: theme.colors.muted, fontSize: 10, lineHeight: 15, marginTop: 2 },
+  input: { minHeight: 100, backgroundColor: theme.colors.bg, borderWidth: 1, borderColor: theme.colors.line, borderRadius: theme.radius.md, padding: theme.spacing.md, textAlignVertical: 'top', color: theme.colors.ink },
+  closedBox: { backgroundColor: theme.colors.successSoft, borderRadius: theme.radius.lg, padding: theme.spacing.lg, gap: theme.spacing.sm },
+  closedHead: { flexDirection: 'row', alignItems: 'center', gap: 9 },
+  closedMark: { width: 34, height: 34, borderRadius: 11, backgroundColor: 'rgba(21,115,71,0.1)', alignItems: 'center', justifyContent: 'center' },
+  closedMarkText: { color: theme.colors.success, fontWeight: '900' },
+  closedTitle: { color: theme.colors.success, fontWeight: '900', fontSize: 16 },
+  closedText: { color: '#285B43', lineHeight: 18, fontSize: 11 },
+  closedMeta: { color: theme.colors.success, fontSize: 9 },
+  timeline: { gap: 0 },
+  event: { flexDirection: 'row', gap: theme.spacing.md, minHeight: 58 },
+  eventRail: { width: 12, alignItems: 'center' },
+  eventDot: { width: 9, height: 9, borderRadius: 5, backgroundColor: theme.colors.primary, marginTop: 5 },
+  eventLine: { flex: 1, width: 1.5, backgroundColor: theme.colors.line, marginTop: 3 },
+  eventBody: { flex: 1, paddingBottom: theme.spacing.md },
+  eventType: { fontWeight: '900', color: theme.colors.ink, fontSize: 12 },
+  eventNote: { color: theme.colors.inkSoft, marginTop: 4, fontSize: 10, lineHeight: 15 },
 });
