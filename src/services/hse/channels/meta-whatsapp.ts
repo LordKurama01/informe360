@@ -15,6 +15,24 @@ function accessToken(): string {
   return requiredEnv('META_WHATSAPP_ACCESS_TOKEN');
 }
 
+async function sendGraphMessage(phoneNumberId: string, payload: Record<string, unknown>): Promise<string | null> {
+  const response = await fetch(`https://graph.facebook.com/${graphVersion()}/${encodeURIComponent(phoneNumberId)}/messages`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${accessToken()}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(payload),
+    cache: 'no-store',
+  });
+  if (!response.ok) {
+    const detail = await response.text().catch(() => '');
+    throw new Error(`Meta WhatsApp send failed with status ${response.status}${detail ? `: ${detail.slice(0, 240)}` : ''}`);
+  }
+  const data = await response.json().catch(() => null) as { messages?: Array<{ id?: string }> } | null;
+  return data?.messages?.[0]?.id || null;
+}
+
 export function verifyMetaSignature(rawBody: string, signatureHeader: string | null, appSecret = process.env.META_APP_SECRET): boolean {
   if (!signatureHeader || !appSecret) return false;
   const expected = `sha256=${createHmac('sha256', appSecret).update(rawBody, 'utf8').digest('hex')}`;
@@ -168,26 +186,45 @@ export async function downloadMetaMedia(mediaId: string, fallbackName = `whatsap
 }
 
 export async function sendWhatsAppText(to: string, body: string, phoneNumberId = process.env.META_WHATSAPP_PHONE_NUMBER_ID): Promise<string | null> {
-  const token = accessToken();
   if (!phoneNumberId) throw new Error('META_WHATSAPP_PHONE_NUMBER_ID is not configured');
-  const response = await fetch(`https://graph.facebook.com/${graphVersion()}/${encodeURIComponent(phoneNumberId)}/messages`, {
-    method: 'POST',
-    headers: {
-      Authorization: `Bearer ${token}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      messaging_product: 'whatsapp',
-      recipient_type: 'individual',
-      to,
-      type: 'text',
-      text: { body, preview_url: false },
-    }),
-    cache: 'no-store',
+  return sendGraphMessage(phoneNumberId, {
+    messaging_product: 'whatsapp',
+    recipient_type: 'individual',
+    to,
+    type: 'text',
+    text: { body, preview_url: false },
   });
-  if (!response.ok) throw new Error(`Meta WhatsApp send failed with status ${response.status}`);
-  const payload = await response.json().catch(() => null) as { messages?: Array<{ id?: string }> } | null;
-  return payload?.messages?.[0]?.id || null;
+}
+
+export async function sendWhatsAppReminder(
+  to: string,
+  title: string,
+  dateLabel: string,
+  phoneNumberId = process.env.META_WHATSAPP_PHONE_NUMBER_ID,
+): Promise<string | null> {
+  if (!phoneNumberId) throw new Error('META_WHATSAPP_PHONE_NUMBER_ID is not configured');
+  const templateName = process.env.META_WHATSAPP_REMINDER_TEMPLATE_NAME?.trim();
+  if (!templateName) {
+    return sendWhatsAppText(to, `⏰ Recordatorio HSE\n${title}\n📅 ${dateLabel}`, phoneNumberId);
+  }
+
+  return sendGraphMessage(phoneNumberId, {
+    messaging_product: 'whatsapp',
+    recipient_type: 'individual',
+    to,
+    type: 'template',
+    template: {
+      name: templateName,
+      language: { code: process.env.META_WHATSAPP_TEMPLATE_LANGUAGE?.trim() || 'es_AR' },
+      components: [{
+        type: 'body',
+        parameters: [
+          { type: 'text', text: title },
+          { type: 'text', text: dateLabel },
+        ],
+      }],
+    },
+  });
 }
 
 export function getWhatsAppChannelStatus() {
@@ -199,5 +236,6 @@ export function getWhatsAppChannelStatus() {
       process.env.META_WHATSAPP_PHONE_NUMBER_ID &&
       process.env.META_GRAPH_API_VERSION
     ),
+    reminderTemplateConfigured: Boolean(process.env.META_WHATSAPP_REMINDER_TEMPLATE_NAME),
   };
 }
