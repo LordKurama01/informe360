@@ -8,6 +8,7 @@ const requiredFiles = [
   'mobile/src/screens/InspectionsScreen.tsx',
   'mobile/app/(tabs)/capture.tsx',
   'mobile/app/(tabs)/inspections.tsx',
+  'mobile/src/lib/secure-storage.web.ts',
 ];
 
 for (const file of requiredFiles) await access(file);
@@ -43,5 +44,11 @@ const findingDetail = await readFile('mobile/app/finding/[id].tsx', 'utf8');
 for (const marker of ['initial', 'supporting', 'closure', 'reopenFinding', 'closeFinding']) {
   assert.match(findingDetail, new RegExp(marker), `finding detail must preserve ${marker}`);
 }
+
+const webStorage = await readFile('mobile/src/lib/secure-storage.web.ts', 'utf8');
+assert.match(webStorage, /localStorage/, 'web auth storage must use a browser-safe storage backend');
+
+const authProvider = await readFile('mobile/src/providers/auth-provider.tsx', 'utf8');
+assert.match(authProvider, /finally\s*\(\s*\(\)\s*=>\s*setLoading\(false\)\s*\)/, 'auth bootstrap must always leave loading state');
 
 console.log('Mobile-first premium UI contract OK');
