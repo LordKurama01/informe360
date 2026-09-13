@@ -14,12 +14,14 @@ El proyecto Supabase histórico que utilizó Informe360 en otra cuenta/entorno y
 
 ## Migraciones
 
-El historial vivo y el repo deben coincidir. Actualmente hay dos migraciones:
+El historial vivo y el repo deben coincidir. Actualmente hay tres migraciones:
 
 1. `migrations/20260913012835_informe360_fresh_start.sql`
    - crea la base operacional HSE Copilot, RLS y Storage privado;
 2. `migrations/20260913013947_lock_server_only_logs.sql`
-   - revoca explícitamente acceso de `anon`/`authenticated` a logs server-only y conserva `service_role`.
+   - revoca explícitamente acceso de `anon`/`authenticated` a logs server-only y conserva `service_role`;
+3. `migrations/20260913014226_protect_owner_role.sql`
+   - impide que un `admin` se promueva a `owner` o modifique/elimine owners; esas operaciones requieren owner.
 
 La primera versión fue aplicada durante la noche del 2026-09-12 hora Argentina (2026-09-13 UTC) y crea:
 
@@ -47,6 +49,7 @@ Los archivos históricos `schema.sql` y `seed_normatives.sql` fueron retirados d
 5. `ai_generation_logs` y `tracking_events` son server-only: tienen RLS habilitado, no tienen políticas para `authenticated`, sus grants de cliente fueron revocados explícitamente y `service_role` conserva acceso.
 6. El bucket `hse-evidence` es privado. Los objetos deben guardarse bajo la convención `<organization_id>/...` para que las políticas de Storage puedan validar membresía.
 7. Datos de autorización viven en la base/membresías; nunca se confía en `user_metadata` para autorizar.
+8. El rol `owner` sólo puede ser creado/modificado/eliminado por otro owner de esa organización.
 
 ## Variables
 
