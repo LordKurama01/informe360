@@ -12,6 +12,8 @@ const requiredFiles = [
   'scripts/link-hse-whatsapp-identity.mjs',
   'database/supabase/migrations/20260913160000_hse_whatsapp_field_copilot.sql',
   'database/supabase/migrations/20260913160100_hse_whatsapp_close.sql',
+  'database/supabase/migrations/20260913170000_hse_reminder_completed_status.sql',
+  'database/supabase/migrations/20260913170100_hse_whatsapp_reminder_scheduler.sql',
   'src/blocks/calendar/shared/CalendarPage.tsx',
   'src/services/hse/browser.ts',
 ];
@@ -61,6 +63,17 @@ const closeMigration = await readFile('database/supabase/migrations/202609131601
 assert.match(closeMigration, /create or replace function public\.close_channel_finding/i, 'Close migration must provide service-only channel close RPC');
 assert.match(closeMigration, /grant execute[\s\S]*service_role/i, 'Channel close RPC must be service-role only');
 assert.match(closeMigration, /revoke all[\s\S]*authenticated/i, 'Channel close RPC must not be callable by authenticated clients');
+
+const reminderStatusMigration = await readFile('database/supabase/migrations/20260913170000_hse_reminder_completed_status.sql', 'utf8');
+assert.match(reminderStatusMigration, /'completed'/, 'Reminder status contract must support explicit completion');
+
+const schedulerMigration = await readFile('database/supabase/migrations/20260913170100_hse_whatsapp_reminder_scheduler.sql', 'utf8');
+assert.match(schedulerMigration, /create extension if not exists pg_cron/i, 'Scheduler must enable pg_cron');
+assert.match(schedulerMigration, /create extension if not exists pg_net/i, 'Scheduler must enable pg_net');
+assert.match(schedulerMigration, /vault\.decrypted_secrets/i, 'Scheduler must load its secret from Supabase Vault');
+assert.match(schedulerMigration, /cron\.schedule/i, 'Scheduler must register a recurring job');
+assert.match(schedulerMigration, /api\/hse\/jobs\/whatsapp-reminders/i, 'Scheduler must call the protected HSE reminder endpoint');
+assert.doesNotMatch(schedulerMigration, /3x6mlZEQ|Bearer\s+[A-Za-z0-9_-]{20,}/, 'Scheduler migration must never hardcode the actual job secret');
 
 const linkScript = await readFile('scripts/link-hse-whatsapp-identity.mjs', 'utf8');
 assert.match(linkScript, /HSE_LINK_USER_EMAIL/, 'Identity linker must resolve an explicit HSE user');
