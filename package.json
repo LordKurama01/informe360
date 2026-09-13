@@ -15,6 +15,7 @@
     "test:hse:whatsapp": "node scripts/check-hse-whatsapp.mjs",
     "test:mobile:structure": "node scripts/check-mobile-p0.mjs",
     "test:mobile:ui": "node scripts/check-mobile-premium-ui.mjs",
+    "hse:whatsapp:link": "node scripts/link-hse-whatsapp-identity.mjs",
     "evidence:init": "node scripts/init-evidence.mjs",
     "qa": "npm run test:structure && npm run test:hse && npm run test:forms && npm run test:inspections && npm run test:hse:whatsapp && npm run test:mobile:structure && npm run test:mobile:ui && npm run typecheck && npm run lint && npm run build"
   },
