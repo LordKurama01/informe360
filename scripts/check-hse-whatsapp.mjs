@@ -11,6 +11,7 @@ const requiredFiles = [
   'src/services/hse/assistant/types.ts',
   'scripts/link-hse-whatsapp-identity.mjs',
   'database/supabase/migrations/20260913160000_hse_whatsapp_field_copilot.sql',
+  'database/supabase/migrations/20260913160100_hse_whatsapp_close.sql',
 ];
 
 for (const file of requiredFiles) await access(file);
@@ -47,8 +48,12 @@ for (const table of ['hse_channel_identities', 'hse_channel_messages', 'hse_assi
 }
 assert.match(migration, /enable row level security/gi, 'New public channel tables must enable RLS');
 assert.match(migration, /'whatsapp'/i, 'Reminder channel contract must include WhatsApp');
-assert.match(migration, /create or replace function public\.close_channel_finding/i, 'Migration must provide service-only channel close RPC');
 assert.match(migration, /grant execute[\s\S]*service_role/i, 'Channel finding RPCs must be service-role only');
+
+const closeMigration = await readFile('database/supabase/migrations/20260913160100_hse_whatsapp_close.sql', 'utf8');
+assert.match(closeMigration, /create or replace function public\.close_channel_finding/i, 'Close migration must provide service-only channel close RPC');
+assert.match(closeMigration, /grant execute[\s\S]*service_role/i, 'Channel close RPC must be service-role only');
+assert.match(closeMigration, /revoke all[\s\S]*authenticated/i, 'Channel close RPC must not be callable by authenticated clients');
 
 const linkScript = await readFile('scripts/link-hse-whatsapp-identity.mjs', 'utf8');
 assert.match(linkScript, /HSE_LINK_USER_EMAIL/, 'Identity linker must resolve an explicit HSE user');
