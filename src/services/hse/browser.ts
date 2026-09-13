@@ -5,6 +5,22 @@ import { getBrowserSupabase } from '@/services/supabase/browser';
 export type HseWorkspace = { organizationId: string; organizationName: string; siteId: string | null; siteName: string | null; role: string };
 export type HseFinding = { id: string; code: string; title: string; description: string | null; severity: 'low'|'medium'|'high'|'critical'; priority: 'low'|'medium'|'high'|'urgent'; status: 'open'|'in_progress'|'closed'|'cancelled'; due_at: string | null; closed_at: string | null; location_text: string | null; element_text: string | null; responsible_text: string | null; category: string | null; closure_comment: string | null; created_at: string };
 export type HseSummary = { open: number; overdue: number; dueNext7Days: number; closed: number; closedOnTime: number; closureCompliancePct: number; criticalOpen: number };
+export type HseReminder = {
+  id: string;
+  organization_id: string;
+  finding_id: string | null;
+  action_id: string | null;
+  site_id: string | null;
+  created_by: string;
+  title: string | null;
+  notes: string | null;
+  scheduled_for: string;
+  channel: 'push'|'email'|'in_app'|'whatsapp';
+  status: 'pending'|'sent'|'cancelled'|'failed'|'completed';
+  sent_at: string | null;
+  error_message: string | null;
+  created_at: string;
+};
 
 export async function getCurrentHseUser() {
   const { data } = await getBrowserSupabase().auth.getUser();
@@ -59,6 +75,50 @@ export async function getHseFindings(workspace: HseWorkspace, query = ''): Promi
   const { data, error } = await request;
   if (error) throw error;
   return (data || []) as HseFinding[];
+}
+
+export async function getHseReminders(workspace: HseWorkspace, limit = 200): Promise<HseReminder[]> {
+  let request = getBrowserSupabase()
+    .from('reminders')
+    .select('id,organization_id,finding_id,action_id,site_id,created_by,title,notes,scheduled_for,channel,status,sent_at,error_message,created_at')
+    .eq('organization_id', workspace.organizationId)
+    .order('scheduled_for', { ascending: true })
+    .limit(limit);
+  if (workspace.siteId) request = request.or(`site_id.eq.${workspace.siteId},site_id.is.null`);
+  const { data, error } = await request;
+  if (error) throw error;
+  return (data || []) as HseReminder[];
+}
+
+export async function createHseReminder(
+  workspace: HseWorkspace,
+  input: { title: string; notes?: string | null; scheduledFor: string; channel?: 'in_app'|'push'|'email' }
+): Promise<HseReminder> {
+  const supabase = getBrowserSupabase();
+  const { data: userData, error: userError } = await supabase.auth.getUser();
+  if (userError || !userData.user) throw userError || new Error('Sesión requerida');
+  const title = input.title.trim();
+  if (!title) throw new Error('Ingresá un título');
+  const scheduledFor = new Date(input.scheduledFor);
+  if (Number.isNaN(scheduledFor.getTime())) throw new Error('Fecha inválida');
+
+  const { data, error } = await supabase.from('reminders').insert({
+    organization_id: workspace.organizationId,
+    site_id: workspace.siteId,
+    created_by: userData.user.id,
+    title,
+    notes: input.notes?.trim() || null,
+    scheduled_for: scheduledFor.toISOString(),
+    channel: input.channel || 'in_app',
+    status: 'pending',
+  }).select('id,organization_id,finding_id,action_id,site_id,created_by,title,notes,scheduled_for,channel,status,sent_at,error_message,created_at').single();
+  if (error) throw error;
+  return data as HseReminder;
+}
+
+export async function updateHseReminderStatus(reminderId: string, status: 'pending'|'cancelled'|'completed'): Promise<void> {
+  const { error } = await getBrowserSupabase().from('reminders').update({ status }).eq('id', reminderId);
+  if (error) throw error;
 }
 
 export async function seedHseDemo(): Promise<void> {
