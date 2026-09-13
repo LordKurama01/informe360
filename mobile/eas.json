@@ -1,0 +1,35 @@
+{
+  "cli": {
+    "version": ">= 16.0.0"
+  },
+  "build": {
+    "development": {
+      "developmentClient": true,
+      "distribution": "internal",
+      "env": {
+        "EXPO_PUBLIC_SUPABASE_URL": "https://wvjmsltqrztlvgmayicr.supabase.co",
+        "EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY": "sb_publishable_qh2uEB_LQJIQYTTWjYuPmQ_SZZaGKpT",
+        "EXPO_PUBLIC_API_URL": "https://informe360-hse.onrender.com"
+      }
+    },
+    "preview": {
+      "distribution": "internal",
+      "android": {
+        "buildType": "apk"
+      },
+      "env": {
+        "EXPO_PUBLIC_SUPABASE_URL": "https://wvjmsltqrztlvgmayicr.supabase.co",
+        "EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY": "sb_publishable_qh2uEB_LQJIQYTTWjYuPmQ_SZZaGKpT",
+        "EXPO_PUBLIC_API_URL": "https://informe360-hse.onrender.com"
+      }
+    },
+    "production": {
+      "autoIncrement": true,
+      "env": {
+        "EXPO_PUBLIC_SUPABASE_URL": "https://wvjmsltqrztlvgmayicr.supabase.co",
+        "EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY": "sb_publishable_qh2uEB_LQJIQYTTWjYuPmQ_SZZaGKpT",
+        "EXPO_PUBLIC_API_URL": "https://informe360-hse.onrender.com"
+      }
+    }
+  }
+}
