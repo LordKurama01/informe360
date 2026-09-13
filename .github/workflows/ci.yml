@@ -25,6 +25,12 @@ jobs:
           node-version: '22'
           cache: npm
 
+      - name: Test lockfile normalizer
+        run: node --test scripts/normalize-lock-registry.test.mjs
+
+      - name: Normalize lockfile registry URLs
+        run: node scripts/normalize-lock-registry.mjs
+
       - name: Install dependencies
         run: npm ci --no-audit --no-fund
 
