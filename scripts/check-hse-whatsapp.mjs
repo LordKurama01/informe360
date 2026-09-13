@@ -12,6 +12,8 @@ const requiredFiles = [
   'scripts/link-hse-whatsapp-identity.mjs',
   'database/supabase/migrations/20260913160000_hse_whatsapp_field_copilot.sql',
   'database/supabase/migrations/20260913160100_hse_whatsapp_close.sql',
+  'src/blocks/calendar/shared/CalendarPage.tsx',
+  'src/services/hse/browser.ts',
 ];
 
 for (const file of requiredFiles) await access(file);
@@ -65,6 +67,18 @@ assert.match(linkScript, /HSE_LINK_USER_EMAIL/, 'Identity linker must resolve an
 assert.match(linkScript, /HSE_LINK_WHATSAPP_ID/, 'Identity linker must require the explicit WhatsApp user id');
 assert.match(linkScript, /META_WHATSAPP_PHONE_NUMBER_ID/, 'Identity linker must scope identity to the Meta phone-number account');
 assert.doesNotMatch(linkScript, /\+549\d{6,}/, 'Identity linker must not hardcode a personal phone number');
+
+const hseBrowser = await readFile('src/services/hse/browser.ts', 'utf8');
+for (const symbol of ['HseReminder', 'getHseReminders', 'createHseReminder', 'updateHseReminderStatus']) {
+  assert.match(hseBrowser, new RegExp(`(?:type|function)\\s+${symbol}|export\\s+async\\s+function\\s+${symbol}`), `HSE browser service must expose ${symbol}`);
+}
+assert.match(hseBrowser, /from\(['"]reminders['"]\)/, 'HSE calendar must use reminders as its source of truth');
+
+const calendar = await readFile('src/blocks/calendar/shared/CalendarPage.tsx', 'utf8');
+assert.match(calendar, /getHseReminders/, 'Calendar UI must load real HSE reminders');
+assert.match(calendar, /createHseReminder/, 'Calendar UI must create reminders in the shared HSE store');
+assert.match(calendar, /updateHseReminderStatus/, 'Calendar UI must complete/cancel real reminders');
+assert.doesNotMatch(calendar, /const events\s*=\s*\[/, 'Calendar UI must not render hard-coded demo events');
 
 const env = await readFile('.env.example', 'utf8');
 for (const name of ['META_APP_SECRET', 'META_WHATSAPP_VERIFY_TOKEN', 'META_WHATSAPP_ACCESS_TOKEN', 'META_WHATSAPP_PHONE_NUMBER_ID', 'META_GRAPH_API_VERSION', 'HSE_JOBS_SECRET']) {
