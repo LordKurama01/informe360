@@ -12,9 +12,9 @@ permissions:
   contents: read
 
 jobs:
-  verify:
+  verify-web-and-mobile:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -31,8 +31,20 @@ jobs:
       - name: Normalize lockfile registry URLs
         run: node scripts/normalize-lock-registry.mjs
 
-      - name: Install dependencies
+      - name: Install web dependencies
         run: npm ci --no-audit --no-fund
 
-      - name: Run full QA
+      - name: Run web + HSE QA
         run: npm run qa
+
+      - name: Install mobile dependencies
+        working-directory: mobile
+        run: npm install --no-audit --no-fund
+
+      - name: Typecheck native mobile
+        working-directory: mobile
+        run: npm run typecheck
+
+      - name: Bundle Android pilot
+        working-directory: mobile
+        run: npx expo export --platform android --output-dir dist
