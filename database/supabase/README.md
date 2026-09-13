@@ -14,11 +14,14 @@ El proyecto Supabase histórico que utilizó Informe360 en otra cuenta/entorno y
 
 ## Migraciones
 
-La migración fundacional es:
+El historial vivo y el repo deben coincidir. Actualmente hay dos migraciones:
 
-`migrations/20260913012835_informe360_fresh_start.sql`
+1. `migrations/20260913012835_informe360_fresh_start.sql`
+   - crea la base operacional HSE Copilot, RLS y Storage privado;
+2. `migrations/20260913013947_lock_server_only_logs.sql`
+   - revoca explícitamente acceso de `anon`/`authenticated` a logs server-only y conserva `service_role`.
 
-La versión `20260913012835` coincide con el historial real registrado por Supabase. Fue aplicada durante la noche del 2026-09-12 hora Argentina (2026-09-13 UTC) y crea la base operacional para HSE Copilot:
+La primera versión fue aplicada durante la noche del 2026-09-12 hora Argentina (2026-09-13 UTC) y crea:
 
 - perfiles enlazados a `auth.users`;
 - organizaciones y membresías;
@@ -41,7 +44,7 @@ Los archivos históricos `schema.sql` y `seed_normatives.sql` fueron retirados d
 2. Toda tabla accesible por Data API debe recibir grants explícitos sólo para los roles necesarios.
 3. `SUPABASE_SERVICE_ROLE_KEY` / secret keys son exclusivamente server-side y nunca deben versionarse.
 4. El cliente usa `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`.
-5. `ai_generation_logs` y `tracking_events` son server-only: tienen RLS habilitado, no tienen políticas para `authenticated` y sólo reciben grants de `service_role`.
+5. `ai_generation_logs` y `tracking_events` son server-only: tienen RLS habilitado, no tienen políticas para `authenticated`, sus grants de cliente fueron revocados explícitamente y `service_role` conserva acceso.
 6. El bucket `hse-evidence` es privado. Los objetos deben guardarse bajo la convención `<organization_id>/...` para que las políticas de Storage puedan validar membresía.
 7. Datos de autorización viven en la base/membresías; nunca se confía en `user_metadata` para autorizar.
 
