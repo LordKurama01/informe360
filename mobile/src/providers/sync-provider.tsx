@@ -42,7 +42,7 @@ export function SyncProvider({ children }: PropsWithChildren) {
   useEffect(() => {
     if (!session) return;
     void syncNow();
-    return onNetworkAvailable(() => syncNow());
+    return onNetworkAvailable(() => { void syncNow(); });
   }, [session, syncNow]);
 
   const value = useMemo(() => ({ pendingCount, syncing, lastResult, refreshPending, syncNow }), [pendingCount, syncing, lastResult, refreshPending, syncNow]);
