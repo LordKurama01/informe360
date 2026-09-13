@@ -10,13 +10,13 @@ export function FormField({ field, value, onChange, error }: { field: HseFormFie
     <Text style={styles.label}>{field.label}{field.required ? <Text style={styles.required}> *</Text> : null}</Text>
     {field.helpText ? <Text style={styles.help}>{field.helpText}</Text> : null}
     <FieldControl field={field} value={value} onChange={onChange}/>
-    {error ? <Text style={styles.error}>{error}</Text> : null}
+    {error ? <View style={styles.errorBox}><Text style={styles.error}>{error}</Text></View> : null}
   </View>;
 }
 
 function FieldControl({ field, value, onChange }: { field: HseFormField; value: unknown; onChange(value: unknown): void }) {
   if (field.type === 'text' || field.type === 'date' || field.type === 'number') {
-    return <TextInput value={value === null || value === undefined ? '' : String(value)} onChangeText={text => onChange(field.type === 'number' ? (text === '' ? null : Number(text.replace(',', '.'))) : text)} placeholder={field.type === 'date' ? 'DD/MM/AAAA' : 'Escribir…'} keyboardType={field.type === 'number' ? 'decimal-pad' : 'default'} multiline={field.type === 'text' && field.multiline} style={[styles.input, field.type === 'text' && field.multiline ? styles.multiline : null]}/>;
+    return <TextInput value={value === null || value === undefined ? '' : String(value)} onChangeText={text => onChange(field.type === 'number' ? (text === '' ? null : Number(text.replace(',', '.'))) : text)} placeholder={field.type === 'date' ? 'DD/MM/AAAA' : 'Escribir…'} placeholderTextColor={theme.colors.muted} keyboardType={field.type === 'number' ? 'decimal-pad' : 'default'} multiline={field.type === 'text' && field.multiline} style={[styles.input, field.type === 'text' && field.multiline ? styles.multiline : null]}/>;
   }
   if (field.type === 'yes_no') return <ChoiceRow options={[['yes','Sí'],['no','No']]} value={value} onChange={onChange}/>;
   if (field.type === 'compliance') return <ChoiceRow options={[['complies','Cumple'],['non_compliant','No cumple'],['na','N/A']]} value={value} onChange={onChange}/>;
@@ -28,7 +28,7 @@ function FieldControl({ field, value, onChange }: { field: HseFormField; value: 
 }
 
 function ChoiceRow({ options, value, onChange }: { options: Array<[string,string]>; value: unknown; onChange(value: unknown): void }) { return <View style={styles.row}>{options.map(([key,label]) => <Choice key={key} label={label} active={value === key || (key === 'yes' && value === true) || (key === 'no' && value === false)} onPress={() => onChange(key)}/>)}</View>; }
-function Choice({ label, active, onPress }: { label: string; active: boolean; onPress(): void }) { return <Pressable onPress={onPress} style={[styles.choice, active && styles.choiceOn]}><Text style={[styles.choiceText, active && styles.choiceTextOn]}>{label}</Text></Pressable>; }
+function Choice({ label, active, onPress }: { label: string; active: boolean; onPress(): void }) { return <Pressable accessibilityRole="button" onPress={onPress} style={({ pressed }) => [styles.choice, active && styles.choiceOn, pressed && styles.pressed]}><Text style={[styles.choiceText, active && styles.choiceTextOn]}>{label}</Text></Pressable>; }
 
 function PhotoField({ value, onChange }: { value: unknown; onChange(value: unknown): void }) {
   const uri = typeof value === 'string' ? value : null;
@@ -38,7 +38,7 @@ function PhotoField({ value, onChange }: { value: unknown; onChange(value: unkno
     const result = await ImagePicker.launchCameraAsync({ mediaTypes: ['images'], quality: 0.65 });
     if (!result.canceled && result.assets[0]?.uri) onChange(result.assets[0].uri);
   }
-  return <View style={styles.photoWrap}>{uri ? <Image source={{ uri }} style={styles.photo}/> : null}<Pressable onPress={() => void pick()} style={styles.photoButton}><Text style={styles.photoButtonText}>{uri ? 'Reemplazar foto' : '📷 Tomar foto'}</Text></Pressable></View>;
+  return <View style={styles.photoWrap}>{uri ? <Image source={{ uri }} style={styles.photo}/> : <View style={styles.photoEmpty}><Text style={styles.photoEmptyIcon}>▣</Text><Text style={styles.photoEmptyText}>Sin foto adjunta</Text></View>}<Pressable accessibilityRole="button" onPress={() => void pick()} style={({ pressed }) => [styles.photoButton, pressed && styles.pressed]}><Text style={styles.photoButtonText}>{uri ? 'Reemplazar foto' : 'Tomar foto'}</Text></Pressable></View>;
 }
 
 function RepeaterField({ fields, value, onChange }: { fields: HseLeafField[]; value: unknown; onChange(value: unknown): void }) {
@@ -47,7 +47,40 @@ function RepeaterField({ fields, value, onChange }: { fields: HseLeafField[]; va
   const add = () => { const next=[...rows,{}]; onChange(next); setExpanded(next.length-1); };
   const update = (rowIndex:number, fieldId:string, fieldValue:unknown) => onChange(rows.map((row,index)=>index===rowIndex?{...row,[fieldId]:fieldValue}:row));
   const remove = (rowIndex:number) => onChange(rows.filter((_,index)=>index!==rowIndex));
-  return <View style={styles.repeater}>{rows.map((row,rowIndex)=><View key={rowIndex} style={styles.repeatCard}><Pressable onPress={()=>setExpanded(expanded===rowIndex?-1:rowIndex)} style={styles.repeatHeader}><Text style={styles.repeatTitle}>Paso {rowIndex+1}</Text><Text>{expanded===rowIndex?'−':'+'}</Text></Pressable>{expanded===rowIndex?<View style={styles.repeatBody}>{fields.map(nested=><FormField key={nested.id} field={nested} value={row[nested.id]} onChange={next=>update(rowIndex,nested.id,next)}/>)}<Pressable onPress={()=>remove(rowIndex)}><Text style={styles.remove}>Eliminar paso</Text></Pressable></View>:null}</View>)}<Pressable onPress={add} style={styles.add}><Text style={styles.addText}>+ Agregar paso</Text></Pressable></View>;
+  return <View style={styles.repeater}>{rows.map((row,rowIndex)=><View key={rowIndex} style={styles.repeatCard}><Pressable accessibilityRole="button" onPress={()=>setExpanded(expanded===rowIndex?-1:rowIndex)} style={styles.repeatHeader}><Text style={styles.repeatTitle}>Paso {rowIndex+1}</Text><Text style={styles.expand}>{expanded===rowIndex?'−':'+'}</Text></Pressable>{expanded===rowIndex?<View style={styles.repeatBody}>{fields.map(nested=><FormField key={nested.id} field={nested} value={row[nested.id]} onChange={next=>update(rowIndex,nested.id,next)}/>)}<Pressable accessibilityRole="button" onPress={()=>remove(rowIndex)} style={styles.removeButton}><Text style={styles.remove}>Eliminar paso</Text></Pressable></View>:null}</View>)}<Pressable accessibilityRole="button" onPress={add} style={({ pressed }) => [styles.add, pressed && styles.pressed]}><Text style={styles.addText}>＋ Agregar paso</Text></Pressable></View>;
 }
 
-const styles=StyleSheet.create({block:{gap:6},label:{fontWeight:'900',color:theme.colors.ink,fontSize:13},required:{color:theme.colors.danger},help:{fontSize:11,color:theme.colors.muted,lineHeight:16},input:{backgroundColor:'#fff',borderWidth:1,borderColor:theme.colors.line,borderRadius:12,paddingHorizontal:12,paddingVertical:11,color:theme.colors.ink},multiline:{minHeight:90,textAlignVertical:'top'},row:{flexDirection:'row',gap:7},wrap:{flexDirection:'row',flexWrap:'wrap',gap:7},choice:{flex:1,minWidth:85,paddingVertical:11,paddingHorizontal:10,borderRadius:11,borderWidth:1,borderColor:theme.colors.line,alignItems:'center',backgroundColor:'#fff'},choiceOn:{backgroundColor:theme.colors.ink,borderColor:theme.colors.ink},choiceText:{fontWeight:'800',fontSize:12,color:theme.colors.ink},choiceTextOn:{color:'#fff'},error:{color:theme.colors.danger,fontSize:11,fontWeight:'700'},photoWrap:{gap:8},photo:{height:180,borderRadius:14,backgroundColor:'#E2E8F0'},photoButton:{borderRadius:12,borderWidth:1,borderColor:theme.colors.primary,padding:11,alignItems:'center'},photoButtonText:{color:theme.colors.primary,fontWeight:'900'},repeater:{gap:9},repeatCard:{borderWidth:1,borderColor:theme.colors.line,borderRadius:14,overflow:'hidden'},repeatHeader:{padding:12,flexDirection:'row',justifyContent:'space-between',backgroundColor:'#F8FAFC'},repeatTitle:{fontWeight:'900',color:theme.colors.ink},repeatBody:{padding:12,gap:14},remove:{color:theme.colors.danger,fontWeight:'800',fontSize:12},add:{padding:11,borderWidth:1,borderStyle:'dashed',borderColor:theme.colors.primary,borderRadius:12,alignItems:'center'},addText:{color:theme.colors.primary,fontWeight:'900'}});
+const styles = StyleSheet.create({
+  block: { gap: 7 },
+  label: { fontWeight: '900', color: theme.colors.ink, fontSize: 13, lineHeight: 18 },
+  required: { color: theme.colors.danger },
+  help: { fontSize: 10, color: theme.colors.muted, lineHeight: 15 },
+  input: { minHeight: 50, backgroundColor: theme.colors.bg, borderWidth: 1, borderColor: theme.colors.line, borderRadius: theme.radius.md, paddingHorizontal: theme.spacing.md, paddingVertical: 12, color: theme.colors.ink, fontSize: 14 },
+  multiline: { minHeight: 100, textAlignVertical: 'top' },
+  row: { flexDirection: 'row', gap: 7 },
+  wrap: { flexDirection: 'row', flexWrap: 'wrap', gap: 7 },
+  choice: { flex: 1, minWidth: 88, minHeight: 48, paddingHorizontal: 10, borderRadius: theme.radius.md, borderWidth: 1, borderColor: theme.colors.line, alignItems: 'center', justifyContent: 'center', backgroundColor: theme.colors.bg },
+  choiceOn: { backgroundColor: theme.colors.dark, borderColor: theme.colors.dark },
+  choiceText: { fontWeight: '800', fontSize: 11, color: theme.colors.ink },
+  choiceTextOn: { color: theme.colors.white },
+  pressed: { opacity: 0.76, transform: [{ scale: 0.99 }] },
+  errorBox: { backgroundColor: theme.colors.dangerSoft, borderRadius: 9, paddingHorizontal: 9, paddingVertical: 6 },
+  error: { color: theme.colors.danger, fontSize: 10, fontWeight: '800' },
+  photoWrap: { gap: theme.spacing.sm },
+  photo: { height: 190, borderRadius: theme.radius.lg, backgroundColor: theme.colors.surfaceStrong },
+  photoEmpty: { height: 120, borderRadius: theme.radius.lg, backgroundColor: theme.colors.surfaceMuted, alignItems: 'center', justifyContent: 'center', gap: 4 },
+  photoEmptyIcon: { color: theme.colors.muted, fontSize: 24 },
+  photoEmptyText: { color: theme.colors.muted, fontSize: 10, fontWeight: '800' },
+  photoButton: { minHeight: 48, borderRadius: theme.radius.md, borderWidth: 1, borderColor: theme.colors.primary, alignItems: 'center', justifyContent: 'center' },
+  photoButtonText: { color: theme.colors.primary, fontWeight: '900', fontSize: 12 },
+  repeater: { gap: 9 },
+  repeatCard: { borderWidth: 1, borderColor: theme.colors.line, borderRadius: theme.radius.md, overflow: 'hidden', backgroundColor: theme.colors.bg },
+  repeatHeader: { minHeight: 48, paddingHorizontal: theme.spacing.md, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', backgroundColor: theme.colors.surfaceMuted },
+  repeatTitle: { fontWeight: '900', color: theme.colors.ink },
+  expand: { color: theme.colors.primary, fontSize: 20 },
+  repeatBody: { padding: theme.spacing.md, gap: theme.spacing.lg },
+  removeButton: { minHeight: 40, justifyContent: 'center', alignSelf: 'flex-start' },
+  remove: { color: theme.colors.danger, fontWeight: '800', fontSize: 11 },
+  add: { minHeight: 48, borderWidth: 1, borderStyle: 'dashed', borderColor: theme.colors.primary, borderRadius: theme.radius.md, alignItems: 'center', justifyContent: 'center', backgroundColor: theme.colors.primarySoft },
+  addText: { color: theme.colors.primary, fontWeight: '900', fontSize: 12 },
+});
