@@ -10,4 +10,8 @@ const missing=required.filter(file=>!fs.existsSync(path.join(root,file)));
 if(missing.length){console.error('Missing inspection files:\n'+missing.map(x=>`- ${x}`).join('\n'));process.exit(1);}
 const runPage=fs.readFileSync(path.join(root,'mobile/app/form-run/[runId].tsx'),'utf8');
 if(!runPage.includes('createFindingFromNonCompliance')){console.error('Form run must expose explicit non-compliance → finding flow');process.exit(1);}
-console.log(`Inspection/checklist structure OK (${required.length} dedicated files + finding bridge)`);
+const mobileHome=fs.readFileSync(path.join(root,'mobile/app/(tabs)/index.tsx'),'utf8');
+if(!mobileHome.includes("router.push('/inspections')")){console.error('Mobile Home must link directly to /inspections');process.exit(1);}
+const desktop=fs.readFileSync(path.join(root,'src/blocks/hse-control/HseControl.tsx'),'utf8');
+if(!desktop.includes('href="/app/hse/inspections"')||!desktop.includes('href="/app/hse/forms"')){console.error('HSE Control must link to inspections and form templates');process.exit(1);}
+console.log(`Inspection/checklist structure OK (${required.length} dedicated files + finding bridge + navigation)`);
