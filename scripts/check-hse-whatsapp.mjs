@@ -14,6 +14,7 @@ const requiredFiles = [
   'database/supabase/migrations/20260913160100_hse_whatsapp_close.sql',
   'database/supabase/migrations/20260913170000_hse_reminder_completed_status.sql',
   'database/supabase/migrations/20260913170100_hse_whatsapp_reminder_scheduler.sql',
+  'database/supabase/migrations/20260913170200_harden_pg_net_extension.sql',
   'src/blocks/calendar/shared/CalendarPage.tsx',
   'src/services/hse/browser.ts',
 ];
@@ -74,6 +75,11 @@ assert.match(schedulerMigration, /vault\.decrypted_secrets/i, 'Scheduler must lo
 assert.match(schedulerMigration, /cron\.schedule/i, 'Scheduler must register a recurring job');
 assert.match(schedulerMigration, /api\/hse\/jobs\/whatsapp-reminders/i, 'Scheduler must call the protected HSE reminder endpoint');
 assert.doesNotMatch(schedulerMigration, /3x6mlZEQ|Bearer\s+[A-Za-z0-9_-]{20,}/, 'Scheduler migration must never hardcode the actual job secret');
+
+const pgNetHardening = await readFile('database/supabase/migrations/20260913170200_harden_pg_net_extension.sql', 'utf8');
+assert.match(pgNetHardening, /drop extension if exists pg_net/i, 'pg_net hardening must reinstall the extension from a clean state');
+assert.match(pgNetHardening, /create extension pg_net\s+with schema extensions/i, 'pg_net must live in the extensions schema');
+assert.doesNotMatch(pgNetHardening, /create extension pg_net\s*;/i, 'pg_net hardening must not reinstall into public');
 
 const linkScript = await readFile('scripts/link-hse-whatsapp-identity.mjs', 'utf8');
 assert.match(linkScript, /HSE_LINK_USER_EMAIL/, 'Identity linker must resolve an explicit HSE user');
