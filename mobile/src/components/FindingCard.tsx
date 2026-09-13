@@ -3,27 +3,46 @@ import { theme } from '../theme';
 import type { Finding, Priority } from '../types/hse';
 
 const priorityLabel: Record<Priority, string> = { low: 'BAJA', medium: 'MEDIA', high: 'ALTA', urgent: 'URGENTE' };
-const priorityTone: Record<Priority, string> = { low: '#64748B', medium: '#2563EB', high: '#D97706', urgent: '#DC2626' };
+const priorityTone: Record<Priority, string> = { low: theme.colors.muted, medium: theme.colors.info, high: theme.colors.warning, urgent: theme.colors.danger };
 
 export function FindingCard({ finding, onPress }: { finding: Finding; onPress: () => void }) {
   const overdue = !['closed', 'cancelled'].includes(finding.status) && Boolean(finding.due_at && new Date(finding.due_at).getTime() < Date.now());
-  return <Pressable onPress={onPress} style={styles.card}>
-    <View style={styles.topRow}>
-      <View style={styles.identity}><Text style={styles.code}>{finding.code}</Text><View style={[styles.priorityDot, { backgroundColor: priorityTone[finding.priority] }]}/><Text style={[styles.priority, { color: priorityTone[finding.priority] }]}>{priorityLabel[finding.priority]}</Text></View>
-      <Text style={[styles.status, overdue && styles.overdue]}>{overdue ? 'VENCIDO' : finding.status === 'in_progress' ? 'EN CURSO' : finding.status === 'closed' ? 'CERRADO' : 'ABIERTO'}</Text>
-    </View>
-    <Text style={styles.title}>{finding.title}</Text>
-    <Text style={styles.meta}>{finding.location_text || finding.element_text || finding.category || 'Sin ubicación definida'}</Text>
-    <View style={styles.footer}>
-      <Text style={styles.footerText}>{finding.responsible_text || 'Sin responsable'}</Text>
-      <Text style={styles.footerText}>{finding.due_at ? new Date(finding.due_at).toLocaleDateString('es-AR') : 'Sin vencimiento'}</Text>
+  const status = overdue ? 'VENCIDO' : finding.status === 'in_progress' ? 'EN CURSO' : finding.status === 'closed' ? 'CERRADO' : 'ABIERTO';
+  const statusTone = overdue ? theme.colors.danger : finding.status === 'closed' ? theme.colors.success : theme.colors.primary;
+  const statusBg = overdue ? theme.colors.dangerSoft : finding.status === 'closed' ? theme.colors.successSoft : theme.colors.primarySoft;
+  return <Pressable accessibilityRole="button" onPress={onPress} style={({ pressed }) => [styles.card, pressed && styles.pressed]}>
+    <View style={[styles.riskBar, { backgroundColor: priorityTone[finding.priority] }]}/>
+    <View style={styles.body}>
+      <View style={styles.topRow}>
+        <View style={styles.identity}><Text style={styles.code}>{finding.code}</Text><Text style={[styles.priority, { color: priorityTone[finding.priority] }]}>{priorityLabel[finding.priority]}</Text></View>
+        <Text style={[styles.status, { color: statusTone, backgroundColor: statusBg }]}>{status}</Text>
+      </View>
+      <Text style={styles.title}>{finding.title}</Text>
+      <Text numberOfLines={1} style={styles.meta}>{finding.location_text || finding.element_text || finding.category || 'Sin ubicación definida'}</Text>
+      <View style={styles.footer}>
+        <View style={styles.footerItem}><Text style={styles.footerKey}>RESP.</Text><Text numberOfLines={1} style={styles.footerText}>{finding.responsible_text || 'Sin asignar'}</Text></View>
+        <View style={[styles.footerItem, styles.footerRight]}><Text style={styles.footerKey}>VENCE</Text><Text style={[styles.footerText, overdue && styles.footerDanger]}>{finding.due_at ? new Date(finding.due_at).toLocaleDateString('es-AR') : 'Sin fecha'}</Text></View>
+      </View>
     </View>
   </Pressable>;
 }
 
 const styles = StyleSheet.create({
-  card: { backgroundColor: theme.colors.surface, padding: 16, borderRadius: 18, gap: 8, borderWidth: 1, borderColor: theme.colors.line, shadowColor: '#0F172A', shadowOpacity: 0.04, shadowRadius: 12, shadowOffset: { width: 0, height: 6 }, elevation: 1 },
-  topRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: 8 }, identity: { flexDirection: 'row', alignItems: 'center', gap: 6 }, code: { color: theme.colors.ink, fontSize: 11, fontWeight: '900', letterSpacing: 0.4 }, priorityDot: { width: 7, height: 7, borderRadius: 4 }, priority: { fontSize: 9, fontWeight: '900', letterSpacing: 0.8 },
-  status: { fontSize: 9, fontWeight: '900', color: theme.colors.primary, backgroundColor: '#CCFBF1', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 999 }, overdue: { color: theme.colors.danger, backgroundColor: '#FEE2E2' },
-  title: { color: theme.colors.ink, fontWeight: '900', fontSize: 16, lineHeight: 21 }, meta: { color: theme.colors.muted, fontSize: 13 }, footer: { flexDirection: 'row', justifyContent: 'space-between', gap: 8, borderTopWidth: 1, borderTopColor: theme.colors.line, paddingTop: 9, marginTop: 2 }, footerText: { color: theme.colors.muted, fontSize: 11, fontWeight: '700' },
+  card: { flexDirection: 'row', overflow: 'hidden', backgroundColor: theme.colors.surface, borderRadius: theme.radius.lg, borderWidth: 1, borderColor: theme.colors.line, ...theme.shadow.card },
+  riskBar: { width: 5 },
+  body: { flex: 1, padding: theme.spacing.lg, gap: 7 },
+  pressed: { opacity: 0.8, transform: [{ scale: 0.995 }] },
+  topRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: theme.spacing.sm },
+  identity: { flexDirection: 'row', alignItems: 'center', gap: theme.spacing.sm },
+  code: { color: theme.colors.inkSoft, fontSize: 10, fontWeight: '900', letterSpacing: 0.5 },
+  priority: { fontSize: 9, fontWeight: '900', letterSpacing: 0.8 },
+  status: { fontSize: 9, fontWeight: '900', paddingHorizontal: 9, paddingVertical: 5, borderRadius: theme.radius.pill },
+  title: { color: theme.colors.ink, fontWeight: '900', fontSize: 16, lineHeight: 21 },
+  meta: { color: theme.colors.muted, fontSize: 12, lineHeight: 17 },
+  footer: { flexDirection: 'row', gap: theme.spacing.md, borderTopWidth: 1, borderTopColor: theme.colors.line, paddingTop: theme.spacing.sm, marginTop: 2 },
+  footerItem: { flex: 1, gap: 2 },
+  footerRight: { alignItems: 'flex-end' },
+  footerKey: { color: theme.colors.muted, fontSize: 8, fontWeight: '900', letterSpacing: 0.8 },
+  footerText: { color: theme.colors.inkSoft, fontSize: 11, fontWeight: '800' },
+  footerDanger: { color: theme.colors.danger },
 });
