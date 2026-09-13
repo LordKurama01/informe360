@@ -16,9 +16,9 @@ El proyecto Supabase histórico que utilizó Informe360 en otra cuenta/entorno y
 
 La migración fundacional es:
 
-`migrations/20260912_informe360_fresh_start.sql`
+`migrations/20260913012835_informe360_fresh_start.sql`
 
-Fue aplicada al proyecto vivo el 2026-09-12 y crea la base operacional para HSE Copilot:
+La versión `20260913012835` coincide con el historial real registrado por Supabase. Fue aplicada durante la noche del 2026-09-12 hora Argentina (2026-09-13 UTC) y crea la base operacional para HSE Copilot:
 
 - perfiles enlazados a `auth.users`;
 - organizaciones y membresías;
