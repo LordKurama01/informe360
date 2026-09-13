@@ -46,15 +46,16 @@ export default function ReviewDraft() {
 
   if (!pending) return <Screen><Text style={styles.title}>No hay borrador</Text><PrimaryButton title="Volver" onPress={() => router.replace('/(tabs)')}/></Screen>;
 
-  const draft = pending.draft;
-  const update = (key: keyof typeof draft, value: unknown) => setPending(current => current ? { ...current, draft: { ...current.draft, [key]: value } } : current);
+  const current = pending;
+  const draft = current.draft;
+  const update = (key: keyof typeof draft, value: unknown) => setPending(valueCurrent => valueCurrent ? { ...valueCurrent, draft: { ...valueCurrent.draft, [key]: value } } : valueCurrent);
 
   async function save() {
-    if (!pending.draft.title.trim()) return Alert.alert('Falta el título', 'Describí brevemente el hallazgo.');
+    if (!current.draft.title.trim()) return Alert.alert('Falta el título', 'Describí brevemente el hallazgo.');
     setBusy(true);
     try {
-      const id = await createFindingBundle(pending.fieldEntryId, pending.draft, dueAt, priority);
-      await scheduleFindingReminder(id, pending.draft.title, dueAt);
+      const id = await createFindingBundle(current.fieldEntryId, current.draft, dueAt, priority);
+      await scheduleFindingReminder(id, current.draft.title, dueAt);
       await clearPendingDraft();
       router.replace(`/finding/${id}`);
     } catch (error) {
@@ -71,7 +72,7 @@ export default function ReviewDraft() {
   }
 
   return <Screen>
-    <Text style={styles.kicker}>REVISIÓN HUMANA · {pending.provider.toUpperCase()}</Text>
+    <Text style={styles.kicker}>REVISIÓN HUMANA · {current.provider.toUpperCase()}</Text>
     <Text style={styles.title}>Confirmá antes de guardar</Text>
     <Text style={styles.intro}>La captura original no se modifica. Corregí cualquier interpretación de la IA antes de convertirla en un hallazgo oficial.</Text>
 
