@@ -1,6 +1,6 @@
 {
   "name": "informe360-ai-agent-xprize",
-  "version": "4.1.0-hse-copilot",
+  "version": "4.2.0-hse-forms",
   "private": true,
   "scripts": {
     "dev": "next dev",
@@ -9,10 +9,11 @@
     "lint": "eslint . --max-warnings=0",
     "typecheck": "tsc --noEmit",
     "test:structure": "node scripts/check-structure.mjs",
-    "test:hse": "node --test src/shared/hse/*.test.mjs src/services/ai/hse/*.test.mjs",
+    "test:hse": "node --test src/shared/hse/*.test.mjs src/shared/hse/forms/*.test.mjs src/services/ai/hse/*.test.mjs",
+    "test:forms": "node scripts/check-dynamic-forms.mjs",
     "test:mobile:structure": "node scripts/check-mobile-p0.mjs",
     "evidence:init": "node scripts/init-evidence.mjs",
-    "qa": "npm run test:structure && npm run test:hse && npm run test:mobile:structure && npm run typecheck && npm run lint && npm run build"
+    "qa": "npm run test:structure && npm run test:hse && npm run test:forms && npm run test:mobile:structure && npm run typecheck && npm run lint && npm run build"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.45.4",
