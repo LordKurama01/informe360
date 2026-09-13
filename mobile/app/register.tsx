@@ -3,6 +3,7 @@ import { Alert, Pressable, StyleSheet, Text, TextInput, View } from 'react-nativ
 import { router, useLocalSearchParams } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
 import { AudioModule, RecordingPresets, setAudioModeAsync, useAudioRecorder, useAudioRecorderState } from 'expo-audio';
+import { FieldHeader } from '../src/components/FieldHeader';
 import { Screen } from '../src/components/Screen';
 import { PrimaryButton } from '../src/components/PrimaryButton';
 import { useWorkspace } from '../src/providers/workspace-provider';
@@ -18,6 +19,12 @@ type Mode = 'text' | 'audio' | 'photo';
 
 function captureId() { return `cap-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`; }
 function validMode(value?: string): Mode { return value === 'audio' || value === 'photo' ? value : 'text'; }
+
+const modeCopy: Record<Mode, { title: string; hint: string }> = {
+  audio: { title: 'Contalo hablando', hint: 'Ideal para recorridas. Grabá lo que ves sin frenar la tarea.' },
+  photo: { title: 'Documentalo con una foto', hint: 'Capturá la condición y agregá contexto si hace falta.' },
+  text: { title: 'Escribilo en una frase', hint: 'Lugar, problema, responsable y fecha pueden ir juntos.' },
+};
 
 export default function Register() {
   const params = useLocalSearchParams<{ mode?: string }>();
@@ -100,16 +107,68 @@ export default function Register() {
   }
 
   return <Screen>
-    <View style={styles.head}><Pressable onPress={() => router.back()}><Text style={styles.back}>‹ Volver</Text></Pressable><Text style={styles.eyebrow}>CAPTURA DE CAMPO</Text><Text style={styles.title}>Registrar hallazgo</Text><Text style={styles.subtitle}>La captura original se conserva. La IA ayuda a estructurar; vos confirmás antes de crear el hallazgo.</Text></View>
-    <View style={styles.switch}>{(['text', 'audio', 'photo'] as Mode[]).map(item => <Pressable key={item} onPress={() => setMode(item)} style={[styles.mode, mode === item && styles.modeOn]}><Text style={[styles.modeText, mode === item && styles.modeTextOn]}>{item === 'text' ? '✍️ Texto' : item === 'audio' ? '🎙️ Voz' : '📷 Foto'}</Text></Pressable>)}</View>
-    {mode === 'text' ? <><Text style={styles.label}>Contalo como lo dirías normalmente. Lugar, problema, responsable y fecha pueden ir en una sola frase.</Text><TextInput multiline placeholder="Ej.: Sala de bombas. Hay una pérdida en la manguera hidráulica. Que mantenimiento la revise mañana." value={text} onChangeText={setText} style={styles.textarea}/><PrimaryButton title="Revisar hallazgo" busy={busy} onPress={() => void processText()}/></> : null}
-    {mode === 'audio' ? <View style={styles.center}><Pressable onPress={() => void toggleAudio()} style={[styles.audio, recorderState.isRecording && styles.recording]}><Text style={styles.audioIcon}>{recorderState.isRecording ? '■' : '🎙️'}</Text></Pressable><Text style={styles.audioTitle}>{recorderState.isRecording ? 'Grabando… tocá para terminar' : 'Tocá y hablá'}</Text><Text style={styles.label}>{recorderState.isRecording ? `${Math.round(recorderState.durationMillis / 1000)} s` : 'El audio queda guardado incluso si perdés conexión.'}</Text></View> : null}
-    {mode === 'photo' ? <><Text style={styles.label}>Agregá una nota opcional y sacá la foto. Se comprime antes de subir para ahorrar datos sin perder detalle operativo.</Text><TextInput multiline placeholder="Ej.: etiqueta ilegible del matafuego del taller" value={text} onChangeText={setText} style={styles.textarea}/><PrimaryButton title="Abrir cámara" busy={busy} onPress={() => void pickPhoto()}/></> : null}
+    <Pressable accessibilityRole="button" onPress={() => router.back()} style={styles.backButton}><Text style={styles.back}>‹ Volver</Text></Pressable>
+    <FieldHeader kicker="CAPTURA DE CAMPO" title={modeCopy[mode].title} subtitle={modeCopy[mode].hint}/>
+
+    <View style={styles.switch}>{(['audio', 'photo', 'text'] as Mode[]).map(item => <Pressable accessibilityRole="button" key={item} onPress={() => setMode(item)} style={[styles.mode, mode === item && styles.modeOn]}><Text style={[styles.modeIcon, mode === item && styles.modeIconOn]}>{item === 'audio' ? '●' : item === 'photo' ? '▣' : 'T'}</Text><Text style={[styles.modeText, mode === item && styles.modeTextOn]}>{item === 'audio' ? 'Voz' : item === 'photo' ? 'Foto' : 'Texto'}</Text></Pressable>)}</View>
+
+    {mode === 'text' ? <View style={styles.panel}>
+      <Text style={styles.label}>Describí el hallazgo como lo dirías normalmente.</Text>
+      <TextInput multiline placeholder="Ej.: Sala de bombas. Hay una pérdida en la manguera hidráulica. Que mantenimiento la revise mañana." placeholderTextColor={theme.colors.muted} value={text} onChangeText={setText} style={styles.textarea}/>
+      <PrimaryButton title="Revisar hallazgo" busy={busy} onPress={() => void processText()}/>
+    </View> : null}
+
+    {mode === 'audio' ? <View style={styles.audioPanel}>
+      <View style={[styles.recordState, recorderState.isRecording && styles.recordStateOn]}><View style={[styles.recordDot, recorderState.isRecording && styles.recordDotOn]}/><Text style={[styles.recordStateText, recorderState.isRecording && styles.recordStateTextOn]}>{recorderState.isRecording ? 'GRABANDO' : 'LISTO PARA GRABAR'}</Text></View>
+      <Pressable accessibilityRole="button" onPress={() => void toggleAudio()} disabled={busy} style={({ pressed }) => [styles.audio, recorderState.isRecording && styles.recording, (pressed || busy) && styles.pressed]}><Text style={styles.audioIcon}>{recorderState.isRecording ? '■' : '●'}</Text></Pressable>
+      <Text style={styles.audioTitle}>{recorderState.isRecording ? 'Tocá para terminar' : 'Tocá y hablá'}</Text>
+      <Text style={styles.audioHelp}>{recorderState.isRecording ? `${Math.round(recorderState.durationMillis / 1000)} segundos` : 'El audio queda guardado incluso si perdés conexión.'}</Text>
+      {busy ? <Text style={styles.processing}>Procesando captura…</Text> : null}
+    </View> : null}
+
+    {mode === 'photo' ? <View style={styles.panel}>
+      <View style={styles.photoHint}><View style={styles.photoIcon}><Text style={styles.photoIconText}>▣</Text></View><Text style={styles.photoHintText}>La foto se comprime antes de subir para ahorrar datos sin perder detalle operativo.</Text></View>
+      <Text style={styles.label}>Nota opcional</Text>
+      <TextInput multiline placeholder="Ej.: etiqueta ilegible del matafuego del taller" placeholderTextColor={theme.colors.muted} value={text} onChangeText={setText} style={styles.textarea}/>
+      <PrimaryButton title="Abrir cámara" busy={busy} onPress={() => void pickPhoto()}/>
+    </View> : null}
+
+    <View style={styles.safety}><View style={styles.safetyDot}/><Text style={styles.safetyText}>La captura original se conserva. La IA estructura y vos confirmás antes de crear el hallazgo.</Text></View>
   </Screen>;
 }
 
 const styles = StyleSheet.create({
-  head: { gap: 6 }, back: { color: theme.colors.primary, fontWeight: '800' }, eyebrow: { color: theme.colors.primary, fontWeight: '900', letterSpacing: 1.6, fontSize: 10, marginTop: 4 }, title: { fontSize: 32, fontWeight: '900', color: theme.colors.ink }, subtitle: { color: theme.colors.muted, lineHeight: 20 },
-  switch: { flexDirection: 'row', gap: 8 }, mode: { flex: 1, paddingVertical: 12, borderRadius: 13, backgroundColor: '#fff', borderWidth: 1, borderColor: theme.colors.line, alignItems: 'center' }, modeOn: { backgroundColor: theme.colors.primary, borderColor: theme.colors.primary }, modeText: { fontWeight: '800', color: theme.colors.muted, fontSize: 12 }, modeTextOn: { color: '#fff' },
-  label: { color: theme.colors.muted, lineHeight: 20 }, textarea: { minHeight: 150, backgroundColor: '#fff', borderWidth: 1, borderColor: theme.colors.line, borderRadius: 16, padding: 15, textAlignVertical: 'top', fontSize: 16 }, center: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 16 }, audio: { width: 156, height: 156, borderRadius: 78, backgroundColor: theme.colors.primary, alignItems: 'center', justifyContent: 'center', shadowColor: '#000', shadowOpacity: 0.14, shadowRadius: 18, shadowOffset: { width: 0, height: 8 }, elevation: 6 }, recording: { backgroundColor: theme.colors.danger }, audioIcon: { fontSize: 48, color: '#fff' }, audioTitle: { fontSize: 20, fontWeight: '900', color: theme.colors.ink },
+  backButton: { alignSelf: 'flex-start', minHeight: 42, justifyContent: 'center' },
+  back: { color: theme.colors.primary, fontWeight: '900' },
+  switch: { flexDirection: 'row', gap: theme.spacing.sm, backgroundColor: theme.colors.surfaceMuted, borderRadius: theme.radius.lg, padding: 5 },
+  mode: { flex: 1, minHeight: 56, borderRadius: theme.radius.md, alignItems: 'center', justifyContent: 'center', gap: 2 },
+  modeOn: { backgroundColor: theme.colors.surface, ...theme.shadow.card },
+  modeIcon: { color: theme.colors.muted, fontSize: 13, fontWeight: '900' },
+  modeIconOn: { color: theme.colors.primary },
+  modeText: { color: theme.colors.muted, fontWeight: '800', fontSize: 10 },
+  modeTextOn: { color: theme.colors.ink },
+  panel: { backgroundColor: theme.colors.surface, borderWidth: 1, borderColor: theme.colors.line, borderRadius: theme.radius.xl, padding: theme.spacing.lg, gap: theme.spacing.md, ...theme.shadow.card },
+  label: { color: theme.colors.inkSoft, fontSize: 12, lineHeight: 18, fontWeight: '800' },
+  textarea: { minHeight: 150, backgroundColor: theme.colors.bg, borderWidth: 1, borderColor: theme.colors.line, borderRadius: theme.radius.md, padding: theme.spacing.lg, textAlignVertical: 'top', fontSize: 15, lineHeight: 21, color: theme.colors.ink },
+  audioPanel: { minHeight: 360, alignItems: 'center', justifyContent: 'center', backgroundColor: theme.colors.surface, borderWidth: 1, borderColor: theme.colors.line, borderRadius: theme.radius.xl, padding: theme.spacing.xl, gap: theme.spacing.md, ...theme.shadow.card },
+  recordState: { flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: theme.colors.surfaceMuted, borderRadius: theme.radius.pill, paddingHorizontal: 10, paddingVertical: 6 },
+  recordStateOn: { backgroundColor: theme.colors.dangerSoft },
+  recordDot: { width: 7, height: 7, borderRadius: 4, backgroundColor: theme.colors.muted },
+  recordDotOn: { backgroundColor: theme.colors.danger },
+  recordStateText: { color: theme.colors.muted, fontSize: 9, fontWeight: '900', letterSpacing: 0.8 },
+  recordStateTextOn: { color: theme.colors.danger },
+  audio: { width: 154, height: 154, borderRadius: 77, backgroundColor: theme.colors.primary, borderWidth: 12, borderColor: theme.colors.primarySoft, alignItems: 'center', justifyContent: 'center', ...theme.shadow.raised },
+  recording: { backgroundColor: theme.colors.danger, borderColor: theme.colors.dangerSoft },
+  pressed: { opacity: 0.75, transform: [{ scale: 0.98 }] },
+  audioIcon: { fontSize: 45, color: theme.colors.white },
+  audioTitle: { fontSize: 20, fontWeight: '900', color: theme.colors.ink },
+  audioHelp: { color: theme.colors.muted, lineHeight: 18, fontSize: 12, textAlign: 'center' },
+  processing: { color: theme.colors.primary, fontSize: 11, fontWeight: '900' },
+  photoHint: { flexDirection: 'row', gap: 10, alignItems: 'center', backgroundColor: theme.colors.primarySoft, borderRadius: theme.radius.md, padding: theme.spacing.md },
+  photoIcon: { width: 34, height: 34, borderRadius: 11, backgroundColor: 'rgba(11,111,103,0.1)', alignItems: 'center', justifyContent: 'center' },
+  photoIconText: { color: theme.colors.primary, fontWeight: '900' },
+  photoHintText: { flex: 1, color: theme.colors.primaryDark, fontSize: 11, lineHeight: 16 },
+  safety: { flexDirection: 'row', gap: 8, alignItems: 'flex-start', paddingHorizontal: theme.spacing.sm },
+  safetyDot: { width: 7, height: 7, borderRadius: 4, backgroundColor: theme.colors.success, marginTop: 5 },
+  safetyText: { flex: 1, color: theme.colors.muted, fontSize: 10, lineHeight: 15 },
 });
