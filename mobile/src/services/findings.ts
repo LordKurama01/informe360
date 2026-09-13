@@ -59,8 +59,17 @@ export async function getFindingBundle(id: string): Promise<FindingBundle> {
   return { finding: findingResult.data as Finding, actions: actionsResult.data || [], evidence: evidenceResult.data || [], events: eventsResult.data || [] } as FindingBundle;
 }
 
-export async function closeFinding(finding: Finding, comment: string) { const uid = await userId(); const { error } = await supabase.from('findings').update({ status: 'closed', closed_at: new Date().toISOString(), closed_by: uid, closure_comment: comment.trim() || null }).eq('id', finding.id).eq('version', finding.version); if (error) throw error; }
-export async function reopenFinding(finding: Finding) { const { error } = await supabase.from('findings').update({ status: 'open', closed_at: null, closed_by: null, closure_comment: null }).eq('id', finding.id).eq('version', finding.version); if (error) throw error; }
+export async function closeFinding(finding: Finding, comment: string) {
+  const { data, error } = await supabase.rpc('close_finding', { p_finding_id: finding.id, p_expected_version: finding.version, p_comment: comment });
+  if (error) throw error;
+  return data as number;
+}
+
+export async function reopenFinding(finding: Finding) {
+  const { data, error } = await supabase.rpc('reopen_finding', { p_finding_id: finding.id, p_expected_version: finding.version });
+  if (error) throw error;
+  return data as number;
+}
 
 export async function addEvidence(workspace: Workspace, findingId: string, upload: { path: string; fileName: string; byteSize: number }, mimeType: string, phase: EvidencePhase = 'supporting') { const uid = await userId(); const { error } = await supabase.from('evidence_files').insert({ organization_id: workspace.organizationId, finding_id: findingId, storage_bucket: 'hse-evidence', storage_path: upload.path, file_name: upload.fileName, mime_type: mimeType, byte_size: upload.byteSize, uploaded_by: uid, phase }); if (error) throw error; }
 
