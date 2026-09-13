@@ -15,10 +15,11 @@ for (const file of requiredFiles) await access(file);
 
 const route = await readFile('src/app/api/hse/channels/whatsapp/route.ts', 'utf8');
 assert.match(route, /X-Hub-Signature-256/i, 'WhatsApp webhook must verify the Meta HMAC signature');
-assert.match(route, /hub\.verify_token|verify_token/i, 'WhatsApp webhook must implement Meta challenge verification');
+assert.match(route, /verifyMetaChallenge/, 'WhatsApp webhook must call the Meta challenge verifier');
 assert.match(route, /request\.text\(\)/, 'Webhook signature verification must use the raw request body');
 
 const adapter = await readFile('src/services/hse/channels/meta-whatsapp.ts', 'utf8');
+assert.match(adapter, /hub\.verify_token/, 'Meta adapter must compare hub.verify_token');
 assert.match(adapter, /createHmac\(['"]sha256['"]/, 'Meta adapter must verify SHA-256 signatures');
 assert.match(adapter, /messageType === ['"]audio['"]|['"]audio['"]/, 'Meta adapter must support WhatsApp audio');
 assert.match(adapter, /messageType === ['"]image['"]|['"]image['"]/, 'Meta adapter must support WhatsApp images');
