@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams } from 'expo-router';
+import { useWorkspace } from '../../src/providers/workspace-provider';
 import { getPublishedTemplate, startFormRun } from '../../src/services/forms';
 import type { FormTemplateSummary } from '../../src/types/forms';
 import { theme } from '../../src/theme';
@@ -59,8 +60,6 @@ export default function FormTemplatePage() {
 function Meta({ value, label }: { value: number; label: string }) {
   return <View style={styles.metaItem}><Text style={styles.metaValue}>{value}</Text><Text style={styles.metaLabel}>{label}</Text></View>;
 }
-
-import { useWorkspace } from '../../src/providers/workspace-provider';
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: theme.colors.bg },
