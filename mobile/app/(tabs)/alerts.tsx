@@ -5,13 +5,15 @@ import { useWorkspace } from '../../src/providers/workspace-provider';
 import { listPendingReminders } from '../../src/services/findings';
 import { theme } from '../../src/theme';
 
-type ReminderRow = { id:string; scheduled_for:string; status:string; finding_id:string|null; findings:{title:string;code:string}|null };
+type ReminderFinding = { title:string; code:string };
+type ReminderRow = { id:string; scheduled_for:string; status:string; finding_id:string|null; findings:ReminderFinding|null };
+type RawReminderRow = Omit<ReminderRow,'findings'> & { findings:ReminderFinding|ReminderFinding[]|null };
 
 export default function Alerts(){
   const{workspace}=useWorkspace();
   const[items,setItems]=useState<ReminderRow[]>([]);
   const[busy,setBusy]=useState(false);
-  const load=useCallback(async()=>{if(!workspace)return;setBusy(true);try{setItems(await listPendingReminders(workspace) as ReminderRow[]);}finally{setBusy(false)}},[workspace]);
+  const load=useCallback(async()=>{if(!workspace)return;setBusy(true);try{const raw=await listPendingReminders(workspace) as unknown as RawReminderRow[];setItems(raw.map(item=>({...item,findings:Array.isArray(item.findings)?item.findings[0]||null:item.findings})));}finally{setBusy(false)}},[workspace]);
   useEffect(()=>{void load()},[load]);
   const grouped=useMemo(()=>{const now=Date.now(), day=86400000;return {overdue:items.filter(i=>new Date(i.scheduled_for).getTime()<now),today:items.filter(i=>{const t=new Date(i.scheduled_for).getTime();return t>=now&&t<now+day}),later:items.filter(i=>new Date(i.scheduled_for).getTime()>=now+day)}},[items]);
   return <View style={styles.safe}><ScrollView refreshControl={<RefreshControl refreshing={busy} onRefresh={load}/>} contentContainerStyle={styles.content}>
