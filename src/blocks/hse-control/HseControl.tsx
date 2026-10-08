@@ -12,6 +12,7 @@ const emptySummary: HseSummary = { open:0, overdue:0, dueNext7Days:0, closed:0, 
 
 export function HseControl({ mode = 'overview' }: { mode?: 'overview' | 'reports' }) {
   const [booting, setBooting] = useState(true);
+  const [showSlowBoot, setShowSlowBoot] = useState(false);
   const [dataStatus, setDataStatus] = useState<HseDataStatus>('loading');
   const [signedIn, setSignedIn] = useState(false);
   const [workspace, setWorkspace] = useState<HseWorkspace|null>(null);
@@ -60,6 +61,14 @@ export function HseControl({ mode = 'overview' }: { mode?: 'overview' | 'reports
 
   useEffect(() => { const timer=setTimeout(() => void loadWorkspace().catch(handleLoadError), query ? 250 : 0); return () => clearTimeout(timer); }, [loadWorkspace, query, handleLoadError]);
 
+  // Fast route transitions must not flash a full-screen login-like loading page.
+  // Only render a subtle dashboard-shaped skeleton when the first request is slow.
+  useEffect(() => {
+    if (!booting) return;
+    const timer = window.setTimeout(() => setShowSlowBoot(true), 320);
+    return () => window.clearTimeout(timer);
+  }, [booting]);
+
   const visible = useMemo(() => {
     const next7=nowMs+7*86400000;
     if(filter==='closed') return findings.filter(f=>f.status==='closed');
@@ -94,7 +103,19 @@ export function HseControl({ mode = 'overview' }: { mode?: 'overview' | 'reports
     finally{setBusy(false);}
   }
 
-  if(booting)return <main className={styles.authShell}><section className={styles.authVisual}><Brand variant="onDark"/><div className={styles.authPitch}><span className={styles.eyebrowLight}>HSE COPILOT</span><h1>Preparando tu espacio operativo.</h1><p>Sincronizando organización, hallazgos y permisos.</p></div></section><section className={styles.authPanel}><div className={styles.loadingCard}><div className={styles.loadingLine}/><div className={styles.loadingLineShort}/><span>Conectando con Informe360…</span></div></section></main>;
+  if(booting)return <main className={styles.bootFrame} aria-label="Cargando espacio operativo">
+    {showSlowBoot ? <>
+      <aside className={styles.bootAside} aria-hidden="true">
+        <div className={styles.bootLogo}/><div className={styles.bootNavLine}/><div className={styles.bootNavLine}/><div className={styles.bootNavLine}/>
+      </aside>
+      <section className={styles.bootMain} role="status" aria-live="polite">
+        <div className={styles.bootHeaderLine}/>
+        <div className={styles.bootHero}/>
+        <div className={styles.bootCards}><div/><div/><div/></div>
+        <span className={styles.bootCaption}>Preparando tu espacio de trabajo…</span>
+      </section>
+    </> : null}
+  </main>;
 
   if(!signedIn)return <main className={styles.authShell}>
     <section className={styles.authVisual}>
