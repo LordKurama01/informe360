@@ -115,3 +115,11 @@ La E1 se ejecuta aisladamente en `feat/hse-e1-offline-resilience-2026-10-08` con
 - **Alcance de este bloque:** código y assets de la rama QA + documentación. Sin cambios de Supabase productivo ni de Render producción.
 - **Riesgos conocidos:** 28 advisories npm móviles pendientes de triage; build físico Android/iOS aún no ejecutado; job WhatsApp registró un 503 histórico que requiere revalidación separada.
 - **Criterio de cierre:** `npm run qa` + TypeScript móvil + Expo Web export en Render QA, verificación de assets nativos decodificables y smoke de rutas críticas. Si alguno falla, no promover.
+
+### Resultado del hardening
+- **Rama candidata:** `fix/hse-release-hardening-2026-10-08` sobre E1 QA; PR #4 abierto contra `feat/hse-e1-offline-resilience-2026-10-08`.
+- **Render QA aislado:** servicio `informe360-hse-hardening-qa` (`srv-db3hgrtg1s2s73ag2jdg`), deploy `dep-db3hgs5g1s2s73ag2ju0`, commit funcional `1168c390f97829798164fc9b5e0d155c7e906e69`: **BUILD SUCCEEDED / DEPLOY SUCCEEDED**.
+- **QA comprobada:** branding web, landing HSE, estructura/UI móvil, assets PNG nativos, login, onboarding, TypeScript web/móvil, ESLint, build Next y export Expo Web: **PASS**.
+- **Correcciones verificadas:** landing desktop/móvil usa marca HSE en vez del bloque genérico “360”; login/onboarding comparten paleta industrial; los tres PNG nativos son decodificables, cuadrados y >=512 px.
+- **No cerrado todavía:** 28 advisories npm móviles (10 moderate, 18 high), QA Android/iOS físico, RLS negativa multi-organización y revalidación del job WhatsApp. No usar `npm audit fix --force` sin triage.
+- **Producción:** no modificada en este bloque. No promover hasta integrar el hardening en E1 QA y volver a ejecutar el gate correspondiente.
