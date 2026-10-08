@@ -171,3 +171,11 @@
 - **Límite honesto:** aún no se completó la revisión visual con sesión real en diferentes resoluciones ni APK/IPA. Render LIVE y checks no son aceptación visual automática.
 - **Resultado:** separación técnica **VALIDADA POR BUILD/DEPLOY**, experiencia visual final **PENDIENTE DE ACEPTACIÓN**, PR #3 sigue sin merge; Render de producción no se modificó.
 - **Siguiente paso:** revisar la **web** https://informe360-hse-web-qa.onrender.com/app/hse en PC y la **app** en dispositivo nativo cuando exista build; no volver a enviar al usuario a Expo Web como página comercial; continuar E1.P3 offline y E1.P4 Android/iOS.
+
+
+## 2026-10-08 — Logos web HSE reparados
+- **Diagnóstico real en Render QA:** `/app/hse` devolvía la interfaz pero Next Image respondía 400 para `/brand/informe360-hse/logo-dark.png` y `logo-light.png`; Render registró `The requested resource isn't a valid image`. Esto explica el ícono de imagen rota visto en la captura.
+- **Corrección:** se incorporaron a la rama E1 los cuatro SVG oficiales ya existentes en la rama de branding (`oscuro`, `claro`, `color`, `sin-fondo`) y HSE web dejó de renderizar los PNG legacy inválidos.
+- **UI:** auth oscuro usa `informe360-hse-oscuro.svg`; superficies claras usan `informe360-hse-claro.svg`; watermark/branding web usan assets vectoriales válidos y sin optimizador de imagen.
+- **Gate:** `check-hse-branding.mjs` ahora valida contenido SVG y rechaza que vuelvan a usarse los PNG legacy rotos. Render build reportó `Informe360 HSE branding contract OK`.
+- **Deploy QA web:** `dep-db3q56l9fdbs73eqeup0` sobre SHA `58a7c5133062c3a18cf17fa9e8b0fbb0aa5ecccb`; build SUCCEEDED y servicio arrancó Next.js correctamente. Producción no fue modificada.
