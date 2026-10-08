@@ -24,18 +24,25 @@ export async function listOfflineCaptures(): Promise<OfflineCapture[]> {
 
 
 
-export async function queueOfflineCapture(input: Omit<OfflineCapture, 'id' | 'createdAt' | 'attempts'>) {
+export async function queueOfflineCapture(input: Omit<OfflineCapture, 'id' | 'createdAt' | 'attempts'> & Partial<Pick<OfflineCapture, 'id' | 'createdAt'>>) {
   const { data } = await supabase.auth.getSession();
   if (!data.session?.user?.id) throw new Error('Iniciá sesión antes de guardar nuevas capturas.');
   const item: OfflineCapture = {
     ownerUserId: data.session.user.id,
     ...input,
-    id: `offline-${Date.now()}-${Math.random().toString(36).slice(2)}`,
-    createdAt: new Date().toISOString(),
+    id: input.id || `offline-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+    createdAt: input.createdAt || new Date().toISOString(),
     attempts: 0,
     lastError: null,
   };
   return updateLocalArray<OfflineCapture, OfflineCapture>(Storage, KEY, items => {
+    const previous = items.find(existing => existing.id === item.id);
+    if (previous) {
+      if (previous.ownerUserId !== item.ownerUserId || previous.workspace.organizationId !== item.workspace.organizationId) {
+        throw new Error('Identificador local asociado a otro usuario o empresa.');
+      }
+      return { items, result: previous };
+    }
     if (items.length >= 100) throw new Error('Cola de capturas completa. Sincronizá antes de guardar otra.');
     return { items: [item, ...items], result: item };
   });
