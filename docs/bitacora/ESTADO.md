@@ -106,3 +106,12 @@ La E1 se ejecuta aisladamente en `feat/hse-e1-offline-resilience-2026-10-08` con
 - **P0 para APK/iOS:** íconos PNG de la marca en `mobile/assets/brand` no cumplen el decodificador Metro (error `Invalid png image asset`). El login dejó de depender de ellos, pero el empaquetado nativo requiere activos de marca válidos. No declarar APK compilada.
 - **Pendiente UI:** validación perceptual en teléfono, homogeneizar onboarding, probar login con usuario real, revisar estética de pantallas siguientes.
 - **Continúa:** E1.P3 inicio offline de inspecciones y E1.P4 QA nativa. Sin cambios en Render producción.
+
+
+## 12. Release hardening y coherencia visual — 2026-10-08
+
+- **HEAD de entrada verificado:** `5a78a82005b5813c37b808f5da1a43e18a2192a3` en `feat/hse-e1-offline-resilience-2026-10-08`; PR #3 abierto en draft. Producción permanece en `feat/hse-phases-1-5` y no se autoriza merge/promoción durante este bloque.
+- **Objetivo aprobado:** revisar y mejorar coherencia visual web/móvil, eliminar marcas genéricas “360”, endurecer onboarding/registro, reparar activos nativos, ampliar QA y volver a validar en Render QA.
+- **Alcance de este bloque:** código y assets de la rama QA + documentación. Sin cambios de Supabase productivo ni de Render producción.
+- **Riesgos conocidos:** 28 advisories npm móviles pendientes de triage; build físico Android/iOS aún no ejecutado; job WhatsApp registró un 503 histórico que requiere revalidación separada.
+- **Criterio de cierre:** `npm run qa` + TypeScript móvil + Expo Web export en Render QA, verificación de assets nativos decodificables y smoke de rutas críticas. Si alguno falla, no promover.
