@@ -74,3 +74,11 @@ La E1 se ejecuta aisladamente en `feat/hse-e1-offline-resilience-2026-10-08` con
 - E1.P2 y E1.P3: implementaciones parciales con tests puros acotados; **NO listas para producción**.
 - E1.P4: pendiente. CI [falló en rama funcional](https://github.com/LordKurama01/informe360/actions/runs/37716323412) antes de ejecutar pasos. Causa no confirmada.
 - Regla: evitar duplicar fotos o interpretarlas como evidencia cloud si siguen como URI local. Proteger datos previos y producción.
+
+## 8. QA Render (actualización 2026-10-07)
+
+- **QA aislado en Render confirmado LIVE:** [informe360-hse-e1-qa](https://informe360-hse-e1-qa.onrender.com), servicio `srv-db3fsnnavr4c739kgeag`, despliegue `dep-db3fucl9fdbs73dke9dg` sobre código `10ea3b1fe21c29b2306dbbdd8b983739b69a2075`.
+- `npm run qa` web + TypeScript mobile + Expo web export **PASARON** en Render. Ver [QA_RENDER_2026-10-07.md](QA_RENDER_2026-10-07.md).
+- Producción Render `informe360-hse` permanece LIVE en `422f8bcbce65b3e68f892d51d37b1ed0999690c5`, sin cambios de código/servicio.
+- **Faltan:** fotos de formularios en Storage privado y firma/visualización remota; arranque de nuevas inspecciones sin red; QA Android/iOS físico; revisión real de RLS y 28 avisos npm (10 moderate, 18 high).
+- **Reanudación:** E1.P2 y E1.P3 restantes, no habilitar E2 ni release. AutoDeploy desactivado en QA para evitar gasto innecesario de minutos.
