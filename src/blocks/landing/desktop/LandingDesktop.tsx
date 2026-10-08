@@ -110,11 +110,11 @@ export function LandingDesktop() {
         <div className={styles.benefits}>
           <article>
             <h3>Informe editable</h3>
-            <p>Texto tecnico listo para revisar, corregir y entregar.</p>
+            <p>Hallazgos y conclusiones listos para revisar y entregar.</p>
           </article>
           <article>
             <h3>PDF profesional</h3>
-            <p>Salida preparada para descargar y enviar al cliente.</p>
+            <p>Salida consistente con evidencia, responsables y trazabilidad.</p>
           </article>
           <article>
             <h3>Acciones SMART</h3>
@@ -122,7 +122,7 @@ export function LandingDesktop() {
           </article>
           <article>
             <h3>Seguimiento</h3>
-            <p>Pendientes y proximos pasos despues de cada visita.</p>
+            <p>Pendientes y próximos pasos visibles después de cada recorrida.</p>
           </article>
         </div>
       </section>
@@ -130,14 +130,14 @@ export function LandingDesktop() {
       <section id="flujo" className={styles.flowSection}>
         <div className={styles.sectionIntro}>
           <span className={styles.kicker}>Como funciona</span>
-          <h2>Tres pasos. Sin sistema pesado.</h2>
+          <h2>Tres pasos. Un único registro operativo.</h2>
         </div>
 
         <div className={styles.steps}>
           <article>
             <span>01</span>
-            <h3>Cargas la visita</h3>
-            <p>Empresa, lugar, fecha, sector y observaciones.</p>
+            <h3>Abrís la recorrida</h3>
+            <p>Empresa, sitio, sector, fecha y tipo de inspección.</p>
           </article>
           <article>
             <span>02</span>
