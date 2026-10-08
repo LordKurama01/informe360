@@ -230,3 +230,11 @@
 - `dep-db3s5qij9qps738rkao0` pasó pruebas y compilación Next, alcanzó **LIVE** 2026-10-08T16:22:41Z. SHA funcional `1504afea91e5e594bf07a7c24c3318ad57ea8f66`.
 - Checkpoint: P2.1–P2.3 listas técnicamente; permisos/RLS en usuarios reales, acciones de checklists y aceptación visual de Inspecciones aún requieren validación P2.4/P2.5.
 - No hubo cambio de datos, credenciales ni deploy a producción.
+
+
+## 2026-10-08 — EWEB.P2.4 — Flujo de inspecciones web y auditoría RLS
+- **Auditoría antes de implementar:** revisados RPC `create_form_run`, esquema/índices/policies existentes y versión publicada de las cuatro plantillas; consultas de solo lectura, 0 runs/respuestas antes de las pruebas. Se halló que `form_runs_update` y `form_answers_update/delete` usan membresía organizacional con permisos demasiado amplios para ejecuciones cerradas y carecen de RLS por sitio. No tocar Supabase compartido; documentar bloqueo release.
+- **Implementación guardada:** `dea385c` servicios iniciar/idempotencia, recuperar registro y schema, borrador y envío, evidencias de Storage privado. `0868cd8` editor web, campos con versión, validación y estado solo lectura; `40486e9` enlaces Iniciar/Continuar bajo panel común; `f152249` nueva ruta; `eab8e48` CSS; `c34c59a` cinco pruebas nuevas; `cab8537` QA.
+- **Falla registrada:** deploy `dep-db3sfh0473hc73f675ag` BUILD_FAILED por test antiguo de navegación; arreglo `954ff4a`. **Resultado definitivo:** Render QA `dep-db3sg22jnfac738k47sg` **LIVE** (commit `954ff4a155f42108b624e3c07459c95947ce9dfa`, terminado 16:44:29Z), 5/5 nuevas pruebas, conjunto QA y Next compilado.
+- **Limitaciones honestas:** sin prueba real de cuenta guardando y presentando; `repeater` exige app móvil; falta QA de foto privada con login y staging multiempresa. El servicio QA apunta al Supabase compartido, por lo que no se generaron registros de ejemplo.
+- **Estado:** EWEB.P2.4 implementación técnica validada; cierre funcional y release bloqueados hasta [auditoría RLS](EWEB_P2_4_AUDITORIA_RLS_2026-10-08.md) y EWEB.P2.5. Producción Render `feat/hse-phases-1-5` intacta, PR #3 borrador.
