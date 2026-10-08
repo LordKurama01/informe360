@@ -10,11 +10,12 @@ import { formatClosureCompliance, formatHseCount, hseDataStatusLabel, type HseDa
 import { installStandardInspectionTemplates, listFormRuns, listFormTemplates, startHseInspection, type HseFormRunRow, type HseFormTemplate } from '@/services/hse/forms-browser';
 import { filterInspectionRuns, inspectionStatusLabel, selectHseInspections, type InspectionRunFilter } from '@/shared/hse/inspection-view';
 import { HseInspectionRunPanel } from './HseInspectionRunPanel';
+import { HseFormsPanel } from './HseFormsPanel';
 
 type Filter = 'open'|'overdue'|'upcoming'|'critical'|'closed'|'all';
 const emptySummary: HseSummary = { open:0, overdue:0, dueNext7Days:0, closed:0, closedOnTime:0, closureCompliancePct:0, criticalOpen:0 };
 
-export function HseControl({ mode = 'overview', inspectionRunId }: { mode?: 'overview' | 'reports' | 'inspections' | 'inspection-run'; inspectionRunId?: string }) {
+export function HseControl({ mode = 'overview', inspectionRunId }: { mode?: 'overview' | 'reports' | 'inspections' | 'inspection-run' | 'forms'; inspectionRunId?: string }) {
   const router = useRouter();
   const [booting, setBooting] = useState(true);
   const [showSlowBoot, setShowSlowBoot] = useState(false);
@@ -56,6 +57,8 @@ export function HseControl({ mode = 'overview', inspectionRunId }: { mode?: 'ove
     if (nextWorkspace) {
       if (mode === 'reports') {
         setReports(await listHseReports(nextWorkspace));
+      } else if (mode === 'forms') {
+        setInspectionTemplates(await listFormTemplates(nextWorkspace));
       } else if (mode === 'inspections') {
         const [templates, runs] = await Promise.all([
           listFormTemplates(nextWorkspace),
