@@ -147,7 +147,7 @@ export function LandingDesktop() {
           <article>
             <span>03</span>
             <h3>Revisas y entregas</h3>
-            <p>Informe editable, PDF profesional y acciones de seguimiento.</p>
+            <p>Cerrás hallazgos, asignás acciones y generás el informe.</p>
           </article>
         </div>
       </section>
