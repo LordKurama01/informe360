@@ -1,5 +1,6 @@
 import Storage from 'expo-sqlite/kv-store';
 import type { Workspace } from './workspace';
+import { readLocalArray, updateLocalArray } from './local-kv';
 
 const KEY = 'hse.offline.capture.queue.v1';
 
@@ -16,22 +17,12 @@ export type OfflineCapture = {
 };
 
 export async function listOfflineCaptures(): Promise<OfflineCapture[]> {
-  const raw = await Storage.getItem(KEY);
-  if (!raw) return [];
-  try {
-    const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) ? parsed as OfflineCapture[] : [];
-  } catch {
-    return [];
-  }
+  return readLocalArray<OfflineCapture>(Storage, KEY);
 }
 
-async function write(items: OfflineCapture[]) {
-  await Storage.setItem(KEY, JSON.stringify(items));
-}
+
 
 export async function queueOfflineCapture(input: Omit<OfflineCapture, 'id' | 'createdAt' | 'attempts'>) {
-  const items = await listOfflineCaptures();
   const item: OfflineCapture = {
     ...input,
     id: `offline-${Date.now()}-${Math.random().toString(36).slice(2)}`,
@@ -39,18 +30,19 @@ export async function queueOfflineCapture(input: Omit<OfflineCapture, 'id' | 'cr
     attempts: 0,
     lastError: null,
   };
-  await write([item, ...items].slice(0, 100));
-  return item;
+  return updateLocalArray<OfflineCapture, OfflineCapture>(Storage, KEY, items => {
+    if (items.length >= 100) throw new Error('Cola de capturas completa. Sincronizá antes de guardar otra.');
+    return { items: [item, ...items], result: item };
+  });
 }
 
 export async function removeOfflineCapture(id: string) {
-  await write((await listOfflineCaptures()).filter(item => item.id !== id));
+  await updateLocalArray<OfflineCapture, void>(Storage, KEY, items => ({ items: items.filter(item => item.id !== id), result: undefined }));
 }
 
 export async function markOfflineCaptureFailure(id: string, error: unknown) {
   const message = error instanceof Error ? error.message : String(error || 'Error de sincronización');
-  const items = await listOfflineCaptures();
-  await write(items.map(item => item.id === id ? { ...item, attempts: item.attempts + 1, lastError: message } : item));
+  await updateLocalArray<OfflineCapture, void>(Storage, KEY, items => ({ items: items.map(item => item.id === id ? { ...item, attempts: item.attempts + 1, lastError: message } : item), result: undefined }));
 }
 
 export async function pendingOfflineCount() {
