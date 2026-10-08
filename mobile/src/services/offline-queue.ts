@@ -1,4 +1,5 @@
 import Storage from 'expo-sqlite/kv-store';
+import { supabase } from '../lib/supabase';
 import type { Workspace } from './workspace';
 import { readLocalArray, updateLocalArray } from './local-kv';
 
@@ -6,6 +7,7 @@ const KEY = 'hse.offline.capture.queue.v1';
 
 export type OfflineCapture = {
   id: string;
+  ownerUserId?: string; // Legacy captures may lack ownership; do not auto-upload them.
   workspace: Workspace;
   inputType: 'text' | 'audio' | 'photo';
   rawText: string | null;
@@ -23,7 +25,10 @@ export async function listOfflineCaptures(): Promise<OfflineCapture[]> {
 
 
 export async function queueOfflineCapture(input: Omit<OfflineCapture, 'id' | 'createdAt' | 'attempts'>) {
+  const { data } = await supabase.auth.getSession();
+  if (!data.session?.user?.id) throw new Error('Iniciá sesión antes de guardar nuevas capturas.');
   const item: OfflineCapture = {
+    ownerUserId: data.session.user.id,
     ...input,
     id: `offline-${Date.now()}-${Math.random().toString(36).slice(2)}`,
     createdAt: new Date().toISOString(),
