@@ -407,7 +407,7 @@ export function HseControl({ mode = 'overview', inspectionRunId }: { mode?: 'ove
     </section>
 
     <nav className={styles.mobileDock} aria-label="Navegación HSE móvil">
-      <Link href="/app/hse">Inicio</Link><Link href="/app/hse/inspections">Inspecciones</Link><Link className={styles.mobileDockPrimary} href="/app/hse"><Image src="/brand/informe360-hse/informe360-hse-claro.svg" alt="HSE" width={1200} height={1200} unoptimized/></Link><Link href="/app/calendar">Agenda</Link><Link href="/app/hse/reports">Informes</Link>
+      <Link href="/app/hse">Inicio</Link><Link href="/app/hse/inspections">Inspecciones</Link><Link className={styles.mobileDockPrimary} href="/app/hse"><Image src="/brand/informe360-hse/informe360-hse-claro.svg" alt="HSE" width={1200} height={1200} unoptimized/></Link><Link href="/app/hse/agenda">Agenda</Link><Link href="/app/hse/reports">Informes</Link>
     </nav>
   </main>;
 }
