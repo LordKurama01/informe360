@@ -22,11 +22,13 @@ Cada parte tiene: entrada (HEAD, entorno, alcance), ejecución acotada, aceptaci
 
 ## E1 — Mobile nativo robusto y offline-first
 **Objetivo:** inspecciones fiables Android/iOS en campo, sin perder datos por cortes de red. **No empezar otra app**.
-- **E1.P1 — Diagnóstico y contratos existentes [PENDIENTE]:** auditar `offline-queue.ts`, `form-offline.ts`, `sync.ts`, `media.ts`, `capture-pipeline.ts`, `forms.ts`, RLS y tests; mapear fallos reproducibles (interrupción, reinicio, conflictos, imágenes, concurrencia). Entregar matriz de brechas + tests RED antes de modificar.
-- **E1.P2 — Guardado local y archivos [PENDIENTE]:** reutilizar selectivamente patrones MIT de FolderIT (atomicidad, cola serial, autosave honesto, manejo de fotos). Respetar la estructura de archivos y el cifrado/privacidad. No reemplazar el backend.
-- **E1.P3 — Sincronización idempotente [PENDIENTE]:** resolver causa raíz de duplicados/pérdidas; reintentos, conflicto de versiones, fallo parcial de subida y recuperación sin borrar el original prematuramente. Mantener claves de idempotencia server-side.
-- **E1.P4 — QA móvil real [PENDIENTE]:** typecheck, tests automatizados, build Android e iOS según herramientas disponibles, prueba offline→reabrir→sync→reintentar sin duplicar, logout/cambio de empresa, fotos y permisos. No afirmar iOS físico probado si no se ejecutó.
+- **E1.P1 — Diagnóstico y contratos existentes [VALIDADA auditoría]:** auditar `offline-queue.ts`, `form-offline.ts`, `sync.ts`, `media.ts`, `capture-pipeline.ts`, `forms.ts`, RLS y tests; mapear fallos reproducibles (interrupción, reinicio, conflictos, imágenes, concurrencia). Entregar matriz de brechas + tests RED antes de modificar.
+- **E1.P2 — Guardado local y archivos [EN CURSO]:** reutilizar selectivamente patrones MIT de FolderIT (atomicidad, cola serial, autosave honesto, manejo de fotos). Respetar la estructura de archivos y el cifrado/privacidad. No reemplazar el backend.
+- **E1.P3 — Sincronización idempotente [EN CURSO]:** resolver causa raíz de duplicados/pérdidas; reintentos, conflicto de versiones, fallo parcial de subida y recuperación sin borrar el original prematuramente. Mantener claves de idempotencia server-side.
+- **E1.P4 — QA móvil real [BLOQUEADA: runner GitHub y QA físico]:** typecheck, tests automatizados, build Android e iOS según herramientas disponibles, prueba offline→reabrir→sync→reintentar sin duplicar, logout/cambio de empresa, fotos y permisos. No afirmar iOS físico probado si no se ejecutó.
 - **Gate E1:** recorrido de campo reanudable + evidencia persistida + reconciliación sin pérdidas/duplicación demostrada; regresiones de capturas y hallazgos aprobadas. Si no hay dispositivos/entorno, bloquear QA físico explícitamente.
+
+[Checkpoint E1](E1_AVANCE_2026-10-07.md): pruebas unitarias acotadas, sin QA productiva. Revisar PR #3 antes de continuar.
 
 ## E2 — Inspecciones HSE, hallazgos y PDF integrado
 - **E2.P1 — Reutilizar motor existente [PENDIENTE]:** verificar formularios versionados, checklists/seed, móvil y web, RLS por organización, offline, cierre y estado histórico. **No crear segunda implementación**.
