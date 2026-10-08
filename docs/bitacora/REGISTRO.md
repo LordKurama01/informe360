@@ -158,3 +158,16 @@
 - **Sin impacto productivo:** no se desplegó `feat/hse-phases-1-5`, no se crearon usuarios ni se alteró Supabase en este paso; PR #3 permanece en borrador.
 - **Limitación:** QA de compilación y lógica del adaptador superada. No se probó una sesión autenticada del usuario con navegador automatizado, por lo que falta confirmar el recorrido real a tabs y el funcionamiento de cada módulo.
 - **Próximo:** pedir reabrir el sitio actualizado; si el panel aún falla, recoger error actualizado y revisar el siguiente servicio implicado. Después continuar E1.P3 offline, E1.P4 APK/iOS.
+
+
+## 2026-10-08 — PLATAFORMAS.P1 — WEB Next.js y APP React Native por separado
+- **Solicitud y síntoma:** captura del usuario mostraba Expo Web móvil a pantalla completa de escritorio (1779px), barra inferior nativa, botón Capturar grande y métricas gigantes.
+- **Causa raíz:** el servicio `informe360-hse-e1-qa` publicaba exclusivamente `expo export --platform web`, y se estaba utilizando como portal web. El repo **ya contenía un panel WEB Next.js** en `src/app/app/hse/` y `src/blocks/hse-control/`, no había que reconstruirlo.
+- **Infra nueva (Render FREE, autoDeploy=no):** `informe360-hse-web-qa` servicio `srv-db3pmdbncjis73bbrvig`, url https://informe360-hse-web-qa.onrender.com/app/hse, build `normalize lock → npm ci → npm run qa`, start `next start`; Supabase público del mismo proyecto existente.
+- **Código:** `e00b68b` — `mobile/app/_layout.tsx`: navegador Expo desktop ≥760px redirige a Next, Android/iOS mantienen los proveedores y la navegación nativa. `407fdea` raíz QA Next env `HSE_WEB_QA_MODE=1` abre `/app/hse`. `dc05f66` responsive web usa navegación superior, sin dock flotante de app. `6c96a47`/`e7a0e6f`/`1651a19`/`6ca8c11` nuevas reglas/tests integrados a QA.
+- **Entorno:** Expo QA `EXPO_PUBLIC_WEB_APP_URL` apunta a QA web; Next QA `HSE_WEB_QA_MODE=1`; se preservó la configuración de producción. No hay base/usuario/credenciales nuevos ni migraciones.
+- **QA App preview:** `dep-db3pn8tg1s2s73bddac0` **LIVE** a las 13:35:12Z, commit `e00b68bb8d5a2aa3dfa518042dd0808781506732`; Expo export TypeScript y QA web completados.
+- **QA Web:** `dep-db3pp8c9v7es73e11rf0` **LIVE** a las 13:39:16Z, commit `6ca8c11d6b8ba6c84bc5976779b92fd7b9c99f84`. `test:hse:platforms` OK + `npm run qa`, Next compilado y servidor iniciado. Fuente: API y logs de Render.
+- **Límite honesto:** aún no se completó la revisión visual con sesión real en diferentes resoluciones ni APK/IPA. Render LIVE y checks no son aceptación visual automática.
+- **Resultado:** separación técnica **VALIDADA POR BUILD/DEPLOY**, experiencia visual final **PENDIENTE DE ACEPTACIÓN**, PR #3 sigue sin merge; Render de producción no se modificó.
+- **Siguiente paso:** revisar la **web** https://informe360-hse-web-qa.onrender.com/app/hse en PC y la **app** en dispositivo nativo cuando exista build; no volver a enviar al usuario a Expo Web como página comercial; continuar E1.P3 offline y E1.P4 Android/iOS.
