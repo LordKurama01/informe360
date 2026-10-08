@@ -18,7 +18,7 @@ Estas notas NO sustituyen la verdad del repositorio, el estado de Supabase/Rende
 
 ## Cómo interpretar «seguí»
 
-1. Localizar este índice y la última entrada del REGISTRO **en GitHub**. Si todavía no está fusionado, leer la rama `docs/bitacora-hse-2026-10-07` y el PR asociado.
+1. Localizar este índice y la última entrada del REGISTRO **en GitHub**. Si no hay merge, usar el [índice permanente issue #2](https://github.com/LordKurama01/informe360/issues/2): la bitácora más reciente está en `feat/hse-e1-offline-resilience-2026-10-08` ([PR #3](https://github.com/LordKurama01/informe360/pull/3)), descendiente de `docs/bitacora-hse-2026-10-07` ([PR #1](https://github.com/LordKurama01/informe360/pull/1)).
 2. Leer ESTADO y ETAPAS para localizar la primera parte no validada, teniendo en cuenta dependencias.
 3. Verificar rama de código, SHA HEAD, archivos, RLS/infra si aplica, CI, riesgos y diferencias con el estado documentado. Si cambió algo, corregir primero el ESTADO y registrar la divergencia.
 4. Ejecutar **una parte acotada**, con commits trazables y sin duplicar funcionalidades. Si el usuario pide completar varias partes, repetir el ciclo sin perder gates.
@@ -30,6 +30,10 @@ Estas notas NO sustituyen la verdad del repositorio, el estado de Supabase/Rende
 `E<etapa>.P<parte>` + fecha local + SHA base + rama + alcance + archivos + pruebas realizadas/resultados + status + links + riesgos/rollback + siguiente parte. No registrar ejecución supuesta; usar explícitamente `no ejecutado`, `sin comprobar` o `no aplica`.
 
 Cada parte se respalda en **código y tests, o documentación verificable si es una etapa de auditoría**. Mantener `REGISTRO.md` append-only (sin reescritura del pasado). No incluir credenciales, información sensible, datos de clientes, secretos o evidencias privadas.
+
+## Estado de trabajo activo
+
+**E1 en ejecución**, última bitácora: [E1_AVANCE_2026-10-07.md](E1_AVANCE_2026-10-07.md). E1.P1 auditada, P2/P3 en curso y P4 bloqueada. La ruta crítica aún no habilita E2. No fusionar PRs borradores ni desplegar por defecto.
 
 ## Política de integración
 
