@@ -27,3 +27,18 @@
 
 ## Próxima entrada obligatoria
 **E0.P3:** releer archivos remotos, registrar SHA final de rama documental, enlace a PR y checks; confirmar rama HSE auto-desplegada sin cambios. Luego activar **E1.P1** (auditoría offline) en una rama de ejecución separada, no realizar implementación sin antes verificar el estado real.
+
+
+---
+
+## 2026-10-07 — E0.P3 — Verificación remota, índice GitHub y protección de Render
+- **PR creado:** [#1 — bitácora permanente](https://github.com/LordKurama01/informe360/pull/1), **draft**, base `feat/hse-phases-1-5`, head `docs/bitacora-hse-2026-10-07`. Al abrirlo: 5 commits documentales, 5 archivos modificados, sin código.
+- **Issue índice creada:** [#2 — BITÁCORA MAESTRA HSE](https://github.com/LordKurama01/informe360/issues/2). Solo apunta a los archivos; no crea otra fuente de verdad.
+- **Verificación positiva:** lectura vía API GitHub de `AGENTS.md`, `docs/bitacora/README.md`, `ESTADO.md`, `ETAPAS.md`, `REGISTRO.md`, todos presentes en rama documental.
+- **HEAD de desarrollo / Render, revalidado:** `feat/hse-phases-1-5` conserva `422f8bcbce65b3e68f892d51d37b1ed0999690c5`. No se hizo push a rama autoDeploy, ni deploy, ni migración.
+- **GitHub Actions en rama documental:** [run #224](https://github.com/LordKurama01/informe360/actions/runs/37715224223) concluyó **FAILURE** en SHA `e27e2d1162df412881b11522469e1cf535e4b1f9`.
+- **Comparación con base:** la rama HSE ya tiene [CI FAILURE](https://github.com/LordKurama01/informe360/actions/runs/37714821289) en su HEAD sin estos documentos. La documentación **no demuestra** que haya causado o arreglado el fallo. La descarga del log de job devolvió `BlobNotFound` 404 y los pasos vacíos; causa exacta: **NO CONFIRMADA**.
+- **Correcciones al plan y snapshot:** `ea6a3f24e88d7594e24b0675942a7ae1a91b529b` (ETAPAS: E0 documental validada y CI documentado), `276c31b2b727b2ecf4a9e7d96bbba75cd144b6b8` (ESTADO: PR/issue y bloqueo CI).
+- **Estado:** E0.P3 VALIDADA para **custodia documental**. QA funcional, build nativo, publicación de App y CI verde: **NO realizados**.
+- **Rollback:** eliminar/cerrar PR o revertir solo commits documentales de la rama hija; no hay rollback productivo porque producción no cambió.
+- **Próxima parte exacta:** **E1.P1 — Diagnóstico de CI heredado + auditoría diferencial offline**. Antes de programar: leer el árbol/HEAD vigente, conseguir evidencia de error CI o reproducir localmente, inspeccionar cobertura existente y proponer pruebas RED. No copiar app completa; preservar la app actual.
