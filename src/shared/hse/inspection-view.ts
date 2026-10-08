@@ -37,3 +37,23 @@ export function inspectionStatusLabel(status: string): string {
     default: return 'Estado no identificado';
   }
 }
+
+
+export type InspectionRunFilter = 'all' | 'pending' | 'submitted';
+
+/** Client-side search: no extra session, org or summary fetch on each keypress. */
+export function filterInspectionRuns<R extends InspectionRunLike>(
+  runs: readonly R[],
+  names: ReadonlyMap<string, string>,
+  term: string,
+  status: InspectionRunFilter,
+): R[] {
+  const q = term.trim().toLocaleLowerCase('es-AR');
+  return runs.filter(run => {
+    const isPending = run.status === 'draft' || run.status === 'in_progress';
+    const isSubmitted = run.status === 'submitted' || run.status === 'completed';
+    if (status === 'pending' && !isPending) return false;
+    if (status === 'submitted' && !isSubmitted) return false;
+    return !q || (names.get(run.template_id) || '').toLocaleLowerCase('es-AR').includes(q);
+  });
+}
