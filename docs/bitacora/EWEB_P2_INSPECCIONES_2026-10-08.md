@@ -17,7 +17,7 @@ Fecha de inicio: **2026-10-08**. Estado: **implementación aislada en QA, valida
 |---|---|---|
 | P2.1 | Inspecciones reutiliza HseControl, login, workspace, menú lateral, topbar, carga discreta y navegación coherente | IMPLEMENTADA |
 | P2.2 | Plantillas versionadas y últimas inspecciones con datos reales, filtradas por organización y sitio; conservar instalación optativa de estándares | IMPLEMENTADA |
-| P2.3 | Estados vacío/error/carga, búsqueda/filtros y acciones operativas sin romper el motor de inspección existente | PENDIENTE |
+| P2.3 | Estados vacío/error/carga y filtros Todas/Pendientes/Presentadas, búsqueda de plantillas y ejecuciones sin consultar servidor en cada tecla | IMPLEMENTADA; QA EN CURSO |
 | P2.4 | Prueba funcional con cuenta real, integridad/RLS y rutas web responsive; ver si hay ejecución web completa o solo móvil | PENDIENTE |
 | P2.5 | Gate Render, QA visual escritorio/móvil y cierre documentado | EN CURSO (gate técnico inicial) |
 
@@ -43,3 +43,12 @@ Fecha de inicio: **2026-10-08**. Estado: **implementación aislada en QA, valida
 2. Comprobar deploy `dep-db3s40jncjis73bjlevg` y registrar cualquier error con su solución.
 3. Completar P2.3 (filtros y estados útiles) y P2.4 pruebas de flujo real, luego P2.5 aceptación.
 4. No alterar ni desplegar producción antes de gates firmes.
+
+
+## EWEB.P2.3 — Búsqueda y filtros
+- `src/shared/hse/inspection-view.ts`: filtro puro que segmenta borrador/en curso, presentadas/completadas y todas; acepta búsqueda de nombres de plantillas y no modifica los registros originales. También preserva estados no reconocidos, sin inventar equivalencias.
+- `HseControl.tsx`: entrada única para buscar plantillas e inspecciones, filtros accesibles con `aria-pressed`, contadores derivados de los resultados, y mensaje diferenciado si hay cero datos o ningún resultado de la búsqueda.
+- `scripts/hse-inspections.test.mjs`: nuevas pruebas de búsqueda por texto, filtros por estado, inmutabilidad, accesibilidad y navegación. Corren dentro del QA habitual.
+- **Primer deploy P2.1/P2.2:** `dep-db3s40jncjis73bjlevg` **LIVE** con `9837a84faa3e273e83a73962dd6d0185c5bc54b2`, build Next aprobado.
+- **Segundo deploy P2.3:** `dep-db3s5qij9qps738rkao0`, commit `1504afea91e5e594bf07a7c24c3318ad57ea8f66`. Estado pendiente hasta confirmación de la API de Render.
+- P2.4/P2.5 no están cerradas, y EWEB.P1 sigue esperando la aceptación visual presencial. No se hicieron cambios productivos.
