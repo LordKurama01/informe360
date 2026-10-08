@@ -94,7 +94,7 @@ RAG documental con citas, EPP/visión computacional, capacitación masiva, marke
 **Objetivo:** un producto web consistente en Next.js. Toda opción de navegación del menú lateral mantiene carcasa, identidad, empresa/sitio activos y datos reales de Supabase. El preview React Native Expo no sustituye la web.
 
 - **EWEB.P1 — Inicio + Informes [IMPLEMENTADA; QA Render VALIDADA; aceptación visual PENDIENTE]:** eliminar CTA «Demo», impedir la generación accidental de datos ficticios desde HSE; sustituir los informes de ejemplo y la pantalla ajena al sistema por historial real `/app/hse/reports` dentro de `HseControl`, protegido por organización/sitio y RLS. Redirigir `/app/reports` **solo en instancia HSE QA** sin afectar otras superficies Informe360. Criterio: mismo menú/identidad; estado vacío honesto; actualización real; tests + Render.
-- **EWEB.P2 — Inspecciones [PENDIENTE]:** mantener datos reales y funciones existentes, pero integrar navegación, cabecera, menús, espaciados, responsive, estados vacíos/errores del panel HSE; no reconstruir el motor de checklists.
+- **EWEB.P2 — Inspecciones [P2.1/P2.2 IMPLEMENTADAS; QA de publicación EN CURSO; P2.3–P2.5 PENDIENTES]:** mantener datos reales y funciones existentes, pero integrar navegación, cabecera, menús, espaciados, responsive, estados vacíos/errores del panel HSE; no reconstruir el motor de checklists.
 - **EWEB.P3 — Formularios [PENDIENTE]:** reutilizar motor versionado ya existente, hacer coherentes menú, encabezado, controles y roles, sin segunda base ni datos de ejemplo.
 - **EWEB.P4 — Agenda + informes detallados [PENDIENTE]:** distinguir agenda del producto HSE de rutas legadas de otras apps y aplicar carcasa web común a seguimiento; la **vista de impresión** de informe puede ser deliberadamente documental, con vuelta clara al panel.
 - **EWEB.P5 — QA visual / funcional [PENDIENTE]:** accesibilidad, logo, escritorio 1366/1440/1920, móvil web 360–430, rutas profundas y refresh, sesión, RLS por empresa, informes de muestra **no**, pruebas Next en Render, regresión sin alterar producción.
@@ -116,3 +116,14 @@ RAG documental con citas, EPP/visión computacional, capacitación masiva, marke
 **Checkpoint EWEB.P1.4:** Render QA deploy `dep-db3qsml9fdbs73eslmf0` **LIVE**, SHA `6377f727ea144c2cc4865aae313f88e66132e83a`. `npm run qa` (incluye cuatro pruebas de dashboard), TypeScript, ESLint y Next.js build aprobados. EWEB.P1.5 sigue pendiente de validación visual y recorrido autenticado.
 
 **Checkpoint UX EWEB.P1.5:** la pantalla de carga rápida se suprimió (<320 ms) y el buscador dejó de recargar sesión/KPI en cada letra. Indicador de navegación lateral y transiciones mejorados. Render `dep-db3r3f8473hc73f1m5vg` **LIVE**, SHA `837bd8791006fa3c23f596939211253f034c5314`, 3 tests nuevos y Next QA completos. Ver [bitácora UX](EWEB_P1_5_LOADING_SLIDER_2026-10-08.md). No cerrar etapa antes de prueba visual autenticada ni fusionar a producción.
+
+
+### EWEB.P2 — Desglose operativo de Inspecciones
+
+- **P2.1 — Unificación visual [IMPLEMENTADA]:** ruta `/app/hse/inspections` usa `HseControl mode="inspections"`, con la misma sesión, cabecera, menú activo, UX y colores que Inicio/Informes.
+- **P2.2 — Operativa existente [IMPLEMENTADA]:** plantillas versionadas y ejecuciones reales de Supabase, selección por organización y sitio, instalación optativa de biblioteca estándar; no carga automática de ejemplos.
+- **P2.3 — Interacción y estados [PENDIENTE]:** filtros de ejecución, búsqueda, estados de carga/error y capacidades de apertura/continuación de checklists con los endpoints disponibles.
+- **P2.4 — Integridad y uso real [PENDIENTE]:** RLS/sitio, flujos de operaciones reales, acceso con cuenta autenticada, responsive y errores reproducibles.
+- **P2.5 — Validación y cierre [EN CURSO]:** tests HSE, Next y deploy QA de esta primera entrega, más revisión visual antes de aprobación.
+
+[Bitácora granular EWEB.P2](EWEB_P2_INSPECCIONES_2026-10-08.md). La aceptación visual de EWEB.P1 sigue abierta; avance autorizado por el pedido de continuar, no se convierte retrospectivamente en aprobado. Producción sin despliegues.
