@@ -61,6 +61,16 @@ NO reiniciar Informe360. NO importar otra app completa. Mantener una fuente de v
 
 
 - **Trabajo de este ciclo:** E0 — protocolo, bitácora y PR documental creados y verificados (sin merge).
-- **Bloque funcional siguiente:** E1.P1 — primero diagnosticar falla CI heredada, luego auditar guardado local y sincronización preexistentes, inventario de pruebas y fallos. **No implementar hasta leer el registro y comprobar HEAD, código y CI.**
+- **Bloque funcional siguiente (actualizado):** E1.P2 / E1.P3 restantes: referencia remota segura a fotos, recuperación legacy e idempotencia end-to-end. E1.P4 QA pendiente. **Primero comprobar HEAD, PR #3 y logs CI; no desplegar.**
 - **Estado de cierre:** leer la última entrada de [REGISTRO.md](REGISTRO.md). Si el PR de bitácora sigue abierto, tomar los archivos de la rama documental; mantenerlo separado de Render.
 - **Orden futura «seguí»:** verificar GitHub y estado real; completar el primer paso pendiente de ETAPAS, registrar resultado y siguiente paso. No pedir al usuario repetir este contexto.
+
+
+## 7. Avance posterior a snapshot — 2026-10-07
+
+La E1 se ejecuta aisladamente en `feat/hse-e1-offline-resilience-2026-10-08` con [PR #3](https://github.com/LordKurama01/informe360/pull/3) borrador, destino rama documental. **No integra ni despliega**. Revisar [E1_AVANCE_2026-10-07.md](E1_AVANCE_2026-10-07.md) y última entrada de REGISTRO.
+
+- E1.P1: auditoría concluida.
+- E1.P2 y E1.P3: implementaciones parciales con tests puros acotados; **NO listas para producción**.
+- E1.P4: pendiente. CI [falló en rama funcional](https://github.com/LordKurama01/informe360/actions/runs/37716323412) antes de ejecutar pasos. Causa no confirmada.
+- Regla: evitar duplicar fotos o interpretarlas como evidencia cloud si siguen como URI local. Proteger datos previos y producción.
