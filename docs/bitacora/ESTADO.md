@@ -166,3 +166,13 @@ La E1 se ejecuta aisladamente en `feat/hse-e1-offline-resilience-2026-10-08` con
 - Inspección previa de imagen, árbol y código: `/app/reports` usa una página antigua con datos ficticios hardcodeados, CSS oscuro azul ajeno a HSE y sin menú lateral. `/app/hse` posee la UI y autenticación correctas.
 - Acción acotada: trasladar Informes HSE a `/app/hse/reports` bajo la misma carcasa HSE y consultar registros reales de Supabase con RLS/organización/sitio. En QA web, redirigir el enlace heredado `/app/reports` al módulo nuevo; proteger integraciones no HSE. Quitar botón Demo y capacidad de sembrar registros de prueba desde la UI HSE.
 - No modificar producción ni crear registros ficticios. Evidencia pendiente: QA Render Next.js, test de integración estructural y validación visual.
+
+
+## 2026-10-08 — EWEB.P1 — Panel de informes HSE coherente [BUILD VALIDADO]
+
+- **Hecho:** el botón «Demo» y acciones de cargar datos ficticios desaparecieron de `HseControl.tsx`; el acceso sin organización ahora muestra aviso honesto y botón de reintento.
+- **Informes HSE:** `/app/hse/reports` emplea `HseControl mode="reports"`; conserva exactamente la barra lateral, cabecera, colores, contexto de empresa y navegación de Inicio. Registros reales de Supabase `reports` filtrados por `organization_id`, `site_id` y RLS. Si no hay registros, estado vacío real, nunca ejemplos fabricados.
+- **Compatibilidad:** la ruta heredada `/app/reports` envía al módulo HSE **sólo** en el servicio web HSE QA (`HSE_WEB_QA_MODE=1`); otras superficies conservan su implementación legada separada.
+- **QA:** Render Web QA `dep-db3qf0ad0e5s73b6jh4g` LIVE, código `5b8f1d3a0fbd565f11b5a6157c35c9187d1f3aa8`, 2026-10-08T14:25:54Z. `test:hse:reports` OK y pipeline `npm run qa` + Next build completos.
+- **URL para revisión:** https://informe360-hse-web-qa.onrender.com/app/hse/reports. Esta evidencia **no confirma todavía aceptación visual del usuario** ni una prueba de navegación manual autenticada en escritorio.
+- **Próximos bloques:** EWEB.P2 Inspecciones, EWEB.P3 Formularios, EWEB.P4 Agenda/lectura, EWEB.P5 QA visual. La etapa móvil E1.P3 sigue abierta. Producción intacta.
