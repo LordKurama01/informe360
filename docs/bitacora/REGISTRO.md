@@ -137,3 +137,12 @@
 - **Dependencias:** npm móvil continúa informando 28 advisories (10 moderate, 18 high). No se usó `--force`.
 - **Producción web:** no se desplegó la rama E1 ni se cambió el servicio `informe360-hse`.
 - **Siguiente:** obtener autorización/medio seguro para configurar secretos runtime y aplicar/verificar hardening RLS; después repetir smoke y recién entonces evaluar promoción. QA Android/iOS físico sigue pendiente.
+
+
+## 2026-10-08 — Corrección de registro — hardening RLS aplicado
+- **Corrección de la entrada anterior:** el DDL productivo dejó de estar pendiente. Se aplicaron siete migraciones pequeñas de `ALTER POLICY` sobre Supabase Informe360 para cerrar relaciones inter-organización ambiguas en versiones, ejecuciones, respuestas y vínculos a hallazgos.
+- **Verificación:** Supabase lista las siete migraciones nuevas y las políticas críticas inspeccionadas ya contienen referencias explícitas a la organización de la fila externa.
+- **Datos:** las tablas de formularios seguían sin filas al momento de la auditoría, reduciendo riesgo de incompatibilidad con datos existentes.
+- **Readiness:** se añadió un contrato explícito al health de E1 QA para separar liveness de readiness/capacidades.
+- **QA final:** `dep-db3hr9ei0phs73a8h3tg` SUCCEEDED sobre `646e70a28e4c1a459ec1ce66d372a8d6f09fc545`.
+- **Producción web:** sigue sin promoción de E1. El runtime actualmente publicado reporta ausencia de credencial server-side de Supabase, WhatsApp no configurado y AI en fallback manual; mantener release bloqueado hasta resolver configuración y smoke real.
