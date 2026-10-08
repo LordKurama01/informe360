@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import Link from 'next/link';
 import styles from './LandingMobile.module.css';
 
@@ -20,17 +21,17 @@ export function LandingMobile() {
     <main className={styles.page}>
       <header className={styles.header}>
         <Link href="/" className={styles.brand} aria-label="Informe360 inicio">
-          <span>360</span>
-          <strong>Informe360</strong>
+          <Image src="/brand/informe360-hse/mark-light.png" alt="" width={38} height={38} className={styles.logoImage} priority />
+          <span className={styles.brandText}><strong>Informe360</strong><small>HSE Copilot</small></span>
         </Link>
         <Link href="/login" className={styles.loginButton}>Ingresar</Link>
       </header>
 
       <section className={styles.hero}>
-        <span className={styles.kicker}>Informes para campo</span>
-        <h1>Informes t&eacute;cnicos listos para entregar.</h1>
+        <span className={styles.kicker}>HSE para campo</span>
+        <h1>Inspecciones y evidencia, sin doble carga.</h1>
         <p>
-          Cargas visita, evidencia y checklist. Informe360 arma informe editable, acciones SMART, normativa relacionada, PDF profesional y seguimiento.
+          Registrás la recorrida desde el teléfono. Informe360 ordena evidencia, hallazgos, acciones y el informe final en el mismo flujo.
         </p>
 
         <section className={styles.planCard} aria-label="Plan Profesional">
