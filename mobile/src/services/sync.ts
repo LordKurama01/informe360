@@ -2,19 +2,17 @@ import { deletePersistedCapture } from './media';
 import { hasInternetConnection } from './network';
 import { listOfflineCaptures, markOfflineCaptureFailure, removeOfflineCapture } from './offline-queue';
 import { processCapture } from './capture-pipeline';
+import { eligibleForSync, type Scope as SyncScope } from './sync-scope';
 
 export type SyncResult = { attempted: number; synced: number; failed: number; pending: number; online: boolean };
 
-export type SyncScope = { organizationId: string; userId: string };
 let inFlight: Promise<SyncResult> | null = null;
 
 async function performSync(scope: SyncScope): Promise<SyncResult> {
   const online = await hasInternetConnection();
   const items = await listOfflineCaptures();
   // Legacy captures without an owner remain on-device for deliberate recovery.
-  const eligible = items.filter(item =>
-    item.ownerUserId === scope.userId && item.workspace.organizationId === scope.organizationId
-  );
+  const eligible = eligibleForSync(items, scope);
   if (!online || !eligible.length) return { attempted: 0, synced: 0, failed: 0, pending: items.length, online };
 
   let synced = 0;
