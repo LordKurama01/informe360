@@ -16,7 +16,7 @@
     "test:hse:web": "node scripts/check-hse-web-premium.mjs",
     "test:hse:branding": "node scripts/check-hse-branding.mjs",
     "test:hse:landing-brand": "node scripts/check-hse-landing-brand.mjs",
-    "test:hse:form-rls": "node scripts/check-hse-form-rls.mjs",
+    "test:hse:form-rls": "node scripts/check-hse-form-rls-v2.mjs",
     "test:mobile:structure": "node scripts/check-mobile-p0.mjs",
     "test:mobile:ui": "node scripts/check-mobile-premium-ui.mjs",
     "test:mobile:assets": "node scripts/check-mobile-brand-assets.mjs",
