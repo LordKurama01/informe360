@@ -4,18 +4,19 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { createHseReport, getCurrentHseUser, getHseFindings, getHseSummary, getHseWorkspace, hseSignIn, hseSignOut, hseSignUp, listHseReports, type HseReportRow, type HseFinding, type HseSummary, type HseWorkspace } from '@/services/hse/browser';
+import { createHseReport, getCurrentHseUser, getHseFindings, getHseSummary, getHseWorkspace, hseSignIn, hseSignOut, hseSignUp, listHseReports, getHseReminders, type HseReminder, type HseReportRow, type HseFinding, type HseSummary, type HseWorkspace } from '@/services/hse/browser';
 import styles from './HseControl.module.css';
 import { formatClosureCompliance, formatHseCount, hseDataStatusLabel, type HseDataStatus } from '@/shared/hse/dashboard-metrics';
 import { installStandardInspectionTemplates, listFormRuns, listFormTemplates, startHseInspection, type HseFormRunRow, type HseFormTemplate } from '@/services/hse/forms-browser';
 import { filterInspectionRuns, inspectionStatusLabel, selectHseInspections, type InspectionRunFilter } from '@/shared/hse/inspection-view';
 import { HseInspectionRunPanel } from './HseInspectionRunPanel';
 import { HseFormsPanel } from './HseFormsPanel';
+import { HseAgendaPanel } from './HseAgendaPanel';
 
 type Filter = 'open'|'overdue'|'upcoming'|'critical'|'closed'|'all';
 const emptySummary: HseSummary = { open:0, overdue:0, dueNext7Days:0, closed:0, closedOnTime:0, closureCompliancePct:0, criticalOpen:0 };
 
-export function HseControl({ mode = 'overview', inspectionRunId }: { mode?: 'overview' | 'reports' | 'inspections' | 'inspection-run' | 'forms'; inspectionRunId?: string }) {
+export function HseControl({ mode = 'overview', inspectionRunId }: { mode?: 'overview' | 'reports' | 'inspections' | 'inspection-run' | 'forms' | 'agenda'; inspectionRunId?: string }) {
   const router = useRouter();
   const [booting, setBooting] = useState(true);
   const [showSlowBoot, setShowSlowBoot] = useState(false);
@@ -28,6 +29,8 @@ export function HseControl({ mode = 'overview', inspectionRunId }: { mode?: 'ove
   const [searchPending, setSearchPending] = useState(false);
   const [searchError, setSearchError] = useState<string | null>(null);
   const [reports, setReports] = useState<HseReportRow[]>([]);
+  const [agendaFindings, setAgendaFindings] = useState<HseFinding[]>([]);
+  const [agendaReminders, setAgendaReminders] = useState<HseReminder[]>([]);
   const [inspectionTemplates, setInspectionTemplates] = useState<HseFormTemplate[]>([]);
   const [inspectionRuns, setInspectionRuns] = useState<HseFormRunRow[]>([]);
   const [inspectionMessage, setInspectionMessage] = useState<string | null>(null);
@@ -57,6 +60,9 @@ export function HseControl({ mode = 'overview', inspectionRunId }: { mode?: 'ove
     if (nextWorkspace) {
       if (mode === 'reports') {
         setReports(await listHseReports(nextWorkspace));
+      } else if (mode === 'agenda') {
+        const [nextFindings,nextReminders] = await Promise.all([getHseFindings(nextWorkspace),getHseReminders(nextWorkspace)]);
+        setAgendaFindings(nextFindings);setAgendaReminders(nextReminders);
       } else if (mode === 'forms') {
         setInspectionTemplates(await listFormTemplates(nextWorkspace));
       } else if (mode === 'inspections') {
@@ -255,7 +261,7 @@ export function HseControl({ mode = 'overview', inspectionRunId }: { mode?: 'ove
         {mode === 'overview' ? <button className={styles.navItem} onClick={()=>setFilter('open')}><span>02</span>Hallazgos</button> : <Link className={styles.navItem} href="/app/hse"><span>02</span>Hallazgos</Link>}
         <Link className={`${styles.navItem} ${mode === 'inspections' || mode === 'inspection-run' ? styles.navItemActive : ''}`} aria-current={mode === 'inspections' || mode === 'inspection-run' ? 'page' : undefined} href="/app/hse/inspections"><span>03</span>Inspecciones</Link>
         <Link className={`${styles.navItem} ${mode === 'forms' ? styles.navItemActive : ''}`} aria-current={mode === 'forms' ? 'page' : undefined} href="/app/hse/forms"><span>04</span>Formularios</Link>
-        <Link className={styles.navItem} href="/app/calendar"><span>05</span>Agenda</Link>
+        <Link className={`${styles.navItem} ${mode === 'agenda' ? styles.navItemActive : ''}`} aria-current={mode === 'agenda' ? 'page' : undefined} href="/app/hse/agenda"><span>05</span>Agenda</Link>
         <Link className={`${styles.navItem} ${mode === 'reports' ? styles.navItemActive : ''}`} href="/app/hse/reports" aria-current={mode === 'reports' ? 'page' : undefined}><span>06</span>Informes</Link>
       </nav>
       <div className={styles.sideStatus}><span className={styles.liveDot}/><div><b>{workspace.organizationName}</b><small>{workspace.siteName||'Sitio operativo'}</small></div></div>
@@ -269,7 +275,7 @@ export function HseControl({ mode = 'overview', inspectionRunId }: { mode?: 'ove
       </header>
 
       <div className={styles.workspace}>
-        {mode === 'forms' ? <HseFormsPanel workspace={workspace} templates={inspectionTemplates} onRefresh={async () => { setInspectionTemplates(await listFormTemplates(workspace)); }}/> : mode === 'inspection-run' && inspectionRunId ? <HseInspectionRunPanel workspace={workspace} runId={inspectionRunId}/> : mode === 'inspections' ? <>
+        {mode === 'agenda' ? <HseAgendaPanel workspace={workspace} findings={agendaFindings} reminders={agendaReminders} onRefresh={async () => { const [a,b] = await Promise.all([getHseFindings(workspace),getHseReminders(workspace)]); setAgendaFindings(a);setAgendaReminders(b); }}/> : mode === 'forms' ? <HseFormsPanel workspace={workspace} templates={inspectionTemplates} onRefresh={async () => { setInspectionTemplates(await listFormTemplates(workspace)); }}/> : mode === 'inspection-run' && inspectionRunId ? <HseInspectionRunPanel workspace={workspace} runId={inspectionRunId}/> : mode === 'inspections' ? <>
           <section className={styles.hero}>
             <div>
               <span className={styles.eyebrowLight}>INSPECCIONES HSE</span>
