@@ -179,3 +179,13 @@
 - **UI:** auth oscuro usa `informe360-hse-oscuro.svg`; superficies claras usan `informe360-hse-claro.svg`; watermark/branding web usan assets vectoriales válidos y sin optimizador de imagen.
 - **Gate:** `check-hse-branding.mjs` ahora valida contenido SVG y rechaza que vuelvan a usarse los PNG legacy rotos. Render build reportó `Informe360 HSE branding contract OK`.
 - **Deploy QA web:** `dep-db3q56l9fdbs73eqeup0` sobre SHA `58a7c5133062c3a18cf17fa9e8b0fbb0aa5ecccb`; build SUCCEEDED y servicio arrancó Next.js correctamente. Producción no fue modificada.
+
+
+## 2026-10-08 — EWEB.P1 — Demo fuera + informes reales bajo navegación HSE
+- **Solicitud:** eliminar «Demo» y corregir que Informes parecía otra aplicación.
+- **Hallazgo:** botón `Demo` llamaba a `seed_hse_demo` y la ruta `/app/reports` usaba CSS azul oscuro y lista de 3 informes inventados, sin el panel HSE; la navegación lateral apuntaba a ese módulo legado.
+- **Cambios:** `src/blocks/hse-control/HseControl.tsx` commit `72cff59`: eliminar siembra UI, modo informes bajo carcasa única, menú activo, búsqueda, lista/estado vacío y vínculo a informe real. `src/services/hse/browser.ts` commit `131afef`: consulta de `reports` por organización y sitio usando RLS. `src/app/app/hse/reports/page.tsx` commit `e39ed6a`: ruta dedicada. `src/app/app/reports/page.tsx` commit `2802da6`: redirigir sólo HSE QA preservando legado de otras superficies en `LegacyReports.tsx` commit `80227af`. `HseControl.module.css` commit `e786e6e`: filas y responsive. `scripts/check-hse-reports-unification.mjs` y `package.json` commits `d3d9369` y `5b8f1d3`: tests integrados.
+- **QA Render Web:** `dep-db3qf0ad0e5s73b6jh4g` **LIVE**, SHA funcional `5b8f1d3a0fbd565f11b5a6157c35c9187d1f3aa8`, `test:hse:reports` pasó con mensaje `HSE reports unified navigation and real-data contract OK`. Build y deploy completados.
+- **No ejecutado:** prueba de navegación en navegador autenticado, verificación visual con captura nueva, pruebas cruzadas con otras empresas ni nueva APK.
+- **Infra:** solo Render Web QA `srv-db3pmdbncjis73bbrvig` con autoDeploy=no, sin cambios de Supabase ni Render producción, sin registros ficticios agregados.
+- **Estado:** EWEB.P1 IMPLEMENTADA Y VALIDADA POR BUILD/QA ESTRUCTURAL; validación visual pendiente. **Siguiente:** EWEB.P2 integrar Inspecciones al mismo shell, después EWEB.P3 Formularios, EWEB.P4 Agenda, EWEB.P5 aceptación visual.
