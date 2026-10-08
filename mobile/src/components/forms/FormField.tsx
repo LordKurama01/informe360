@@ -1,9 +1,10 @@
 import { useState } from 'react';
-import { Image, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Alert, Image, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import type { HseFormField, HseLeafField } from '../../types/forms';
 import { theme } from '../../theme';
 import { RiskMatrixField } from './RiskMatrixField';
+import { compressEvidenceImage, persistCaptureFile } from '../../services/media';
 
 export function FormField({ field, value, onChange, error }: { field: HseFormField; value: unknown; onChange(value: unknown): void; error?: string }) {
   return <View style={styles.block}>
@@ -36,7 +37,14 @@ function PhotoField({ value, onChange }: { value: unknown; onChange(value: unkno
     const permission = await ImagePicker.requestCameraPermissionsAsync();
     if (!permission.granted) return;
     const result = await ImagePicker.launchCameraAsync({ mediaTypes: ['images'], quality: 0.65 });
-    if (!result.canceled && result.assets[0]?.uri) onChange(result.assets[0].uri);
+    if (!result.canceled && result.assets[0]?.uri) {
+      try {
+        const image = await compressEvidenceImage(result.assets[0].uri);
+        onChange(await persistCaptureFile(image.uri, 'jpg'));
+      } catch {
+        Alert.alert('Foto no guardada', 'No se pudo conservar la evidencia en este teléfono.');
+      }
+    }
   }
   return <View style={styles.photoWrap}>{uri ? <Image source={{ uri }} style={styles.photo}/> : <View style={styles.photoEmpty}><Text style={styles.photoEmptyIcon}>▣</Text><Text style={styles.photoEmptyText}>Sin foto adjunta</Text></View>}<Pressable accessibilityRole="button" onPress={() => void pick()} style={({ pressed }) => [styles.photoButton, pressed && styles.pressed]}><Text style={styles.photoButtonText}>{uri ? 'Reemplazar foto' : 'Tomar foto'}</Text></Pressable></View>;
 }
