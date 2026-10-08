@@ -2,8 +2,10 @@ import type { Metadata } from 'next';
 import './globals.css';
 
 const description = 'Herramienta HSE mobile-first para capturar hallazgos, gestionar acciones, inspecciones, evidencias y seguimiento operativo.';
+const appUrl = process.env.NEXT_PUBLIC_APP_URL?.trim() || 'https://informe360-hse.onrender.com';
 
 export const metadata: Metadata = {
+  metadataBase: new URL(appUrl),
   title: 'Informe360 HSE Copilot',
   description,
   icons: {
@@ -18,6 +20,7 @@ export const metadata: Metadata = {
     title: 'Informe360 HSE Copilot',
     description,
     type: 'website',
+    url: appUrl,
     images: [
       {
         url: '/brand/informe360-hse/og-image.jpg',
