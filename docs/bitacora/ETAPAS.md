@@ -78,3 +78,12 @@ RAG documental con citas, EPP/visión computacional, capacitación masiva, marke
 - E1.P1 VALIDADA auditoría; E1.P2/P3 EN CURSO; E1.P4: **QA web/JS VALIDADA parcialmente**, **QA nativa física, seguridad y offline integral PENDIENTES**. Se conservan los gates E1 originales.
 - No confundir export web con compilación nativa ni deploy LIVE con prueba end-to-end.
 - La siguiente parte material es **E1.P2: fotos privadas de formularios y lectura remota**, seguida de creación offline y prueba idempotente en E1.P3.
+
+
+## Etapa transversal de experiencia móvil
+
+- **E1.UX.P1 — Login [IMPLEMENTADA CON QA DE BUILD, revisión visual física PENDIENTE]:** usar el sistema visual industrial nativo, sin bloque textual “360”. Ver [bitácora de acceso](E1_UX_LOGIN_2026-10-07.md) y Render LIVE `dep-db3gbu3tqb8s73dsunf0`.
+- **E1.UX.P2 — Onboarding [PENDIENTE]:** sustituir el centrado excesivo y mantener consistencia con login; preservar creación real de workspace.
+- **E1.UX.P3 — Branding APK/iOS [BLOQUEADA]:** reemplazar y verificar PNG inválidos antes de build nativo.
+- **E1.UX.P4 — QA Android/iOS [PENDIENTE]:** dispositivo físico, teclado, safe areas, estados error/loading y navegación; nunca equiparar Expo Web a UX nativa validada.
+- El diseño HSE debe priorizar campo, alto contraste, tipografía legible, una acción primaria, objetivos táctiles >=44pt, persistencia offline y ausencia de textos de demo prominentes.
