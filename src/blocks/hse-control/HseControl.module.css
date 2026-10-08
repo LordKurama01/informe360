@@ -41,3 +41,13 @@
 }
 
 @media print{.appShell,.reportShell{background:#fff}.sideNav,.mobileDock,.printActions{display:none}.mainArea{padding:0}.reportShell{border:0;margin:0;max-width:none;padding:0}}
+
+
+/* Unified HSE technical reports: reuse shell, typography and palette. */
+.reportRow{display:flex;align-items:center;justify-content:space-between;gap:20px;padding:19px 20px;border:1px solid #dde3dc;border-radius:15px;background:#fff;color:#17211f;text-decoration:none;transition:border-color .16s ease,background-color .16s ease}
+.reportRow:hover,.reportRow:focus-visible{border-color:#78a89d;background:#f6faf7;outline:none}
+.reportRowContent{min-width:0;display:grid;gap:7px}
+.reportRowContent h3{margin:0;font-size:16px;line-height:1.35;font-weight:850;color:#17211f}
+.reportRowAction{display:flex;align-items:center;gap:16px;flex:none;white-space:nowrap;font-size:12px;font-weight:800;color:#0a6658}
+.reportStartLink{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:0 14px;border-radius:10px;background:#0d1715;color:#fff;text-decoration:none;font-size:12px;font-weight:800;margin-top:12px}
+@media(max-width:760px){.reportRow{padding:15px;align-items:flex-start;flex-direction:column;gap:12px}.reportRowAction{align-self:flex-end}}
