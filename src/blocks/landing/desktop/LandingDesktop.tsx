@@ -61,7 +61,7 @@ export function LandingDesktop() {
               </div>
             </div>
 
-            <p>Incluye informes tecnicos, evidencia, checklist HSE, acciones SMART, normativa relacionada, PDF profesional y soporte inicial por WhatsApp.</p>
+            <p>Incluye inspecciones HSE, formularios versionados, evidencia, hallazgos, acciones SMART, trazabilidad, PDF profesional y soporte inicial.</p>
 
             <a className={styles.contractButton} href={contractHref} target="_blank" rel="noreferrer" onClick={trackContract}>
               Contratar
@@ -76,16 +76,16 @@ export function LandingDesktop() {
           </div>
 
           <section className={styles.reportPreview}>
-            <small>Informe generado</small>
-            <h2>Mejoras y mantenimiento de unidad</h2>
-            <p>Resumen ejecutivo, hallazgos, detalle tecnico y conclusion.</p>
+            <small>Inspección cerrada</small>
+            <h2>Recorrida HSE · Área operativa</h2>
+            <p>Hallazgos, evidencia, responsables, vencimientos y cierre técnico.</p>
           </section>
 
           <div className={styles.outputGrid}>
             <section>
               <small>Evidencia</small>
-              <strong>3 fotos</strong>
-              <span>Checklist HSE</span>
+              <strong>3 evidencias</strong>
+              <span>Registro trazable</span>
             </section>
             <section>
               <small>Acciones</small>
@@ -96,7 +96,7 @@ export function LandingDesktop() {
 
           <section className={styles.deliveryBox}>
             <small>Entrega</small>
-            <strong>PDF listo + resumen para compartir</strong>
+            <strong>PDF profesional + historial operativo</strong>
           </section>
         </aside>
       </section>
@@ -104,7 +104,7 @@ export function LandingDesktop() {
       <section id="resultado" className={styles.resultSection}>
         <div className={styles.sectionIntro}>
           <span className={styles.kicker}>Resultado</span>
-          <h2>Menos armado manual. Mas entrega profesional.</h2>
+          <h2>De la recorrida al cierre, sin reconstruir el informe a mano.</h2>
         </div>
 
         <div className={styles.benefits}>
