@@ -90,3 +90,33 @@
 .inspectionState{display:inline-flex;align-items:center;min-height:28px;white-space:nowrap;background:#eaf5ef;color:#176550;border:1px solid #d2e7db;border-radius:999px;padding:5px 10px;font-size:11px;font-weight:850}
 .inspectionSuccess{border:1px solid #c9e3d5;background:#eef8f1;color:#176550;border-radius:12px;padding:13px 15px;font-size:13px;font-weight:700}
 @media(max-width:760px){.inspectionActions{width:100%;justify-content:stretch}.inspectionActions .secondary,.inspectionActions .reportStartLink{flex:1 1 auto;text-align:center;min-width:0}.inspectionCards{grid-template-columns:1fr}.inspectionCard{padding:17px}}
+
+
+/* EWEB.P2.4: editable, versioned inspection runs — same HSE web shell. */
+.inspectionCardFooter{margin-top:auto;width:100%;padding-top:12px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px}
+.inspectionCardFooter .secondary{min-height:44px;padding:8px 12px}
+.inspectionRunStatus{font-size:28px!important;line-height:1.15!important}
+.inspectionSection{padding:22px 0;border-top:1px solid #e0e7df;display:grid;gap:14px}
+.inspectionSection h3{margin:0;color:#17211f;font-size:19px}
+.inspectionSection>p{margin:0;color:#5d6f67;font-size:13px}
+.inspectionField{display:grid;gap:9px}
+.inspectionLabel{font-size:13px;font-weight:850;color:#20362e}
+.inspectionFieldHint{color:#6d776f;font-size:12px;line-height:1.5;margin:0}
+.inspectionInput{min-height:48px;border:1px solid #d4dfd8;border-radius:12px;padding:10px 12px;font:inherit;background:white;color:#12231c;min-width:0;width:100%;box-sizing:border-box}
+.inspectionInput:focus-visible{outline:2px solid #147667;outline-offset:2px}
+.inspectionInput:disabled{background:#edf0ec;color:#66756d;cursor:default}
+.inspectionChoices{display:flex;gap:10px;flex-wrap:wrap}
+.inspectionChoices label{display:grid;gap:8px;flex:1 1 170px;font-size:12px;color:#506057}
+.inspectionChoice{min-height:48px;border-radius:12px;padding:10px 16px;border:1px solid #d1ddd4;background:#fff;color:#1d372d;font:inherit;font-size:13px;font-weight:750;cursor:pointer}
+.inspectionChoiceActive,.inspectionChoice[aria-pressed=true]{background:#133d32;border-color:#133d32;color:#fff}
+.inspectionChoice:focus-visible{outline:2px solid #b9773f;outline-offset:2px}
+.inspectionChoice:disabled{opacity:.65;cursor:default}
+.inspectionSubmit{display:flex;justify-content:flex-end;align-items:center;gap:12px;flex-wrap:wrap;margin-top:25px}
+.inspectionSubmit>button{min-width:170px}
+.inspectionPhoto{display:grid;justify-items:start;gap:9px;padding:15px;background:#f2f5ef;border-radius:14px;font-size:13px;color:#607068}
+.inspectionPreview{max-width:min(100%,560px);width:100%;height:auto;object-fit:contain;border-radius:12px}
+.inspectionUpload{position:relative;display:inline-flex;min-height:45px;align-items:center;justify-content:center;cursor:pointer;padding:10px 15px;border-radius:11px;background:#1d4b3b;color:#fff;font-size:12px;font-weight:800;overflow:hidden}
+.inspectionUpload input{position:absolute;inset:0;width:100%;opacity:0;cursor:pointer}
+.inspectionError{color:#a9342a;font-size:12px}
+@media(max-width:760px){.inspectionChoices{display:grid;grid-template-columns:1fr;gap:7px}.inspectionChoice{width:100%}.inspectionSubmit>button{width:100%}.inspectionCardFooter{align-items:stretch}.inspectionCardFooter .secondary{width:100%}}
+@media(prefers-reduced-motion:reduce){.inspectionChoice{transition:none}}
