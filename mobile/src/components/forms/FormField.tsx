@@ -1,10 +1,12 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Alert, Image, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import type { HseFormField, HseLeafField } from '../../types/forms';
 import { theme } from '../../theme';
 import { RiskMatrixField } from './RiskMatrixField';
 import { compressEvidenceImage, persistCaptureFile } from '../../services/media';
+import { photoStoragePath } from '../../services/form-evidence';
+import { signedFormPhoto } from '../../services/form-media';
 
 export function FormField({ field, value, onChange, error }: { field: HseFormField; value: unknown; onChange(value: unknown): void; error?: string }) {
   return <View style={styles.block}>
@@ -32,7 +34,21 @@ function ChoiceRow({ options, value, onChange }: { options: Array<[string,string
 function Choice({ label, active, onPress }: { label: string; active: boolean; onPress(): void }) { return <Pressable accessibilityRole="button" onPress={onPress} style={({ pressed }) => [styles.choice, active && styles.choiceOn, pressed && styles.pressed]}><Text style={[styles.choiceText, active && styles.choiceTextOn]}>{label}</Text></Pressable>; }
 
 function PhotoField({ value, onChange }: { value: unknown; onChange(value: unknown): void }) {
-  const uri = typeof value === 'string' ? value : null;
+  const raw = typeof value === 'string' ? value : null;
+  const remote = Boolean(photoStoragePath(raw));
+  const [uri, setUri] = useState<string | null>(remote ? null : raw);
+  const [previewError, setPreviewError] = useState(false);
+
+  useEffect(() => {
+    if (!raw || !photoStoragePath(raw)) { setUri(raw); setPreviewError(false); return; }
+    let active = true;
+    setUri(null);
+    setPreviewError(false);
+    void signedFormPhoto(raw).then(url => { if (active) setUri(url); })
+      .catch(() => { if (active) setPreviewError(true); });
+    return () => { active = false; };
+  }, [raw]);
+
   async function pick() {
     const permission = await ImagePicker.requestCameraPermissionsAsync();
     if (!permission.granted) return;
@@ -46,7 +62,7 @@ function PhotoField({ value, onChange }: { value: unknown; onChange(value: unkno
       }
     }
   }
-  return <View style={styles.photoWrap}>{uri ? <Image source={{ uri }} style={styles.photo}/> : <View style={styles.photoEmpty}><Text style={styles.photoEmptyIcon}>▣</Text><Text style={styles.photoEmptyText}>Sin foto adjunta</Text></View>}<Pressable accessibilityRole="button" onPress={() => void pick()} style={({ pressed }) => [styles.photoButton, pressed && styles.pressed]}><Text style={styles.photoButtonText}>{uri ? 'Reemplazar foto' : 'Tomar foto'}</Text></Pressable></View>;
+  return <View style={styles.photoWrap}>{uri ? <Image source={{ uri }} style={styles.photo}/> : <View style={styles.photoEmpty}><Text style={styles.photoEmptyIcon}>▣</Text><Text style={styles.photoEmptyText}>{previewError ? 'No se pudo mostrar la foto privada' : remote ? 'Cargando foto protegida…' : 'Sin foto adjunta'}</Text></View>}<Pressable accessibilityRole="button" onPress={() => void pick()} style={({ pressed }) => [styles.photoButton, pressed && styles.pressed]}><Text style={styles.photoButtonText}>{raw ? 'Reemplazar foto' : 'Tomar foto'}</Text></Pressable></View>;
 }
 
 function RepeaterField({ fields, value, onChange }: { fields: HseLeafField[]; value: unknown; onChange(value: unknown): void }) {
