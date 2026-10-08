@@ -54,6 +54,8 @@ test('HSE web route and app native shell remain separate',async()=>{
   for(const mode of ['forms','agenda','inspections','reports'])assert.match(control,new RegExp("mode === '"+mode+"'"));
   assert.match(css,/\.formsEditorGrid\{/);
   assert.match(css,/\.agendaColumns\{/);
+  assert.match(control,/href="\/app\/hse\/forms">Formularios<\/Link>/, 'responsive web must expose Formularios');
+  assert.match(css,/grid-template-columns:repeat\(5,minmax\(0,1fr\)\)/, 'mobile web header fits all five sections');
   assert.match(app,/Platform\.OS === 'web' && width >= 760/);
   assert.doesNotMatch(control,/seedHseDemo|>Demo</);
 });
