@@ -97,3 +97,12 @@ La E1 se ejecuta aisladamente en `feat/hse-e1-offline-resilience-2026-10-08` con
 - Último deploy funcional certificado en Render QA: `dep-db3g6l7avr4c739lltog`, estado **LIVE**, SHA `941247fa11bc249ec90f0247473db414a2dbb500`. Cubre media privada y wizard por pasos; tests y compilación RN/Web correctos.
 - Fuente: [QA_RENDER_2026-10-07.md](QA_RENDER_2026-10-07.md). Es una prueba técnica, **no una APK/iOS ni un test funcional con credenciales**.
 - **Foco de continuidad E1.P3:** creación y reanudación de inspecciones 100% offline con plantillas cacheadas, aislamiento por cuenta y sincronización; RLS form_answers antes del release. E1.P4 dispositivos pendientes.
+
+
+## 11. Cambio visual del login y QA
+
+- Cambio solicitado al observar captura del acceso QA: muy espaciado y con un logo genérico; corregido con hero industrial compacto, casco dibujado en RN, CTA único y validaciones inline. Ver [E1_UX_LOGIN_2026-10-07.md](E1_UX_LOGIN_2026-10-07.md).
+- **QA Render LIVE:** `dep-db3gbu3tqb8s73dsunf0`, SHA funcional `ede4b812da2713282fe85c773b6fde7553d38776`. `npm run qa`, mobile TypeScript y Expo Web export validados; navegador puede abrir [preview](https://informe360-hse-e1-qa.onrender.com).
+- **P0 para APK/iOS:** íconos PNG de la marca en `mobile/assets/brand` no cumplen el decodificador Metro (error `Invalid png image asset`). El login dejó de depender de ellos, pero el empaquetado nativo requiere activos de marca válidos. No declarar APK compilada.
+- **Pendiente UI:** validación perceptual en teléfono, homogeneizar onboarding, probar login con usuario real, revisar estética de pantallas siguientes.
+- **Continúa:** E1.P3 inicio offline de inspecciones y E1.P4 QA nativa. Sin cambios en Render producción.
