@@ -31,16 +31,23 @@ export default function TabsLayout() {
 }
 
 const styles = StyleSheet.create({
-  bar: { height: 78, paddingTop: 7, paddingBottom: 9, backgroundColor: theme.colors.surface, borderTopColor: theme.colors.line, borderTopWidth: 1, ...theme.shadow.card },
-  item: { paddingVertical: 1 },
-  label: { fontSize: 9, fontWeight: '800', marginTop: 1 },
-  iconWrap: { width: 30, height: 27, borderRadius: 10, alignItems: 'center', justifyContent: 'center' },
-  iconWrapActive: { backgroundColor: theme.colors.primarySoft },
-  icon: { color: theme.colors.muted, fontSize: 18, fontWeight: '900' },
+  bar: {
+    height: 69, paddingTop: 5, paddingBottom: 7,
+    backgroundColor: '#FFFFFF', borderTopColor: '#E1E7E2', borderTopWidth: 1,
+  },
+  item: { paddingVertical: 0, justifyContent: 'center' },
+  label: { fontSize: 10, fontWeight: '700', marginTop: 2 },
+  iconWrap: { width: 30, height: 29, borderRadius: 9, alignItems: 'center', justifyContent: 'center' },
+  iconWrapActive: { backgroundColor: '#FDEFE5' },
+  icon: { color: '#74827D', fontSize: 20, fontWeight: '700' },
   iconActive: { color: theme.colors.primary },
-  captureButton: { flex: 1, alignItems: 'center', justifyContent: 'flex-start', marginTop: -19 },
-  captureCircle: { width: 58, height: 58, borderRadius: 29, backgroundColor: theme.colors.primary, borderWidth: 5, borderColor: theme.colors.bg, alignItems: 'center', justifyContent: 'center', ...theme.shadow.raised },
-  capturePlus: { color: theme.colors.white, fontSize: 30, lineHeight: 32, fontWeight: '500' },
-  captureLabel: { color: theme.colors.primary, fontSize: 9, fontWeight: '900', marginTop: 2 },
-  capturePressed: { opacity: 0.78, transform: [{ scale: 0.98 }] },
+  captureButton: { flex: 1, alignItems: 'center', justifyContent: 'center', marginTop: -5, gap: 1 },
+  captureCircle: {
+    width: 44, height: 44, borderRadius: 15,
+    backgroundColor: theme.colors.primary,
+    alignItems: 'center', justifyContent: 'center',
+  },
+  capturePlus: { color: '#FFFFFF', fontSize: 28, lineHeight: 31, fontWeight: '600' },
+  captureLabel: { color: theme.colors.primary, fontSize: 10, fontWeight: '800' },
+  capturePressed: { opacity: 0.78, transform: [{ scale: 0.96 }] },
 });
