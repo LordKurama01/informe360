@@ -132,3 +132,15 @@
 .formsContent>section{min-width:0}
 @media(max-width:960px){.formsEditorGrid{grid-template-columns:1fr}}
 @media(max-width:760px){.formsContent>header{padding:18px}.formsContent>header h1{font-size:25px!important}.formsContent>section{overflow-x:auto}}
+
+
+/* P4: HSE agenda, not the generic platform calendar. */
+.agendaColumns{display:grid;grid-template-columns:minmax(0,1fr) minmax(330px,.9fr);gap:16px;align-items:start}
+.agendaDate{font-size:12px;font-weight:800;white-space:nowrap;color:#9c5325}
+.agendaActions{display:flex;align-items:center;gap:7px;flex-wrap:wrap;justify-content:flex-end}
+.agendaActions .secondary{min-height:44px;font-size:12px}
+.agendaCreate{display:grid;gap:12px;background:#f0f4ef;border:1px solid #e1e9df;border-radius:15px;padding:16px;margin:8px 0 20px}
+.agendaCreate>label{display:grid;gap:5px;font-size:12px;font-weight:750;color:#2b4037}
+.agendaCreate>.primary{justify-self:start}
+@media(max-width:1200px){.agendaColumns{grid-template-columns:1fr}}
+@media(max-width:760px){.agendaCreate>.primary{width:100%}.agendaDate{white-space:normal}.agendaActions{justify-content:flex-start}}
