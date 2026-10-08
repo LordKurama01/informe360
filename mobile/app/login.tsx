@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import {
   ActivityIndicator,
-  Image,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -56,7 +55,11 @@ export default function Login() {
           <View style={styles.hero}>
             <View style={styles.heroAccent}/>
             <View style={styles.brandRow}>
-              <Image source={require('../assets/brand/app-icon.png')} resizeMode="contain" style={styles.brandImage} accessibilityLabel="Informe360 HSE"/>
+              <View style={styles.brandMark} accessible accessibilityLabel="Informe360 HSE, casco de seguridad">
+                <View style={styles.helmetDome}/>
+                <View style={styles.helmetRidge}/>
+                <View style={styles.helmetBrim}/>
+              </View>
               <View style={styles.brandCopy}>
                 <Text style={styles.brandName}>INFORME360</Text>
                 <Text style={styles.brandDescriptor}>HSE  /  FIELD OPERATIONS</Text>
@@ -160,7 +163,10 @@ const styles = StyleSheet.create({
   hero: { position: 'relative', backgroundColor: '#10282D', paddingTop: 26, paddingHorizontal: 25, paddingBottom: 71, overflow: 'hidden' },
   heroAccent: { position: 'absolute', right: -110, top: 48, width: 225, height: 225, borderWidth: 1, borderRadius: 115, borderColor: 'rgba(100,222,198,0.16)' },
   brandRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  brandImage: { width: 48, height: 48, borderRadius: 13, backgroundColor: '#0F514C' },
+  brandMark: { width: 48, height: 48, borderRadius: 13, backgroundColor: '#0F514C', alignItems: 'center', justifyContent: 'center' },
+  helmetDome: { position: 'absolute', top: 15, left: 11, width: 26, height: 17, borderTopLeftRadius: 14, borderTopRightRadius: 14, backgroundColor: '#E4F8F1' },
+  helmetRidge: { position: 'absolute', top: 12, left: 22, width: 4, height: 20, borderRadius: 3, backgroundColor: '#9EDBCD' },
+  helmetBrim: { position: 'absolute', top: 31, left: 7, width: 34, height: 4, borderRadius: 3, backgroundColor: '#E4F8F1' },
   brandCopy: { flex: 1, gap: 3 },
   brandName: { color: '#F5FFFF', fontSize: 17, fontWeight: '900', letterSpacing: 2.1 },
   brandDescriptor: { color: '#8CB6B3', fontSize: 9, fontWeight: '800', letterSpacing: 1.25 },
