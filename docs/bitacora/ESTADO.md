@@ -61,6 +61,196 @@ NO reiniciar Informe360. NO importar otra app completa. Mantener una fuente de v
 
 
 - **Trabajo de este ciclo:** E0 — protocolo, bitácora y PR documental creados y verificados (sin merge).
-- **Bloque funcional siguiente:** E1.P1 — primero diagnosticar falla CI heredada, luego auditar guardado local y sincronización preexistentes, inventario de pruebas y fallos. **No implementar hasta leer el registro y comprobar HEAD, código y CI.**
+- **Bloque funcional siguiente (actualizado):** E1.P2 / E1.P3 restantes: referencia remota segura a fotos, recuperación legacy e idempotencia end-to-end. E1.P4 QA pendiente. **Primero comprobar HEAD, PR #3 y logs CI; no desplegar.**
 - **Estado de cierre:** leer la última entrada de [REGISTRO.md](REGISTRO.md). Si el PR de bitácora sigue abierto, tomar los archivos de la rama documental; mantenerlo separado de Render.
 - **Orden futura «seguí»:** verificar GitHub y estado real; completar el primer paso pendiente de ETAPAS, registrar resultado y siguiente paso. No pedir al usuario repetir este contexto.
+
+
+## 7. Avance posterior a snapshot — 2026-10-07
+
+La E1 se ejecuta aisladamente en `feat/hse-e1-offline-resilience-2026-10-08` con [PR #3](https://github.com/LordKurama01/informe360/pull/3) borrador, destino rama documental. **No integra ni despliega**. Revisar [E1_AVANCE_2026-10-07.md](E1_AVANCE_2026-10-07.md) y última entrada de REGISTRO.
+
+- E1.P1: auditoría concluida.
+- E1.P2 y E1.P3: implementaciones parciales con tests puros acotados; **NO listas para producción**.
+- E1.P4: pendiente. CI [falló en rama funcional](https://github.com/LordKurama01/informe360/actions/runs/37716323412) antes de ejecutar pasos. Causa no confirmada.
+- Regla: evitar duplicar fotos o interpretarlas como evidencia cloud si siguen como URI local. Proteger datos previos y producción.
+
+## 8. QA Render (actualización 2026-10-07)
+
+- **QA aislado en Render confirmado LIVE:** [informe360-hse-e1-qa](https://informe360-hse-e1-qa.onrender.com), servicio `srv-db3fsnnavr4c739kgeag`, despliegue `dep-db3fucl9fdbs73dke9dg` sobre código `10ea3b1fe21c29b2306dbbdd8b983739b69a2075`.
+- `npm run qa` web + TypeScript mobile + Expo web export **PASARON** en Render. Ver [QA_RENDER_2026-10-07.md](QA_RENDER_2026-10-07.md).
+- Producción Render `informe360-hse` permanece LIVE en `422f8bcbce65b3e68f892d51d37b1ed0999690c5`, sin cambios de código/servicio.
+- **Faltan:** fotos de formularios en Storage privado y firma/visualización remota; arranque de nuevas inspecciones sin red; QA Android/iOS físico; revisión real de RLS y 28 avisos npm (10 moderate, 18 high).
+- **Reanudación:** E1.P2 y E1.P3 restantes, no habilitar E2 ni release. AutoDeploy desactivado en QA para evitar gasto innecesario de minutos.
+
+## 9. Estado E1.P2 — fotografías y UX móvil (actualización)
+
+- Fotos de formularios y repetidores se preparan para Storage privado y se referencian con `hse-evidence:`, no rutas locales persistidas en respuestas cloud; firmado temporal y visualización en app. Implementado en [PR #3](https://github.com/LordKurama01/informe360/pull/3), **NO desplegado a producción ni probado con imagen real en móvil**.
+- Formularios divididos en pasos nativos con validación, barra de progreso y auto-scroll al paso siguiente. QA funcional táctil pendiente.
+- Render QA `dep-db3g4ufavr4c739leo6g`: LIVE para motor de fotos; builds posteriores detectaron tipado incorrecto del ancho del progreso, corregido en `941247fa...` y pendiente de verificación del deploy `dep-db3g6l7avr4c739lltog`.
+- **Seguridad release gate:** revisar integridad referencial y permisos de modificación RLS para `form_answers`, sin cambiar producción antes de una migración auditada y QA negativa multi-organización. Bucket `hse-evidence` confirmado privado.
+- **Próximo:** terminar E1.P3 (inicio offline desde plantillas persistidas y pruebas de sincronización), y E1.P4 en dispositivos Android/iOS y revisión de dependencias.
+
+
+## 10. Confirmación QA UX y fotos
+
+- Último deploy funcional certificado en Render QA: `dep-db3g6l7avr4c739lltog`, estado **LIVE**, SHA `941247fa11bc249ec90f0247473db414a2dbb500`. Cubre media privada y wizard por pasos; tests y compilación RN/Web correctos.
+- Fuente: [QA_RENDER_2026-10-07.md](QA_RENDER_2026-10-07.md). Es una prueba técnica, **no una APK/iOS ni un test funcional con credenciales**.
+- **Foco de continuidad E1.P3:** creación y reanudación de inspecciones 100% offline con plantillas cacheadas, aislamiento por cuenta y sincronización; RLS form_answers antes del release. E1.P4 dispositivos pendientes.
+
+
+## 11. Cambio visual del login y QA
+
+- Cambio solicitado al observar captura del acceso QA: muy espaciado y con un logo genérico; corregido con hero industrial compacto, casco dibujado en RN, CTA único y validaciones inline. Ver [E1_UX_LOGIN_2026-10-07.md](E1_UX_LOGIN_2026-10-07.md).
+- **QA Render LIVE:** `dep-db3gbu3tqb8s73dsunf0`, SHA funcional `ede4b812da2713282fe85c773b6fde7553d38776`. `npm run qa`, mobile TypeScript y Expo Web export validados; navegador puede abrir [preview](https://informe360-hse-e1-qa.onrender.com).
+- **P0 para APK/iOS:** íconos PNG de la marca en `mobile/assets/brand` no cumplen el decodificador Metro (error `Invalid png image asset`). El login dejó de depender de ellos, pero el empaquetado nativo requiere activos de marca válidos. No declarar APK compilada.
+- **Pendiente UI:** validación perceptual en teléfono, homogeneizar onboarding, probar login con usuario real, revisar estética de pantallas siguientes.
+- **Continúa:** E1.P3 inicio offline de inspecciones y E1.P4 QA nativa. Sin cambios en Render producción.
+
+
+## 12. Release hardening y coherencia visual — 2026-10-08
+
+- **HEAD de entrada verificado:** `5a78a82005b5813c37b808f5da1a43e18a2192a3` en `feat/hse-e1-offline-resilience-2026-10-08`; PR #3 abierto en draft. Producción permanece en `feat/hse-phases-1-5` y no se autoriza merge/promoción durante este bloque.
+- **Objetivo aprobado:** revisar y mejorar coherencia visual web/móvil, eliminar marcas genéricas “360”, endurecer onboarding/registro, reparar activos nativos, ampliar QA y volver a validar en Render QA.
+- **Alcance de este bloque:** código y assets de la rama QA + documentación. Sin cambios de Supabase productivo ni de Render producción.
+- **Riesgos conocidos:** 28 advisories npm móviles pendientes de triage; build físico Android/iOS aún no ejecutado; job WhatsApp registró un 503 histórico que requiere revalidación separada.
+- **Criterio de cierre:** `npm run qa` + TypeScript móvil + Expo Web export en Render QA, verificación de assets nativos decodificables y smoke de rutas críticas. Si alguno falla, no promover.
+
+### Resultado del hardening
+- **Rama candidata:** `fix/hse-release-hardening-2026-10-08` sobre E1 QA; PR #4 abierto contra `feat/hse-e1-offline-resilience-2026-10-08`.
+- **Render QA aislado:** servicio `informe360-hse-hardening-qa` (`srv-db3hgrtg1s2s73ag2jdg`), deploy `dep-db3hgs5g1s2s73ag2ju0`, commit funcional `1168c390f97829798164fc9b5e0d155c7e906e69`: **BUILD SUCCEEDED / DEPLOY SUCCEEDED**.
+- **QA comprobada:** branding web, landing HSE, estructura/UI móvil, assets PNG nativos, login, onboarding, TypeScript web/móvil, ESLint, build Next y export Expo Web: **PASS**.
+- **Correcciones verificadas:** landing desktop/móvil usa marca HSE en vez del bloque genérico “360”; login/onboarding comparten paleta industrial; los tres PNG nativos son decodificables, cuadrados y >=512 px.
+- **No cerrado todavía:** 28 advisories npm móviles (10 moderate, 18 high), QA Android/iOS físico, RLS negativa multi-organización y revalidación del job WhatsApp. No usar `npm audit fix --force` sin triage.
+- **Producción:** no modificada en este bloque. No promover hasta integrar el hardening en E1 QA y volver a ejecutar el gate correspondiente.
+
+
+## 13. Hardening integrado + auditoría runtime/DB — 2026-10-08
+
+- **PR #4 integrado en E1 QA:** merge `b1fe12062d4f46eb325f054daa59ddcb4cf0ed40`. Producción `feat/hse-phases-1-5` no fue modificada.
+- **QA integrada final:** Render `informe360-hse-e1-qa`, deploy `dep-db3hpi59fdbs73ds5dog` sobre SHA funcional `3c8a86357b8c1e114ffe91d472ffbc7024496448`: BUILD y DEPLOY **SUCCEEDED**. Incluye branding, PNG nativos, login/onboarding, tests offline/sync/fotos, RLS contract, TypeScript, lint, Next build y Expo Web export.
+- **Supabase real:** proyecto Informe360 `wvjmsltqrztlvgmayicr` ACTIVE_HEALTHY. Bucket `hse-evidence` privado; políticas de Storage restringen por organización.
+- **Hallazgo de seguridad RLS:** las políticas vigentes de formularios contienen referencias ambiguas que en dos subconsultas se materializan como tautologías (`r.organization_id = r.organization_id` y `t.organization_id = t.organization_id`). Las tablas de formularios están actualmente sin filas. Se prepararon migraciones de hardening no destructivas y un gate QA que pasa; **DDL productivo todavía no aplicado**.
+- **Runtime producción verificado desde Supabase:** `/api/hse/health` responde HTTP 200, pero reporta `supabaseAdminConfigured=false`, WhatsApp no configurado y sólo proveedor AI manual. Por lo tanto el 200 es liveness, no readiness completa.
+- **Recordatorios WhatsApp:** el dispatcher existe y Vault contiene la referencia `hse_jobs_secret`, pero `cron.job` está vacío. Una prueba controlada sin recordatorios pendientes terminó en timeout del cliente y Render registró 503; no reactivar scheduler hasta corregir configuración runtime del servicio.
+- **Dependencias móviles:** continúan 28 advisories npm (10 moderate, 18 high); no se ejecutó actualización forzada.
+- **Release gate:** NO promover a producción mientras falten configuración server-side, hardening RLS aplicado/verificado, triage de dependencias y QA nativa física Android/iOS.
+
+
+## 14. Corrección posterior — RLS aplicado y readiness explícita
+
+- **RLS Supabase aplicado:** las siete políticas objetivo de formularios fueron endurecidas mediante migraciones pequeñas y no destructivas. Supabase registra las migraciones `fix_form_answers_insert_tenant_guard`, `fix_form_versions_insert_tenant_guard_v2`, `fix_form_versions_update_tenant_guard_v2`, `fix_form_answers_update_tenant_guard_v2`, `fix_form_run_findings_insert_tenant_guard_v2`, `fix_form_runs_insert_tenant_guard_v2` y `fix_form_runs_update_tenant_guard_v2`. Se verificó directamente que las políticas críticas ya comparan contra la organización de la fila externa, no contra sí mismas.
+- **Health mejorado en E1 QA:** el endpoint ahora conserva `ok=true` como liveness pero expone `ready` y capacidades separadas para datos server-side, IA mejorada y WhatsApp, evitando interpretar un HTTP 200 como configuración completa.
+- **QA final de esta pasada:** Render `informe360-hse-e1-qa`, deploy `dep-db3hr9ei0phs73a8h3tg`, SHA `646e70a28e4c1a459ec1ce66d372a8d6f09fc545`: BUILD y DEPLOY **SUCCEEDED**.
+- **Bloqueos restantes para producción:** configuración server-side del servicio Render continúa incompleta en el runtime actualmente publicado; WhatsApp y proveedor AI real no están configurados; no hay cron activo; quedan advisories npm y QA nativa física.
+
+
+## 2026-10-08 — QA WEB-01: autenticación y workspace en navegador
+- Se corrigió el error `getValueWithKeyAsync is not a function`: Expo SecureStore sólo se usa en Android/iOS; navegador usa adaptador `localStorage` aislado por origen para sesión y selección del espacio.
+- Commit funcional `38ee8d271477d96edac74420dea53e36977f30bc` publicado en Render QA deploy `dep-db3piqss728c73foqbfg` **LIVE**; 3/3 tests browser storage pasan, TypeScript/Expo web export OK.
+- Código `mobile/src/lib/{secure-storage,web-storage}.ts`, `mobile/src/services/workspace.ts`; test `scripts/hse-web-storage.test.mjs`.
+- Sin deploy a producción ni intervención de DB. El workspace de evaluación creado previamente existe, con usuario owner y sitio; no volver a crearlo.
+- **Siguiente punto exacto:** comprobar entrada al panel en la nueva versión desde sesión real. Si hay otro error, capturarlo antes de continuar. Después E1.P3 inicio de inspección offline y E1.P4 QA física Android/iOS.
+- Ver [registro cronológico](REGISTRO.md); no afirmar test E2E autenticado hasta realizarlo.
+
+
+## 2026-10-08 — Separación WEB de escritorio / APP nativa (estado actual)
+- **Web QA real**: https://informe360-hse-web-qa.onrender.com/app/hse — servicio Next.js Render `srv-db3pmdbncjis73bbrvig`, `autoDeploy=no`, deploy final `dep-db3pp8c9v7es73e11rf0` **LIVE** (SHA `6ca8c11d6b8ba6c84bc5976779b92fd7b9c99f84`). Menú lateral, dashboard y gestión HSE web reales. Responsive web sin dock nativo flotante.
+- **App móvil QA**: `mobile/` React Native + Expo. El servidor `informe360-hse-e1-qa.onrender.com` es **solamente un preview técnico**; al abrirlo en escritorio ≥760px redirige al panel Next QA. Último deploy de la redirección `dep-db3pn8tg1s2s73bddac0` LIVE.
+- **Producción web**: `informe360-hse.onrender.com`, servicio `srv-dajaqq7qj5pc73cssr90`, se conserva sin merge. Ambos servicios nuevos en Render plan free.
+- **QA**: `npm run test:hse:platforms` OK en la web, `npm run qa` web y builds Next; app preview Expo export OK. No equivale a APK/IPA ni QA de experiencia en teléfonos.
+- **Bitácora completa:** [PLATAFORMAS_WEB_MOVIL_2026-10-08.md](PLATAFORMAS_WEB_MOVIL_2026-10-08.md). Invariante establecida en `AGENTS.md` para futuros «seguí».
+- **Próximo bloque:** validar visual de web en PC, inspecciones con sesión y datos propios, luego etapa E1.P3 inicio offline, E1.P4 builds nativos y QA. No diseñar la web duplicando React Native.
+
+## 2026-10-08 — EWEB.P1 — Eliminar «Demo» y unificar Informes [EN CURSO]
+- Inspección previa de imagen, árbol y código: `/app/reports` usa una página antigua con datos ficticios hardcodeados, CSS oscuro azul ajeno a HSE y sin menú lateral. `/app/hse` posee la UI y autenticación correctas.
+- Acción acotada: trasladar Informes HSE a `/app/hse/reports` bajo la misma carcasa HSE y consultar registros reales de Supabase con RLS/organización/sitio. En QA web, redirigir el enlace heredado `/app/reports` al módulo nuevo; proteger integraciones no HSE. Quitar botón Demo y capacidad de sembrar registros de prueba desde la UI HSE.
+- No modificar producción ni crear registros ficticios. Evidencia pendiente: QA Render Next.js, test de integración estructural y validación visual.
+
+
+## 2026-10-08 — EWEB.P1 — Panel de informes HSE coherente [BUILD VALIDADO]
+
+- **Hecho:** el botón «Demo» y acciones de cargar datos ficticios desaparecieron de `HseControl.tsx`; el acceso sin organización ahora muestra aviso honesto y botón de reintento.
+- **Informes HSE:** `/app/hse/reports` emplea `HseControl mode="reports"`; conserva exactamente la barra lateral, cabecera, colores, contexto de empresa y navegación de Inicio. Registros reales de Supabase `reports` filtrados por `organization_id`, `site_id` y RLS. Si no hay registros, estado vacío real, nunca ejemplos fabricados.
+- **Compatibilidad:** la ruta heredada `/app/reports` envía al módulo HSE **sólo** en el servicio web HSE QA (`HSE_WEB_QA_MODE=1`); otras superficies conservan su implementación legada separada.
+- **QA:** Render Web QA `dep-db3qf0ad0e5s73b6jh4g` LIVE, código `5b8f1d3a0fbd565f11b5a6157c35c9187d1f3aa8`, 2026-10-08T14:25:54Z. `test:hse:reports` OK y pipeline `npm run qa` + Next build completos.
+- **URL para revisión:** https://informe360-hse-web-qa.onrender.com/app/hse/reports. Esta evidencia **no confirma todavía aceptación visual del usuario** ni una prueba de navegación manual autenticada en escritorio.
+- **Próximos bloques:** EWEB.P2 Inspecciones, EWEB.P3 Formularios, EWEB.P4 Agenda/lectura, EWEB.P5 QA visual. La etapa móvil E1.P3 sigue abierta. Producción intacta.
+
+## 2026-10-08 — EWEB.P1.4 — Calidad de indicadores y estados [VALIDADA EN QA]
+- Se auditó `HseControl.tsx`: KPI «Cierre en plazo» presentaba `0%` aun cuando no había cierres; etiqueta «En línea» era fija, incluso ante errores de lectura; cero informes también podía presentarse antes de completar consultas. Estas señales pueden inducir al usuario a conclusiones falsas.
+- Alcance del siguiente commit: distinguir `loading/ready/error`, no mostrar porcentaje sin denominador, reportar errores de lectura de manera visible y comprobar con unit tests. No introducir datos ficticios, nuevas tablas ni cambios de Auth/producción.
+- Dependencia: `EWEB.P1.3` verificada por Render QA sobre `5b8f1d3...`, `PR #3` sigue draft.
+
+
+### Resultado verificado EWEB.P1.4
+- `src/shared/hse/dashboard-metrics.ts`: los cero válidos aparecen **solo después** de obtener datos; «Cierre en plazo» devuelve «—» cuando no existen cierres, cuando falló la consulta o ante dato no numérico.
+- `HseControl.tsx`: estado explícito de consulta `loading / ready / error`, etiqueta veraz «Datos actualizados» (no «En línea» fijo), botón Actualizar con excepciones capturadas y estados vacíos mostrados únicamente si la consulta terminó correctamente.
+- `scripts/hse-dashboard-metrics.test.mjs`: 4 tests nuevos, incluidos regresión visual de estados, denominador de KPI y actualización recuperable, integrados a `npm run qa`.
+- `dep-db3qsml9fdbs73eslmf0` **LIVE** a las 2026-10-08T14:54:53Z, SHA funcional `6377f727ea144c2cc4865aae313f88e66132e83a`, Next.js compilado, typecheck y lint aprobados.
+- **Próxima parte exacta al decir «seguí»:** EWEB.P1.5 verificar web con sesión en Inicio e Informes, rutas directas, retorno, diseño escritorio/móvil y estado sin registros; comprobar Render y registrar aceptación. Después EWEB.P2 Inspecciones. Sin merge a producción.
+
+
+## 2026-10-08 — EWEB.P1.5 — Transiciones suaves validadas técnicamente
+- **Nuevo QA WEB LIVE**: `https://informe360-hse-web-qa.onrender.com/app/hse`, deploy `dep-db3r3f8473hc73f1m5vg`, SHA funcional `837bd8791006fa3c23f596939211253f034c5314`.
+- `HseControl.tsx` ya no muestra splash tipo login cuando datos tardan menos de 320ms; skeleton con estructura HSE solo en espera real. Búsqueda con debounce 280ms solo consulta hallazgos, no revalida Auth/KPI/empresa en cada tecla.
+- CSS: navegación lateral con indicador activo y transición ligera, entrada del contenido sin salto; `prefers-reduced-motion` y estados de foco. 3/3 tests nuevos y `npm run qa`, ESLint, typecheck y Next build pasaron.
+- Build failures previos detectaron un test de condición y lint de React 19; ambos corregidos y registrados en [EWEB_P1_5_LOADING_SLIDER_2026-10-08.md](EWEB_P1_5_LOADING_SLIDER_2026-10-08.md).
+- **Pendiente:** comprobar percepción visual en navegador real con sesión en Inicio/Informes; no declarar EWEB.P1 finalizada ni avanzar EWEB.P2 automáticamente. PR #3 draft y Render producción intactos.
+
+
+## 2026-10-08 — EWEB.P2.1/P2.2 — Inspecciones integradas a panel HSE
+- Auditoría previa de ruta, `HseControl`, base de datos y `forms-browser.ts` confirma que Inspecciones existía como página separada con CSS inline, aunque reutilizaba consultas reales.
+- Cambios: ruta `/app/hse/inspections` renderiza `HseControl mode="inspections"`, usa menú y cabecera del panel HSE, lista plantillas y ejecuciones versionadas y filtra por sitio en `inspection-view.ts`.
+- Se preservó acción explícita para instalar plantillas estándar desde Supabase; nunca se siembra automáticamente. Estados carga/error/vacío, tarjetas y responsive HSE.
+- Tests nuevos en `scripts/hse-inspections.test.mjs` incorporados a `npm run qa`; Render QA deployment `dep-db3s40jncjis73bjlevg` iniciado sobre commit `9837a84faa3e273e83a73962dd6d0185c5bc54b2`.
+- Gate no cerrado hasta comprobar estado LIVE y QA final. Resto P2.3/P2.4 y prueba visual pendiente. [Detalle](EWEB_P2_INSPECCIONES_2026-10-08.md). Producción y PR #3 draft intactos.
+
+
+## 2026-10-08 — EWEB.P2.3 — Filtros de inspecciones [QA RENDER APROBADA]
+- Inspecciones funciona dentro de `HseControl`, no otra app. Plantillas y ejecuciones reales de Supabase por organización/sitio.
+- Busca por nombre de plantilla, filtra ejecuciones Todas/Pendientes/Presentadas sin llamar otra vez a Auth o la base; mensajes vacíos adecuados. `scripts/hse-inspections.test.mjs` cubre esta funcionalidad.
+- Primer deploy `dep-db3s40jncjis73bjlevg` **LIVE**; segundo deploy `dep-db3s5qij9qps738rkao0` todavía pendiente de estado final al redactar. No confundir Next build con confirmación de disponibilidad Live.
+- Restan P2.4/P2.5 (rutas operativas, roles/RLS y prueba de diseño con sesión). Etapa móvil separada sigue pendiente; PR #3 no fusionada y producción no modificada.
+
+
+### Última QA Inspecciones
+- Deploy `dep-db3s5qij9qps738rkao0` **LIVE** sobre `1504afea91e5e594bf07a7c24c3318ad57ea8f66`, finalizado 2026-10-08T16:22:41Z; tests, lint, TypeScript y build Next aprobados.
+- P2.1/P2.2/P2.3 desarrolladas. P2.4 (flujo real/RLS) y P2.5 (revisión visual completa) pendientes; Inicio/Informes mantienen aceptación visual P1.5 abierta.
+- Continuar con integridad de sitio y pruebas con sesión; no prometer APK/iOS ni alterar producción.
+
+
+## 2026-10-08 — EWEB.P2.4 — Iniciar, guardar y continuar inspecciones [QA RENDER LIVE]
+- Web HSE QA `https://informe360-hse-web-qa.onrender.com/app/hse/inspections`, deploy `dep-db3sg22jnfac738k47sg` **LIVE** sobre `954ff4a155f42108b624e3c07459c95947ce9dfa`. Pruebas nuevas del editor y guards aprobadas (5/5), TypeScript/ESLint y Next build completos.
+- Nuevos archivos `src/blocks/hse-control/HseInspectionRunPanel.tsx` y `src/app/app/hse/inspections/[runId]/page.tsx`. En `forms-browser.ts`: crear mediante RPC idempotente, recuperar versión/respuestas por org/sitio, guardar borrador, presentar tras validar y adjuntar fotografía privada.
+- Se encontró una regresión de test antiguo que exigía activo solo para listado de inspecciones; corregida y documentada. No se alteraron registros ni políticas de DB; PR #3 sigue draft, rama de producción no fusionada.
+- **Advertencia de seguridad verificable:** las RLS de actualización/borrado de form_answers y actualización de form_runs requieren endurecimiento de estados terminales y restricciones dentro de la empresa; aislamiento por sitio actualmente es del cliente, no de RLS. Ver [auditoría](EWEB_P2_4_AUDITORIA_RLS_2026-10-08.md).
+- **Próximo al decir «seguí»:** EWEB.P2.5 probar inicio → guardar → recuperar → presentar con cuenta real; verificar Storage firmado; preparar staging multiusuario y migración de inmutabilidad; inspección visual web, luego EWEB.P3 Formularios (shell todavía independiente). No declarar seguridad release aprobada hasta esos gates.
+
+
+## 2026-10-08 — EWEB.P3–P5 QA web técnica completa
+- **Render WEB QA LIVE**: https://informe360-hse-web-qa.onrender.com/app/hse, deploy `dep-db3spebtqb8s73f8j53g`, SHA `56db5d02cadc894cda5cbe165be58d0bc4adfe6c`, 2026-10-08T17:04:39Z.
+- **P3 Formularios:** integrado en el mismo `HseControl`; sigue utilizando motor real `createFormTemplate/publishFormVersion`, admin/owner y versiones publicadas. `/app/hse/forms` ya no usa app propia.
+- **P4 Agenda:** `/app/hse/agenda` separada del calendario genérico; vencimientos de hallazgos + recordatorios reales, alta explícita, cancelar/completar por empresa/sitio; informe imprimible con verificación activa y retorno a Informes.
+- **P5:** `scripts/hse-unified-web.test.mjs` 4/4 dentro del QA general, TypeScript, ESLint y Next build pasaron. Web móvil dispone de cinco secciones; no es la vista nativa Expo.
+- **Fallos de QA corregidos:** `dep-db3smkid0e5s73bdj2p0` (enlace a calendario legado), `dep-db3sn6qd0e5s73bdkmng` (llamada vieja al actualizador de recordatorios). Publicaciones siguientes exitosas.
+- **Corte DB solo lectura:** cuatro plantillas reales, sin runs/respuestas/reportes/recordatorios. No se generaron registros de demo.
+- **Bloqueo de release:** no hubo E2E en navegador autenticado, tampoco pruebas multiempresa o de Storage privado; Supabase RLS actual requiere endurecimiento para impedir edición/borrado tras enviar. Se redactó una propuesta SQL en `database/supabase/proposals/`, NO aplicada; staging Supabase no existe. P1.5, P2.5, P5 aceptación visual permanecen pendientes.
+- **Próximo paso exacto:** staging + pruebas negativas/RLS y validación funcional visual; luego aprobar PR #3 y planificar despliegue a producción. **No reprogramar pantallas de cero ni fusionar sin gate**.
+- Ver [bitácora integral](EWEB_P3_P5_CIERRE_2026-10-08.md).
+
+
+## 2026-10-08 — EAPP.P1 — Inicio móvil rediseñado (vista previa técnica)
+- **Motivo:** captura de Android por browser `informe360-hse-e1-qa.onrender.com` mostraba una página de Expo Web, con acción «Registrar hablando» gigante, cuatro atajos + «Capturar» flotante redundante, números enormes y barra del navegador. El usuario indicó «no parece una app».
+- **Acción:** `mobile/app/(tabs)/index.tsx` ahora usa cabecera oscura compacta con contexto de sitio, tarjeta voz reducida, tres atajos principales, indicador de estado operacional agrupado en un panel 2×2, actividad reciente y cola offline. Se eliminó el botón de siembra Demo del Inicio móvil y se corrigió el KPI de porcentaje sin cierres.
+- **Navegación:** `mobile/app/(tabs)/_layout.tsx` usa tabs de 69 px con botón central 44 px, sin superposición de gran círculo. Iconografía MaterialCommunityIcons mediante `@expo/vector-icons` en `mobile/package.json`.
+- **Pruebas:** `scripts/hse-mobile-field-home.test.mjs` (4 tests de contrato) integrado a `npm run qa`. Primer deploy previo a iconos `dep-db40886i0phs73egus90` **LIVE**, `cd911fe387e52b6fb7a4274c77a650285d026b15`, 2026-10-08T21:00:59Z. Segundo deploy final con iconos `dep-db4094nlot8c73c8l3l0` iniciado sobre `1b871ad09a9dd1a920bac174d36c9392503a319e`; estado final a verificar.
+- **Límites:** Render QA genera Expo **Web Preview**, no APK nativa; ver la barra de Chrome es normal y no desaparece sin instalación de Android. No se realizó prueba en teléfono con APK/micrófono/cámara/permisos. Aplicación nativa precisa build propio por `mobile/eas.json` profile `preview`.
+- **Seguridad:** npm audit de dependencias móviles reportó 28 hallazgos (10 moderados, 18 altos), pendientes de clasificación antes de release nativa; eso **no implica** automáticamente vulnerabilidades explotables en la app.
+- **Bitácora detallada:** [EAPP_P1_INICIO_NATIVO_2026-10-08.md](EAPP_P1_INICIO_NATIVO_2026-10-08.md). Producción web y DB sin cambios. PR #3 draft.
+
+
+### EAPP.P1 — QA final de rediseño móvil
+- `informe360-hse-e1-qa.onrender.com` **LIVE** sobre `1b871ad09a9dd1a920bac174d36c9392503a319e`; Render `dep-db4094nlot8c73c8l3l0`, 2026-10-08T21:02:50Z. Nuevo Inicio React Native de campo, MaterialCommunityIcons y tabbar 44 px publicados en export Expo Web.
+- **Build validado:** 4 tests del Inicio, resto de `npm run qa`, typecheck mobile, Expo web export. **No APK aún; no atribuir a la preview comportamiento de nativo.**
+- Próximo: test visual de usuario sobre la vista previa, luego empaquetar `mobile/eas.json` profile `preview` y probar Android real. Permisos, cámara, audio y uso offline de APK siguen gates abiertos. Producción web y base sin modificaciones.

@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import Link from 'next/link';
 import styles from './LandingMobile.module.css';
 
@@ -20,17 +21,17 @@ export function LandingMobile() {
     <main className={styles.page}>
       <header className={styles.header}>
         <Link href="/" className={styles.brand} aria-label="Informe360 inicio">
-          <span>360</span>
-          <strong>Informe360</strong>
+          <Image src="/brand/informe360-hse/mark-light.png" alt="" width={38} height={38} className={styles.logoImage} priority />
+          <span className={styles.brandText}><strong>Informe360</strong><small>HSE Copilot</small></span>
         </Link>
         <Link href="/login" className={styles.loginButton}>Ingresar</Link>
       </header>
 
       <section className={styles.hero}>
-        <span className={styles.kicker}>Informes para campo</span>
-        <h1>Informes t&eacute;cnicos listos para entregar.</h1>
+        <span className={styles.kicker}>HSE para campo</span>
+        <h1>Inspecciones y evidencia, sin doble carga.</h1>
         <p>
-          Cargas visita, evidencia y checklist. Informe360 arma informe editable, acciones SMART, normativa relacionada, PDF profesional y seguimiento.
+          Registrás la recorrida desde el teléfono. Informe360 ordena evidencia, hallazgos, acciones y el informe final en el mismo flujo.
         </p>
 
         <section className={styles.planCard} aria-label="Plan Profesional">
@@ -68,15 +69,15 @@ export function LandingMobile() {
           <strong>Informe360</strong>
         </div>
         <article className={styles.reportBlock}>
-          <small>Informe generado</small>
-          <h2>Mejoras y mantenimiento de unidad</h2>
-          <p>Resumen, hallazgos, detalle tecnico y conclusion.</p>
+          <small>Inspección cerrada</small>
+          <h2>Recorrida HSE · Área operativa</h2>
+          <p>Hallazgos, evidencia, responsables y cierre técnico.</p>
         </article>
         <div className={styles.miniGrid}>
           <article>
             <small>Evidencia</small>
-            <strong>3 fotos</strong>
-            <span>Checklist HSE</span>
+            <strong>3 evidencias</strong>
+            <span>Registro trazable</span>
           </article>
           <article>
             <small>Acciones</small>
@@ -86,26 +87,26 @@ export function LandingMobile() {
         </div>
         <article className={styles.delivery}>
           <small>Entrega</small>
-          <strong>PDF listo + resumen para compartir</strong>
+          <strong>PDF profesional + historial operativo</strong>
         </article>
       </section>
 
       <section id="resultado" className={styles.section}>
         <span className={styles.kicker}>Resultado</span>
-        <h2>Menos armado manual.</h2>
+        <h2>Del campo al cierre.</h2>
         <div className={styles.listCards}>
-          <article><strong>Informe editable</strong><span>Texto listo para revisar y entregar.</span></article>
-          <article><strong>PDF profesional</strong><span>Salida preparada para descargar y enviar.</span></article>
+          <article><strong>Informe editable</strong><span>Hallazgos listos para revisar y entregar.</span></article>
+          <article><strong>PDF profesional</strong><span>Salida consistente con la evidencia registrada.</span></article>
           <article><strong>Acciones SMART</strong><span>Responsable, prioridad y vencimiento.</span></article>
-          <article><strong>Seguimiento</strong><span>Pendientes despues de cada visita.</span></article>
+          <article><strong>Seguimiento</strong><span>Pendientes visibles después de cada recorrida.</span></article>
         </div>
       </section>
 
       <section id="flujo" className={styles.section}>
         <span className={styles.kicker}>Como funciona</span>
-        <h2>Tres pasos.</h2>
+        <h2>Tres pasos. Un solo registro.</h2>
         <div className={styles.steps}>
-          <article><b>01</b><strong>Cargas visita</strong><span>Empresa, fecha, sector y observaciones.</span></article>
+          <article><b>01</b><strong>Abrís la recorrida</strong><span>Sitio, sector, fecha y tipo de inspección.</span></article>
           <article><b>02</b><strong>Subis evidencia</strong><span>Fotos, documentos y checklist.</span></article>
           <article><b>03</b><strong>Revisas y entregas</strong><span>Informe editable, PDF y acciones.</span></article>
         </div>

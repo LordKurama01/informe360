@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import Link from 'next/link';
 import styles from './LandingDesktop.module.css';
 
@@ -20,8 +21,8 @@ export function LandingDesktop() {
     <main className={styles.page}>
       <header className={styles.header}>
         <Link href="/" className={styles.brand} aria-label="Informe360 inicio">
-          <span className={styles.logo}>360</span>
-          <strong>Informe360</strong>
+          <Image src="/brand/informe360-hse/mark-light.png" alt="" width={42} height={42} className={styles.logoImage} priority />
+          <span className={styles.brandText}><strong>Informe360</strong><small>HSE Copilot</small></span>
         </Link>
 
         <nav className={styles.nav} aria-label="Navegacion principal">
@@ -35,10 +36,10 @@ export function LandingDesktop() {
 
       <section className={styles.hero}>
         <div className={styles.heroCopy}>
-          <span className={styles.kicker}>Informes tecnicos para campo</span>
-          <h1>Informes t&eacute;cnicos listos para entregar.</h1>
+          <span className={styles.kicker}>HSE para operaciones de campo</span>
+          <h1>Inspecciones, evidencia y acciones en un solo flujo.</h1>
           <p className={styles.lead}>
-            Cargas la visita, subis evidencia y completas el checklist. Informe360 arma un informe editable con acciones SMART, normativa relacionada, PDF profesional y seguimiento.
+            Registrás la recorrida, capturás evidencia y completás formularios desde el campo. Informe360 organiza hallazgos, acciones, trazabilidad y el informe final sin reconstruir la operación después.
           </p>
 
           <div id="planes" className={styles.planBox}>
@@ -60,7 +61,7 @@ export function LandingDesktop() {
               </div>
             </div>
 
-            <p>Incluye informes tecnicos, evidencia, checklist HSE, acciones SMART, normativa relacionada, PDF profesional y soporte inicial por WhatsApp.</p>
+            <p>Incluye inspecciones HSE, formularios versionados, evidencia, hallazgos, acciones SMART, trazabilidad, PDF profesional y soporte inicial.</p>
 
             <a className={styles.contractButton} href={contractHref} target="_blank" rel="noreferrer" onClick={trackContract}>
               Contratar
@@ -75,16 +76,16 @@ export function LandingDesktop() {
           </div>
 
           <section className={styles.reportPreview}>
-            <small>Informe generado</small>
-            <h2>Mejoras y mantenimiento de unidad</h2>
-            <p>Resumen ejecutivo, hallazgos, detalle tecnico y conclusion.</p>
+            <small>Inspección cerrada</small>
+            <h2>Recorrida HSE · Área operativa</h2>
+            <p>Hallazgos, evidencia, responsables, vencimientos y cierre técnico.</p>
           </section>
 
           <div className={styles.outputGrid}>
             <section>
               <small>Evidencia</small>
-              <strong>3 fotos</strong>
-              <span>Checklist HSE</span>
+              <strong>3 evidencias</strong>
+              <span>Registro trazable</span>
             </section>
             <section>
               <small>Acciones</small>
@@ -95,7 +96,7 @@ export function LandingDesktop() {
 
           <section className={styles.deliveryBox}>
             <small>Entrega</small>
-            <strong>PDF listo + resumen para compartir</strong>
+            <strong>PDF profesional + historial operativo</strong>
           </section>
         </aside>
       </section>
@@ -103,17 +104,17 @@ export function LandingDesktop() {
       <section id="resultado" className={styles.resultSection}>
         <div className={styles.sectionIntro}>
           <span className={styles.kicker}>Resultado</span>
-          <h2>Menos armado manual. Mas entrega profesional.</h2>
+          <h2>De la recorrida al cierre, sin reconstruir el informe a mano.</h2>
         </div>
 
         <div className={styles.benefits}>
           <article>
             <h3>Informe editable</h3>
-            <p>Texto tecnico listo para revisar, corregir y entregar.</p>
+            <p>Hallazgos y conclusiones listos para revisar y entregar.</p>
           </article>
           <article>
             <h3>PDF profesional</h3>
-            <p>Salida preparada para descargar y enviar al cliente.</p>
+            <p>Salida consistente con evidencia, responsables y trazabilidad.</p>
           </article>
           <article>
             <h3>Acciones SMART</h3>
@@ -121,7 +122,7 @@ export function LandingDesktop() {
           </article>
           <article>
             <h3>Seguimiento</h3>
-            <p>Pendientes y proximos pasos despues de cada visita.</p>
+            <p>Pendientes y próximos pasos visibles después de cada recorrida.</p>
           </article>
         </div>
       </section>
@@ -129,24 +130,24 @@ export function LandingDesktop() {
       <section id="flujo" className={styles.flowSection}>
         <div className={styles.sectionIntro}>
           <span className={styles.kicker}>Como funciona</span>
-          <h2>Tres pasos. Sin sistema pesado.</h2>
+          <h2>Tres pasos. Un único registro operativo.</h2>
         </div>
 
         <div className={styles.steps}>
           <article>
             <span>01</span>
-            <h3>Cargas la visita</h3>
-            <p>Empresa, lugar, fecha, sector y observaciones.</p>
+            <h3>Abrís la recorrida</h3>
+            <p>Empresa, sitio, sector, fecha y tipo de inspección.</p>
           </article>
           <article>
             <span>02</span>
             <h3>Subis evidencia</h3>
-            <p>Fotos, documentos, checklist y notas tecnicas.</p>
+            <p>Fotos, notas, formularios y evidencia desde el teléfono.</p>
           </article>
           <article>
             <span>03</span>
             <h3>Revisas y entregas</h3>
-            <p>Informe editable, PDF profesional y acciones de seguimiento.</p>
+            <p>Cerrás hallazgos, asignás acciones y generás el informe.</p>
           </article>
         </div>
       </section>

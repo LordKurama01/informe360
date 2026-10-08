@@ -114,7 +114,8 @@ export function CalendarPage() {
   async function setStatus(reminderId: string, status: 'completed' | 'cancelled') {
     setError('');
     try {
-      await updateHseReminderStatus(reminderId, status);
+      if (!workspace) throw new Error('Elegí una organización HSE para actualizar el recordatorio.');
+      await updateHseReminderStatus(workspace, reminderId, status);
       await load();
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : 'No se pudo actualizar el recordatorio.');

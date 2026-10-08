@@ -26,3 +26,11 @@
 
 ## Alcance
 `docs/bitacora/ETAPAS.md` es el backlog operativo; los planes antiguos son referencias, no autorizaciones implícitas para ejecutar, replicar o desplegar.
+
+
+## Separación obligatoria WEB / APP (2026-10-08)
+- **Web HSE de escritorio:** Next.js `src/app/app/hse/` + `src/blocks/hse-control/`, con menú lateral, métricas, listados, informes y configuración. URL QA `https://informe360-hse-web-qa.onrender.com/app/hse` (`srv-db3pmdbncjis73bbrvig`); `HSE_WEB_QA_MODE=1` redirige la raíz del servicio al panel. Navegación del navegador debe ser web, incluso en su responsive móvil.
+- **App Android/iOS:** React Native + Expo en `mobile/`, navegación propia, cámara, voz, guardado offline y sincronización. La exportación Expo Web `informe360-hse-e1-qa.onrender.com` es exclusivamente **preview técnica**, no el sitio comercial. En desktop web (>=760 px) envía al portal Next.js, mediante `EXPO_PUBLIC_WEB_APP_URL`. No crear webview ni estirar layout móvil para reemplazar la web.
+- Las dos plataformas utilizan el mismo Supabase con Auth/RLS; no compartir tokens entre diferentes orígenes ni duplicar usuarios/DB.
+- **QA obligatorio:** `npm run test:hse:platforms`, Next.js web build, Expo typecheck/web export para preview, y builds/pruebas nativas separadas antes de publicar Android/iOS. No confundir `LIVE` de Render con APK nativa aprobada.
+- Ver `docs/bitacora/PLATAFORMAS_WEB_MOVIL_2026-10-08.md`. Nunca cambiar rama de Render producción directamente.

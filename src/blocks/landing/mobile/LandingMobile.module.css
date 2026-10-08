@@ -32,7 +32,7 @@
   color: #fff;
 }
 
-.brand span {
+.brandLegacyMark {
   width: 36px;
   height: 36px;
   display: grid;
@@ -332,4 +332,24 @@
 .footer a {
   color: #ffd778;
   font-weight: 850;
+}
+
+.logoImage {
+  width: 38px;
+  height: 38px;
+  object-fit: contain;
+  flex: 0 0 auto;
+}
+
+.brandText {
+  display: grid;
+  gap: 1px;
+}
+
+.brandText small {
+  color: #9eabc9;
+  font-size: 8px;
+  font-weight: 750;
+  letter-spacing: .11em;
+  text-transform: uppercase;
 }

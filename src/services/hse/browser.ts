@@ -5,6 +5,28 @@ import { getBrowserSupabase } from '@/services/supabase/browser';
 export type HseWorkspace = { organizationId: string; organizationName: string; siteId: string | null; siteName: string | null; role: string };
 export type HseFinding = { id: string; code: string; title: string; description: string | null; severity: 'low'|'medium'|'high'|'critical'; priority: 'low'|'medium'|'high'|'urgent'; status: 'open'|'in_progress'|'closed'|'cancelled'; due_at: string | null; closed_at: string | null; location_text: string | null; element_text: string | null; responsible_text: string | null; category: string | null; closure_comment: string | null; created_at: string };
 export type HseSummary = { open: number; overdue: number; dueNext7Days: number; closed: number; closedOnTime: number; closureCompliancePct: number; criticalOpen: number };
+export type HseReportRow = {
+  id: string;
+  title: string | null;
+  report_type: string | null;
+  status: string;
+  created_at: string;
+  site_id: string | null;
+};
+
+export async function listHseReports(workspace: HseWorkspace): Promise<HseReportRow[]> {
+  let request = getBrowserSupabase()
+    .from('reports')
+    .select('id,title,report_type,status,created_at,site_id')
+    .eq('organization_id', workspace.organizationId)
+    .order('created_at', { ascending: false })
+    .limit(150);
+  if (workspace.siteId) request = request.eq('site_id', workspace.siteId);
+  const { data, error } = await request;
+  if (error) throw error;
+  return (data || []) as HseReportRow[];
+}
+
 export type HseReminder = {
   id: string;
   organization_id: string;
@@ -116,9 +138,13 @@ export async function createHseReminder(
   return data as HseReminder;
 }
 
-export async function updateHseReminderStatus(reminderId: string, status: 'pending'|'cancelled'|'completed'): Promise<void> {
-  const { error } = await getBrowserSupabase().from('reminders').update({ status }).eq('id', reminderId);
+export async function updateHseReminderStatus(workspace: HseWorkspace, reminderId: string, status: 'pending'|'cancelled'|'completed'): Promise<void> {
+  let query = getBrowserSupabase().from('reminders').update({ status })
+    .eq('id', reminderId).eq('organization_id', workspace.organizationId).eq('status', 'pending');
+  if (workspace.siteId) query = query.or(`site_id.eq.${workspace.siteId},site_id.is.null`);
+  const { data, error } = await query.select('id');
   if (error) throw error;
+  if (!data?.length) throw new Error('El recordatorio no está pendiente o no pertenece al espacio activo.');
 }
 
 export async function seedHseDemo(): Promise<void> {

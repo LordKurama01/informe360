@@ -18,7 +18,7 @@ Estas notas NO sustituyen la verdad del repositorio, el estado de Supabase/Rende
 
 ## Cómo interpretar «seguí»
 
-1. Localizar este índice y la última entrada del REGISTRO **en GitHub**. Si todavía no está fusionado, leer la rama `docs/bitacora-hse-2026-10-07` y el PR asociado.
+1. Localizar este índice y la última entrada del REGISTRO **en GitHub**. Si no hay merge, usar el [índice permanente issue #2](https://github.com/LordKurama01/informe360/issues/2): la bitácora más reciente está en `feat/hse-e1-offline-resilience-2026-10-08` ([PR #3](https://github.com/LordKurama01/informe360/pull/3)), descendiente de `docs/bitacora-hse-2026-10-07` ([PR #1](https://github.com/LordKurama01/informe360/pull/1)).
 2. Leer ESTADO y ETAPAS para localizar la primera parte no validada, teniendo en cuenta dependencias.
 3. Verificar rama de código, SHA HEAD, archivos, RLS/infra si aplica, CI, riesgos y diferencias con el estado documentado. Si cambió algo, corregir primero el ESTADO y registrar la divergencia.
 4. Ejecutar **una parte acotada**, con commits trazables y sin duplicar funcionalidades. Si el usuario pide completar varias partes, repetir el ciclo sin perder gates.
@@ -31,6 +31,10 @@ Estas notas NO sustituyen la verdad del repositorio, el estado de Supabase/Rende
 
 Cada parte se respalda en **código y tests, o documentación verificable si es una etapa de auditoría**. Mantener `REGISTRO.md` append-only (sin reescritura del pasado). No incluir credenciales, información sensible, datos de clientes, secretos o evidencias privadas.
 
+## Estado de trabajo activo
+
+**E1 en ejecución**, última bitácora: [E1_AVANCE_2026-10-07.md](E1_AVANCE_2026-10-07.md). E1.P1 auditada, P2/P3 en curso y P4 bloqueada. La ruta crítica aún no habilita E2. No fusionar PRs borradores ni desplegar por defecto.
+
 ## Política de integración
 
 Render `informe360-hse` realiza deploy automático al recibir commits en `feat/hse-phases-1-5`. Por eso la documentación nació en rama aparte con PR hacia desarrollo, sin alterar la rama auto-desplegada. No integrar ni mover `main` o la rama productiva por el solo hecho de documentar.
@@ -42,3 +46,12 @@ Render `informe360-hse` realiza deploy automático al recibir commits en `feat/h
 - `docs/superpowers/plans/2026-09-13-hse-mobile-first-premium-ui.md`
 - `docs/HSE_COPILOT_REPOS_Y_COMPONENTES_2026-09-12_ADDENDUM.md`
 - `.github/workflows/ci.yml`
+
+
+## WEB y APP son productos de interfaz distintos
+
+- **[Web HSE de escritorio — QA](https://informe360-hse-web-qa.onrender.com/app/hse)**: aplicación Next.js, diseñada para navegador de PC/tablet, menú lateral y operaciones de gestión.
+- **[Vista técnica de la app móvil](https://informe360-hse-e1-qa.onrender.com)**: compilación Expo Web para revisar desarrollo React Native. En escritorio redirige a la verdadera web; las APK/IPA siguen pendientes de QA nativa.
+- **[Decisión técnica, despliegues y tests](PLATAFORMAS_WEB_MOVIL_2026-10-08.md)**.
+
+Ambas interfaces comparten Supabase, no necesitan dos cuentas ni bases. Al abrir otro dominio puede ser necesario iniciar sesión otra vez con las mismas credenciales.
