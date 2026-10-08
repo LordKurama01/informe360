@@ -78,7 +78,7 @@ export default function Onboarding() {
   if (checking || loading || workspace) {
     return <SafeAreaView edges={['top', 'left', 'right']} style={styles.loadingRoot}>
       <View style={styles.loadingMark}><Text style={styles.loadingMarkText}>HSE</Text></View>
-      <ActivityIndicator color="#6FD6C4" size="large"/>
+      <ActivityIndicator color="#FF9A2E" size="large"/>
       <Text style={styles.loadingTitle}>Abriendo tu espacio de trabajo</Text>
       <Text style={styles.loadingHint}>Estamos recuperando la empresa y el sitio asociados a tu cuenta.</Text>
     </SafeAreaView>;
@@ -116,8 +116,8 @@ export default function Onboarding() {
 const styles = StyleSheet.create({
   flex: { flex: 1 },
   safe: { flex: 1, backgroundColor: '#F2F5F5' },
-  loadingRoot: { flex: 1, justifyContent: 'center', alignItems: 'center', paddingHorizontal: 28, gap: 20, backgroundColor: '#10282D' },
-  loadingMark: { width: 66, height: 66, alignItems: 'center', justifyContent: 'center', borderRadius: 20, backgroundColor: '#0B6F67' },
+  loadingRoot: { flex: 1, justifyContent: 'center', alignItems: 'center', paddingHorizontal: 28, gap: 20, backgroundColor: theme.colors.dark },
+  loadingMark: { width: 66, height: 66, alignItems: 'center', justifyContent: 'center', borderRadius: 20, backgroundColor: theme.colors.primary },
   loadingMarkText: { color: '#FFFFFF', fontSize: 20, fontWeight: '900', letterSpacing: 0.8 },
   loadingTitle: { color: '#FFFFFF', fontSize: 19, fontWeight: '900', textAlign: 'center' },
   loadingHint: { color: '#AAC5C5', fontSize: 13, lineHeight: 20, textAlign: 'center' },
