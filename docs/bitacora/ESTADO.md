@@ -152,3 +152,12 @@ La E1 se ejecuta aisladamente en `feat/hse-e1-offline-resilience-2026-10-08` con
 - Sin deploy a producción ni intervención de DB. El workspace de evaluación creado previamente existe, con usuario owner y sitio; no volver a crearlo.
 - **Siguiente punto exacto:** comprobar entrada al panel en la nueva versión desde sesión real. Si hay otro error, capturarlo antes de continuar. Después E1.P3 inicio de inspección offline y E1.P4 QA física Android/iOS.
 - Ver [registro cronológico](REGISTRO.md); no afirmar test E2E autenticado hasta realizarlo.
+
+
+## 2026-10-08 — Separación WEB de escritorio / APP nativa (estado actual)
+- **Web QA real**: https://informe360-hse-web-qa.onrender.com/app/hse — servicio Next.js Render `srv-db3pmdbncjis73bbrvig`, `autoDeploy=no`, deploy final `dep-db3pp8c9v7es73e11rf0` **LIVE** (SHA `6ca8c11d6b8ba6c84bc5976779b92fd7b9c99f84`). Menú lateral, dashboard y gestión HSE web reales. Responsive web sin dock nativo flotante.
+- **App móvil QA**: `mobile/` React Native + Expo. El servidor `informe360-hse-e1-qa.onrender.com` es **solamente un preview técnico**; al abrirlo en escritorio ≥760px redirige al panel Next QA. Último deploy de la redirección `dep-db3pn8tg1s2s73bddac0` LIVE.
+- **Producción web**: `informe360-hse.onrender.com`, servicio `srv-dajaqq7qj5pc73cssr90`, se conserva sin merge. Ambos servicios nuevos en Render plan free.
+- **QA**: `npm run test:hse:platforms` OK en la web, `npm run qa` web y builds Next; app preview Expo export OK. No equivale a APK/IPA ni QA de experiencia en teléfonos.
+- **Bitácora completa:** [PLATAFORMAS_WEB_MOVIL_2026-10-08.md](PLATAFORMAS_WEB_MOVIL_2026-10-08.md). Invariante establecida en `AGENTS.md` para futuros «seguí».
+- **Próximo bloque:** validar visual de web en PC, inspecciones con sesión y datos propios, luego etapa E1.P3 inicio offline, E1.P4 builds nativos y QA. No diseñar la web duplicando React Native.
