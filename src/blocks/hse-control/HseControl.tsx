@@ -3,18 +3,20 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { createHseReport, getCurrentHseUser, getHseFindings, getHseSummary, getHseWorkspace, hseSignIn, hseSignOut, hseSignUp, seedHseDemo, type HseFinding, type HseSummary, type HseWorkspace } from '@/services/hse/browser';
+import { createHseReport, getCurrentHseUser, getHseFindings, getHseSummary, getHseWorkspace, hseSignIn, hseSignOut, hseSignUp, listHseReports, type HseReportRow, type HseFinding, type HseSummary, type HseWorkspace } from '@/services/hse/browser';
 import styles from './HseControl.module.css';
 
 type Filter = 'open'|'overdue'|'upcoming'|'critical'|'closed'|'all';
 const emptySummary: HseSummary = { open:0, overdue:0, dueNext7Days:0, closed:0, closedOnTime:0, closureCompliancePct:0, criticalOpen:0 };
 
-export function HseControl() {
+export function HseControl({ mode = 'overview' }: { mode?: 'overview' | 'reports' }) {
   const [booting, setBooting] = useState(true);
   const [signedIn, setSignedIn] = useState(false);
   const [workspace, setWorkspace] = useState<HseWorkspace|null>(null);
   const [summary, setSummary] = useState<HseSummary>(emptySummary);
   const [findings, setFindings] = useState<HseFinding[]>([]);
+  const [reports, setReports] = useState<HseReportRow[]>([]);
+  const [reportSearch, setReportSearch] = useState('');
   const [query, setQuery] = useState('');
   const [filter, setFilter] = useState<Filter>('open');
   const [selected, setSelected] = useState<Set<string>>(new Set());
@@ -34,13 +36,17 @@ export function HseControl() {
     const nextWorkspace = await getHseWorkspace();
     setWorkspace(nextWorkspace);
     if (nextWorkspace) {
-      const [nextSummary, nextFindings] = await Promise.all([getHseSummary(nextWorkspace), getHseFindings(nextWorkspace, query)]);
-      setSummary(nextSummary);
-      setFindings(nextFindings);
-      setNowMs(new Date().getTime());
+      if (mode === 'reports') {
+        setReports(await listHseReports(nextWorkspace));
+      } else {
+        const [nextSummary, nextFindings] = await Promise.all([getHseSummary(nextWorkspace), getHseFindings(nextWorkspace, query)]);
+        setSummary(nextSummary);
+        setFindings(nextFindings);
+        setNowMs(new Date().getTime());
+      }
     }
     setBooting(false);
-  }, [query]);
+  }, [query, mode]);
 
   useEffect(() => { const timer=setTimeout(() => void loadWorkspace().catch(e => { setError(e instanceof Error?e.message:'Error'); setBooting(false); }), query ? 250 : 0); return () => clearTimeout(timer); }, [loadWorkspace, query]);
 
@@ -62,12 +68,10 @@ export function HseControl() {
     finally{setBusy(false);}
   }
 
-  async function demo() {
-    setBusy(true);setError(null);
-    try{await seedHseDemo();await loadWorkspace();}
-    catch(e){setError(e instanceof Error?e.message:'No se pudo cargar la demo');}
-    finally{setBusy(false);}
-  }
+  const visibleReports = useMemo(() => reports.filter(report => {
+    const search = reportSearch.trim().toLocaleLowerCase('es-AR');
+    return !search || [report.title, report.report_type, report.status].some(value => (value || '').toLocaleLowerCase('es-AR').includes(search));
+  }), [reports, reportSearch]);
 
   async function signOut(){await hseSignOut();setSignedIn(false);setWorkspace(null);setFindings([]);setSummary(emptySummary);}
   function toggle(id:string){setSelected(current=>{const next=new Set(current);next.has(id)?next.delete(id):next.add(id);return next;});}
@@ -111,18 +115,18 @@ export function HseControl() {
     </section>
   </main>;
 
-  if(!workspace)return <main className={styles.authShell}><section className={styles.authVisual}><Brand variant="onDark"/><div className={styles.authPitch}><span className={styles.eyebrowLight}>CUENTA CONECTADA</span><h1>Falta vincular tu organización HSE.</h1><p>Podés crear la organización real desde la app móvil o cargar una demo para recorrer el producto.</p></div></section><section className={styles.authPanel}><div className={styles.authCard}>{error?<div className={styles.error}>{error}</div>:null}<button className={styles.primary} disabled={busy} onClick={()=>void demo()}>{busy?'Preparando demo…':'Cargar demo comercial'}</button><button className={styles.secondary} onClick={()=>void signOut()}>Cerrar sesión</button></div></section></main>;
+  if(!workspace)return <main className={styles.authShell}><section className={styles.authVisual}><Brand variant="onDark"/><div className={styles.authPitch}><span className={styles.eyebrowLight}>CUENTA CONECTADA</span><h1>Falta vincular tu organización HSE.</h1><p>Tu cuenta todavía no tiene una organización asignada. Solicitá acceso al administrador de tu empresa.</p></div></section><section className={styles.authPanel}><div className={styles.authCard}>{error?<div className={styles.error}>{error}</div>:null}<button className={styles.primary} disabled={busy} onClick={()=>void loadWorkspace()}>{busy?'Comprobando…':'Volver a comprobar acceso'}</button><button className={styles.secondary} onClick={()=>void signOut()}>Cerrar sesión</button></div></section></main>;
 
   return <main className={styles.appShell}>
     <aside className={styles.sideNav}>
       <div className={styles.sideBrand}><Brand variant="onDark"/></div>
       <nav className={styles.navList}>
-        <Link className={`${styles.navItem} ${styles.navItemActive}`} href="/app/hse"><span>01</span>Inicio</Link>
-        <button className={styles.navItem} onClick={()=>setFilter('open')}><span>02</span>Hallazgos</button>
+        <Link className={`${styles.navItem} ${mode === 'overview' ? styles.navItemActive : ''}`} href="/app/hse"><span>01</span>Inicio</Link>
+        {mode === 'overview' ? <button className={styles.navItem} onClick={()=>setFilter('open')}><span>02</span>Hallazgos</button> : <Link className={styles.navItem} href="/app/hse"><span>02</span>Hallazgos</Link>}
         <Link className={styles.navItem} href="/app/hse/inspections"><span>03</span>Inspecciones</Link>
         <Link className={styles.navItem} href="/app/hse/forms"><span>04</span>Formularios</Link>
         <Link className={styles.navItem} href="/app/calendar"><span>05</span>Agenda</Link>
-        <Link className={styles.navItem} href="/app/reports"><span>06</span>Informes</Link>
+        <Link className={`${styles.navItem} ${mode === 'reports' ? styles.navItemActive : ''}`} href="/app/hse/reports" aria-current={mode === 'reports' ? 'page' : undefined}><span>06</span>Informes</Link>
       </nav>
       <div className={styles.sideStatus}><span className={styles.liveDot}/><div><b>{workspace.organizationName}</b><small>{workspace.siteName||'Sitio operativo'}</small></div></div>
       <button className={styles.signOut} onClick={()=>void signOut()}>Cerrar sesión</button>
@@ -131,10 +135,38 @@ export function HseControl() {
     <section className={styles.mainArea}>
       <header className={styles.topbar}>
         <div><span className={styles.eyebrow}>OPERACIÓN HSE</span><h1>{workspace.siteName||workspace.organizationName}</h1></div>
-        <div className={styles.topActions}><span className={styles.syncBadge}><i/>En línea</span><button className={styles.secondary} onClick={()=>void demo()} disabled={busy}>Demo</button></div>
+        <div className={styles.topActions}><span className={styles.syncBadge}><i/>En línea</span><button className={styles.secondary} onClick={()=>void loadWorkspace()} disabled={busy} aria-label="Actualizar datos HSE">Actualizar</button></div>
       </header>
 
       <div className={styles.workspace}>
+        {mode === 'reports' ? <>
+          <section className={styles.hero}>
+            <div><span className={styles.eyebrowLight}>INFORMES TÉCNICOS</span><h2>Informes de tu operación.</h2><p>Historial generado desde hallazgos reales, organizado por empresa y sitio.</p></div>
+            <div className={styles.heroSummary}><strong>{reports.length}</strong><span>informes registrados</span><small>{workspace.siteName || workspace.organizationName}</small></div>
+          </section>
+          <section className={styles.listPanel}>
+            <div className={styles.sectionHead}>
+              <div><span className={styles.eyebrow}>HISTORIAL OPERATIVO</span><h2>Informes generados</h2></div>
+              <span className={styles.resultCount}>{visibleReports.length} registros</span>
+            </div>
+            <div className={styles.toolbar}><input className={styles.search} aria-label="Buscar informes" placeholder="Buscar por título, tipo o estado…" value={reportSearch} onChange={e=>setReportSearch(e.target.value)}/></div>
+            {error ? <div className={styles.error} role="alert">{error}</div> : null}
+            <div className={styles.list}>
+              {visibleReports.map(report => <Link key={report.id} className={styles.reportRow} href={`/app/hse/reports/${report.id}`}>
+                <div className={styles.reportRowContent}>
+                  <span className={styles.code}>{new Date(report.created_at).toLocaleDateString('es-AR')} · {report.report_type || 'Informe HSE'}</span>
+                  <h3>{report.title || 'Informe HSE sin título'}</h3>
+                  <span className={styles.meta}>Registro guardado y vinculado a la operación</span>
+                </div>
+                <span className={styles.reportRowAction}>{report.status} <span aria-hidden="true">↗</span></span>
+              </Link>)}
+              {!visibleReports.length ? <div className={styles.empty}>
+                <p>{reportSearch ? 'No encontramos informes que coincidan con tu búsqueda.' : 'Todavía no hay informes generados para este espacio.'}</p>
+                {!reportSearch ? <Link className={styles.reportStartLink} href="/app/hse">Ir a Hallazgos para crear el primer informe →</Link> : null}
+              </div> : null}
+            </div>
+          </section>
+        </> : <>
         <section className={styles.hero}>
           <Image className={styles.heroMark} src="/brand/informe360-hse/informe360-hse-oscuro.svg" alt="" aria-hidden="true" width={1200} height={1200} unoptimized/>
           <div><span className={styles.eyebrowLight}>ESTADO OPERATIVO</span><h2>Lo importante, primero.</h2><p>Hallazgos, acciones y vencimientos sincronizados con el trabajo de campo.</p></div>
@@ -162,11 +194,12 @@ export function HseControl() {
             <span className={styles.eyebrow}>INFORME TÉCNICO</span><div className={styles.selection}>{selected.size}</div><h3>hallazgo{selected.size===1?'':'s'} seleccionado{selected.size===1?'':'s'}</h3><p>El informe queda vinculado a los registros originales y conserva su trazabilidad.</p><input value={reportTitle} onChange={e=>setReportTitle(e.target.value)} placeholder={`Informe HSE · ${workspace.siteName||workspace.organizationName}`}/><button className={styles.primary} disabled={busy||!selected.size} onClick={()=>void createReport()}>{busy?'Generando…':'Crear informe técnico'}</button><button className={styles.secondary} onClick={()=>setSelected(new Set())}>Limpiar selección</button>
           </aside>
         </section>
+        </>}
       </div>
     </section>
 
     <nav className={styles.mobileDock} aria-label="Navegación HSE móvil">
-      <Link href="/app/hse">Inicio</Link><Link href="/app/hse/inspections">Inspecciones</Link><Link className={styles.mobileDockPrimary} href="/app/hse"><Image src="/brand/informe360-hse/informe360-hse-claro.svg" alt="HSE" width={1200} height={1200} unoptimized/></Link><Link href="/app/calendar">Agenda</Link><Link href="/app/reports">Informes</Link>
+      <Link href="/app/hse">Inicio</Link><Link href="/app/hse/inspections">Inspecciones</Link><Link className={styles.mobileDockPrimary} href="/app/hse"><Image src="/brand/informe360-hse/informe360-hse-claro.svg" alt="HSE" width={1200} height={1200} unoptimized/></Link><Link href="/app/calendar">Agenda</Link><Link href="/app/hse/reports">Informes</Link>
     </nav>
   </main>;
 }
