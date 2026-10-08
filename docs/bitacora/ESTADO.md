@@ -197,3 +197,11 @@ La E1 se ejecuta aisladamente en `feat/hse-e1-offline-resilience-2026-10-08` con
 - CSS: navegación lateral con indicador activo y transición ligera, entrada del contenido sin salto; `prefers-reduced-motion` y estados de foco. 3/3 tests nuevos y `npm run qa`, ESLint, typecheck y Next build pasaron.
 - Build failures previos detectaron un test de condición y lint de React 19; ambos corregidos y registrados en [EWEB_P1_5_LOADING_SLIDER_2026-10-08.md](EWEB_P1_5_LOADING_SLIDER_2026-10-08.md).
 - **Pendiente:** comprobar percepción visual en navegador real con sesión en Inicio/Informes; no declarar EWEB.P1 finalizada ni avanzar EWEB.P2 automáticamente. PR #3 draft y Render producción intactos.
+
+
+## 2026-10-08 — EWEB.P2.1/P2.2 — Inspecciones integradas a panel HSE
+- Auditoría previa de ruta, `HseControl`, base de datos y `forms-browser.ts` confirma que Inspecciones existía como página separada con CSS inline, aunque reutilizaba consultas reales.
+- Cambios: ruta `/app/hse/inspections` renderiza `HseControl mode="inspections"`, usa menú y cabecera del panel HSE, lista plantillas y ejecuciones versionadas y filtra por sitio en `inspection-view.ts`.
+- Se preservó acción explícita para instalar plantillas estándar desde Supabase; nunca se siembra automáticamente. Estados carga/error/vacío, tarjetas y responsive HSE.
+- Tests nuevos en `scripts/hse-inspections.test.mjs` incorporados a `npm run qa`; Render QA deployment `dep-db3s40jncjis73bjlevg` iniciado sobre commit `9837a84faa3e273e83a73962dd6d0185c5bc54b2`.
+- Gate no cerrado hasta comprobar estado LIVE y QA final. Resto P2.3/P2.4 y prueba visual pendiente. [Detalle](EWEB_P2_INSPECCIONES_2026-10-08.md). Producción y PR #3 draft intactos.
