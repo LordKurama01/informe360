@@ -57,7 +57,7 @@ export async function saveFormAnswers(runId: string, answers: HseFormAnswers) {
   if (versionError || !version) throw versionError || new Error('No se encontró la versión publicada.');
   // Upload photo fields before upserting any answers. Local file URIs never reach Postgres.
   const prepared = await preparePhotoAnswers(version.schema_json as HseFormSchema, answers, (key, uri) =>
-    uploadFormPhoto(run.organization_id, runId, key, uri));
+    uploadFormPhoto(run.organization_id, runId, key, uri), run.organization_id + '/form-runs/' + runId + '/');
   const rows = Object.entries(prepared).map(([field_id, value_json]) => ({
     organization_id: run.organization_id, form_run_id: runId, field_id, value_json, answered_by: userData.user.id,
   }));
