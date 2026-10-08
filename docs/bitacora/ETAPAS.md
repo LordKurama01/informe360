@@ -15,8 +15,10 @@ Cada parte tiene: entrada (HEAD, entorno, alcance), ejecución acotada, aceptaci
 ## E0 — Custodia del proyecto y continuidad GitHub (PRIMERA)
 **Objetivo:** evitar reinicios, suposiciones, despliegues accidentales o pérdida de decisiones.
 - **E0.P1 — Auditoría de contexto [VALIDADA documental]:** comprobar repo/branch, HEAD, árbol, servicios Render, CI, arquitectura, mobile y documentación histórica. Evidencia: snapshot `ESTADO.md`.
-- **E0.P2 — Registrar protocolo y roadmap [IMPLEMENTADA; QA documental pendiente]:** crear `AGENTS.md` y `docs/bitacora/{README,ESTADO,ETAPAS,REGISTRO}.md`. No modificar código/productivo.
-- **E0.P3 — Verificación y trazabilidad [PENDIENTE]:** releer los archivos remotos, confirmar que el PR documental existe y apunta a `feat/hse-phases-1-5`, registrar SHAs/estado CI, verificar que la rama auto-deploy permanece sin cambios. Gate: enlaces funcionales a archivos, PR y punto de continuidad.
+- **E0.P2 — Registrar protocolo y roadmap [VALIDADA solo documental]:** crear `AGENTS.md` y `docs/bitacora/{README,ESTADO,ETAPAS,REGISTRO}.md`. No modificar código/productivo.
+- **E0.P3 — Verificación y trazabilidad [VALIDADA solo documental; CI fallando]:** releer los archivos remotos, confirmar que el PR documental existe y apunta a `feat/hse-phases-1-5`, registrar SHAs/estado CI, verificar que la rama auto-deploy permanece sin cambios. Gate: enlaces funcionales a archivos, PR y punto de continuidad.
+
+**Resultado E0:** cinco archivos remotos comprobados; [PR #1 draft](https://github.com/LordKurama01/informe360/pull/1) e [issue índice #2](https://github.com/LordKurama01/informe360/issues/2). HEAD de rama HSE sin cambios al cierre de auditoría. CI documental [falló](https://github.com/LordKurama01/informe360/actions/runs/37715224223) y la rama base también [fallaba](https://github.com/LordKurama01/informe360/actions/runs/37714821289); el origen exacto no se pudo verificar (logs no disponibles en conector). **No se interpreta como QA runtime aprobada.** La primera tarea de E1.P1 debe aislar el fallo de CI, antes de implementaciones funcionales.
 
 ## E1 — Mobile nativo robusto y offline-first
 **Objetivo:** inspecciones fiables Android/iOS en campo, sin perder datos por cortes de red. **No empezar otra app**.
