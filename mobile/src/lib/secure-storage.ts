@@ -1,5 +1,6 @@
 import { Platform } from 'react-native';
 import * as SecureStore from 'expo-secure-store';
+import { createWebKeyValueStore } from './web-storage';
 
 // The native keychain is not available in React Native Web.
 // In browsers Supabase persists its session in origin-scoped localStorage;
@@ -16,15 +17,13 @@ function browserStorage(): Storage | null {
   }
 }
 
+const webStorage = createWebKeyValueStore(browserStorage);
+
 export const secureStorage = {
   async getItem(key: string): Promise<string | null> {
     const base = safeKey(key);
     if (Platform.OS === 'web') {
-      try {
-        return browserStorage()?.getItem(base) ?? null;
-      } catch {
-        return null;
-      }
+      return webStorage.getItem(base);
     }
     const countRaw = await SecureStore.getItemAsync(`${base}__count`);
     if (!countRaw) return SecureStore.getItemAsync(base);
@@ -37,9 +36,7 @@ export const secureStorage = {
   async setItem(key: string, value: string): Promise<void> {
     const base = safeKey(key);
     if (Platform.OS === 'web') {
-      const storage = browserStorage();
-      if (!storage) throw new Error('El almacenamiento del navegador no está disponible.');
-      storage.setItem(base, value);
+      webStorage.setItem(base, value);
       return;
     }
     await this.removeItem(key);
@@ -55,7 +52,7 @@ export const secureStorage = {
   async removeItem(key: string): Promise<void> {
     const base = safeKey(key);
     if (Platform.OS === 'web') {
-      browserStorage()?.removeItem(base);
+      webStorage.removeItem(base);
       return;
     }
     const countRaw = await SecureStore.getItemAsync(`${base}__count`);
