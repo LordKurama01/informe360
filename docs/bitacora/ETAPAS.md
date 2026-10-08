@@ -65,3 +65,10 @@ RAG documental con citas, EPP/visión computacional, capacitación masiva, marke
 `E0.P1 → E0.P2 → E0.P3 → E1.P1 … E5.P4`. Una parte puede constar de varios commits; cada uno debe dejar resultado en REGISTRO. Reordenar **solo** registrando nueva evidencia, impacto y decisión en GitHub.
 
 **Primera tarea al recibir «seguí» tras cerrar E0:** E1.P1 — auditoría de brechas offline frente a `FolderITDev/mobile-field-inspections`, con tests de regresión propuestos, sin reescritura de la app.
+
+## Checkpoint de QA E1 — Render
+
+- [QA_RENDER_2026-10-07.md](QA_RENDER_2026-10-07.md) prueba que `npm run qa` + TS Expo + export web pasaron en el entorno de Render QA.
+- E1.P1 VALIDADA auditoría; E1.P2/P3 EN CURSO; E1.P4: **QA web/JS VALIDADA parcialmente**, **QA nativa física, seguridad y offline integral PENDIENTES**. Se conservan los gates E1 originales.
+- No confundir export web con compilación nativa ni deploy LIVE con prueba end-to-end.
+- La siguiente parte material es **E1.P2: fotos privadas de formularios y lectura remota**, seguida de creación offline y prueba idempotente en E1.P3.
