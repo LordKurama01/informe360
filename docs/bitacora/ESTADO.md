@@ -123,3 +123,15 @@ La E1 se ejecuta aisladamente en `feat/hse-e1-offline-resilience-2026-10-08` con
 - **Correcciones verificadas:** landing desktop/móvil usa marca HSE en vez del bloque genérico “360”; login/onboarding comparten paleta industrial; los tres PNG nativos son decodificables, cuadrados y >=512 px.
 - **No cerrado todavía:** 28 advisories npm móviles (10 moderate, 18 high), QA Android/iOS físico, RLS negativa multi-organización y revalidación del job WhatsApp. No usar `npm audit fix --force` sin triage.
 - **Producción:** no modificada en este bloque. No promover hasta integrar el hardening en E1 QA y volver a ejecutar el gate correspondiente.
+
+
+## 13. Hardening integrado + auditoría runtime/DB — 2026-10-08
+
+- **PR #4 integrado en E1 QA:** merge `b1fe12062d4f46eb325f054daa59ddcb4cf0ed40`. Producción `feat/hse-phases-1-5` no fue modificada.
+- **QA integrada final:** Render `informe360-hse-e1-qa`, deploy `dep-db3hpi59fdbs73ds5dog` sobre SHA funcional `3c8a86357b8c1e114ffe91d472ffbc7024496448`: BUILD y DEPLOY **SUCCEEDED**. Incluye branding, PNG nativos, login/onboarding, tests offline/sync/fotos, RLS contract, TypeScript, lint, Next build y Expo Web export.
+- **Supabase real:** proyecto Informe360 `wvjmsltqrztlvgmayicr` ACTIVE_HEALTHY. Bucket `hse-evidence` privado; políticas de Storage restringen por organización.
+- **Hallazgo de seguridad RLS:** las políticas vigentes de formularios contienen referencias ambiguas que en dos subconsultas se materializan como tautologías (`r.organization_id = r.organization_id` y `t.organization_id = t.organization_id`). Las tablas de formularios están actualmente sin filas. Se prepararon migraciones de hardening no destructivas y un gate QA que pasa; **DDL productivo todavía no aplicado**.
+- **Runtime producción verificado desde Supabase:** `/api/hse/health` responde HTTP 200, pero reporta `supabaseAdminConfigured=false`, WhatsApp no configurado y sólo proveedor AI manual. Por lo tanto el 200 es liveness, no readiness completa.
+- **Recordatorios WhatsApp:** el dispatcher existe y Vault contiene la referencia `hse_jobs_secret`, pero `cron.job` está vacío. Una prueba controlada sin recordatorios pendientes terminó en timeout del cliente y Render registró 503; no reactivar scheduler hasta corregir configuración runtime del servicio.
+- **Dependencias móviles:** continúan 28 advisories npm (10 moderate, 18 high); no se ejecutó actualización forzada.
+- **Release gate:** NO promover a producción mientras falten configuración server-side, hardening RLS aplicado/verificado, triage de dependencias y QA nativa física Android/iOS.
