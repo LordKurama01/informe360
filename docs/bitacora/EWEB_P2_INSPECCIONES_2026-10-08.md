@@ -58,3 +58,31 @@ Fecha de inicio: **2026-10-08**. Estado: **implementación aislada en QA, valida
 - `dep-db3s5qij9qps738rkao0` **LIVE**, commit `1504afea91e5e594bf07a7c24c3318ad57ea8f66`, finalizado el 2026-10-08T16:22:41Z. `npm run qa`, TypeScript, ESLint y Next build pasaron, incluidas las pruebas de filtros.
 - Abrir https://informe360-hse-web-qa.onrender.com/app/hse/inspections para revisar la interfaz. No se ejecutaron pruebas de interacción con credenciales ni se ha aprobado visualmente.
 - La rama Render de producción sigue sin merge y sin despliegues nuevos.
+
+
+## EWEB.P2.4 — Inicio, reanudación y envío web de inspecciones (2026-10-08)
+
+### Auditoría previa (sin alterar datos)
+- Se verificaron por SQL de solo lectura la función `create_form_run`, columnas, constraints y todas las políticas RLS relacionadas con `form_runs`, `form_answers`, plantillas/versiones. Supabase contiene cuatro plantillas publicadas; no se crearon ejecuciones ni respuestas de prueba.
+- `create_form_run` es invoker y valida plantilla publicada, pertenencia a organización, pertenencia del sitio y `client_run_id` idempotente.
+- Se detectaron carencias de inmutabilidad para `form_runs_update` y `form_answers_update/delete`. Ver [auditoría detallada y bloqueos de producción](EWEB_P2_4_AUDITORIA_RLS_2026-10-08.md). RLS protege la organización, **no otorga aislamiento por sitio en backend**.
+
+### Funcionalidad implementada
+- `src/services/hse/forms-browser.ts`: `startHseInspection` con RPC de la app móvil, UUID idempotente y plantilla activa; `getHseInspection` consulta registro/version/schema/respuestas por empresa y sitio; `saveHseInspectionDraft` guarda respuestas autorizadas del esquema; `submitHseInspection` valida obligatorios y estado editable; fotografía privada `hse-evidence` con URL firmada y ruta asociada a la ejecución.
+- `src/blocks/hse-control/HseControl.tsx`: botón «Iniciar inspección» por plantilla activa; historial abre detalle; sección Inspecciones permanece seleccionada en el menú.
+- `src/app/app/hse/inspections/[runId]/page.tsx`: ruta versionada que carga la misma web HSE.
+- `src/blocks/hse-control/HseInspectionRunPanel.tsx`: campos reales de cumplimiento, sí/no, texto, número, fecha, opciones, matriz y fotografía; guardado explícito, presentación con validación y modo de solo lectura cuando status está cerrado. Los `repeater` quedan visibles pero el envío web se bloquea hasta que su editor esté desarrollado; la app nativa conserva su compatibilidad.
+- `HseControl.module.css`: editor responsive que preserva el diseño HSE.
+- `scripts/hse-inspection-run.test.mjs`: tests de creación, restricciones, guardado, validación y fotos privadas, incluido `npm run qa`.
+- No se insertaron datos falsos ni se modificó la base. Las operaciones de guardado se ejecutarán solo cuando el usuario las solicite desde la interfaz.
+
+### QA y correcciones
+- Primer deploy `dep-db3sfh0473hc73f675ag` **BUILD_FAILED**: test anterior esperaba un estado activo de navegación únicamente para el listado, no la nueva ruta de detalle. Se corrigió el test en `954ff4a155f42108b624e3c07459c95947ce9dfa`.
+- Segundo deploy `dep-db3sg22jnfac738k47sg`, SHA `954ff4a155f42108b624e3c07459c95947ce9dfa`: comprobación Render en curso al redactar, no confirmar LIVE todavía.
+- **No se realizó una prueba autenticada de envío con usuario real**. La QA estructural/TypeScript no sustituye esa prueba ni la migración de inmutabilidad.
+
+### Próximo bloque
+1. Confirmar Render LIVE y registrar resultado final.
+2. Comprobar en sesión real «Iniciar» → «Guardar borrador» → salir y reingresar → «Presentar», campos foto, estado de solo lectura; revisar errores de Storage.
+3. Preparar y probar endurecimiento RLS/triggers en staging aislado con dos organizaciones y roles distintos. No tocar Supabase compartido sin este gate.
+4. Cerrar EWEB.P2.5 solo con aceptación visual/funcional y después abordar EWEB.P3 Formularios.
