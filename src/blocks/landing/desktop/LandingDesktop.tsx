@@ -142,7 +142,7 @@ export function LandingDesktop() {
           <article>
             <span>02</span>
             <h3>Subis evidencia</h3>
-            <p>Fotos, documentos, checklist y notas tecnicas.</p>
+            <p>Fotos, notas, formularios y evidencia desde el teléfono.</p>
           </article>
           <article>
             <span>03</span>
