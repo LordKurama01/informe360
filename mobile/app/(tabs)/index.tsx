@@ -184,7 +184,7 @@ export default function Home() {
             <Text style={styles.sectionLinkText}>Ver todos ›</Text>
           </Pressable>
         </View>
-        {items.length && dataState === 'ready' ? <View style={styles.recent}>
+        {items.length > 0 && dataState === 'ready' ? <View style={styles.recent}>
           {items.slice(0,3).map(item => <FindingCard key={item.id} finding={item} onPress={() => router.push(`/finding/${item.id}`)}/>)}
         </View> : dataState === 'ready' ? <View style={styles.emptyCard}>
           <Text style={styles.emptyTitle}>Sin actividad registrada</Text>
@@ -270,7 +270,7 @@ const styles = StyleSheet.create({
   errorText:{color:theme.colors.danger,fontSize:12,fontWeight:'700'},
   recent:{gap:9},
   emptyCard:{backgroundColor:'#FFFFFF',borderWidth:1,borderColor:'#E0E6E2',borderRadius:17,padding:19,gap:5},
-  emptyTitle:{fontSize:14,fontWeight:'850',color:'#20312A'},
+  emptyTitle:{fontSize:14,fontWeight:'800',color:'#20312A'},
   emptyText:{fontSize:12,lineHeight:18,color:'#74827C'},
   bottomNote:{fontSize:10,lineHeight:15,color:'#76857C',textAlign:'center',paddingVertical:8},
   pressed:{opacity:0.77,transform:[{scale:0.985}]},
