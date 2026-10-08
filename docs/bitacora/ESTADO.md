@@ -161,3 +161,8 @@ La E1 se ejecuta aisladamente en `feat/hse-e1-offline-resilience-2026-10-08` con
 - **QA**: `npm run test:hse:platforms` OK en la web, `npm run qa` web y builds Next; app preview Expo export OK. No equivale a APK/IPA ni QA de experiencia en teléfonos.
 - **Bitácora completa:** [PLATAFORMAS_WEB_MOVIL_2026-10-08.md](PLATAFORMAS_WEB_MOVIL_2026-10-08.md). Invariante establecida en `AGENTS.md` para futuros «seguí».
 - **Próximo bloque:** validar visual de web en PC, inspecciones con sesión y datos propios, luego etapa E1.P3 inicio offline, E1.P4 builds nativos y QA. No diseñar la web duplicando React Native.
+
+## 2026-10-08 — EWEB.P1 — Eliminar «Demo» y unificar Informes [EN CURSO]
+- Inspección previa de imagen, árbol y código: `/app/reports` usa una página antigua con datos ficticios hardcodeados, CSS oscuro azul ajeno a HSE y sin menú lateral. `/app/hse` posee la UI y autenticación correctas.
+- Acción acotada: trasladar Informes HSE a `/app/hse/reports` bajo la misma carcasa HSE y consultar registros reales de Supabase con RLS/organización/sitio. En QA web, redirigir el enlace heredado `/app/reports` al módulo nuevo; proteger integraciones no HSE. Quitar botón Demo y capacidad de sembrar registros de prueba desde la UI HSE.
+- No modificar producción ni crear registros ficticios. Evidencia pendiente: QA Render Next.js, test de integración estructural y validación visual.
