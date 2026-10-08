@@ -95,9 +95,9 @@ RAG documental con citas, EPP/visión computacional, capacitación masiva, marke
 
 - **EWEB.P1 — Inicio + Informes [IMPLEMENTADA; QA Render VALIDADA; aceptación visual PENDIENTE]:** eliminar CTA «Demo», impedir la generación accidental de datos ficticios desde HSE; sustituir los informes de ejemplo y la pantalla ajena al sistema por historial real `/app/hse/reports` dentro de `HseControl`, protegido por organización/sitio y RLS. Redirigir `/app/reports` **solo en instancia HSE QA** sin afectar otras superficies Informe360. Criterio: mismo menú/identidad; estado vacío honesto; actualización real; tests + Render.
 - **EWEB.P2 — Inspecciones [P2.1/P2.2 IMPLEMENTADAS; QA de publicación EN CURSO; P2.3–P2.5 PENDIENTES]:** mantener datos reales y funciones existentes, pero integrar navegación, cabecera, menús, espaciados, responsive, estados vacíos/errores del panel HSE; no reconstruir el motor de checklists.
-- **EWEB.P3 — Formularios [PENDIENTE]:** reutilizar motor versionado ya existente, hacer coherentes menú, encabezado, controles y roles, sin segunda base ni datos de ejemplo.
-- **EWEB.P4 — Agenda + informes detallados [PENDIENTE]:** distinguir agenda del producto HSE de rutas legadas de otras apps y aplicar carcasa web común a seguimiento; la **vista de impresión** de informe puede ser deliberadamente documental, con vuelta clara al panel.
-- **EWEB.P5 — QA visual / funcional [PENDIENTE]:** accesibilidad, logo, escritorio 1366/1440/1920, móvil web 360–430, rutas profundas y refresh, sesión, RLS por empresa, informes de muestra **no**, pruebas Next en Render, regresión sin alterar producción.
+- **EWEB.P3 — Formularios [VALIDADA EN QA TÉCNICA; revisión autenticada pendiente]:** reutilizar motor versionado ya existente, hacer coherentes menú, encabezado, controles y roles, sin segunda base ni datos de ejemplo.
+- **EWEB.P4 — Agenda + informes detallados [VALIDADA EN QA TÉCNICA; revisión autenticada pendiente]:** distinguir agenda del producto HSE de rutas legadas de otras apps y aplicar carcasa web común a seguimiento; la **vista de impresión** de informe puede ser deliberadamente documental, con vuelta clara al panel.
+- **EWEB.P5 — QA visual / funcional [QA AUTOMATIZADA APROBADA; aceptación visual y seguridad BLOQUEADAS]:** accesibilidad, logo, escritorio 1366/1440/1920, móvil web 360–430, rutas profundas y refresh, sesión, RLS por empresa, informes de muestra **no**, pruebas Next en Render, regresión sin alterar producción.
 
 **Invariante:** no hay botones públicos de siembra de registros «Demo» en HSE. Los ambientes QA pueden tener una empresa de evaluación explícitamente identificada, pero solo registros guardados en DB real; nunca métricas fabricadas. No fusionar a `feat/hse-phases-1-5` auto-deploy hasta gates.
 
@@ -136,3 +136,12 @@ RAG documental con citas, EPP/visión computacional, capacitación masiva, marke
 
 
 **Checkpoint EWEB.P2.4 — 2026-10-08:** función de inicio mediante RPC publicada, apertura de ejecución por URL, campos según versión, guardado de borrador, presentación, fotos privadas y solo lectura para estados terminales. Render QA `dep-db3sg22jnfac738k47sg` **LIVE**, SHA `954ff4a155f42108b624e3c07459c95947ce9dfa`, 5 pruebas nuevas y pipeline Next aprobados. **RLS actual permite modificaciones amplias intraorganización**; no se aplica migración al Supabase compartido hasta ensayos en staging, ni se declara la prueba E2E terminada. Ver [auditoría](EWEB_P2_4_AUDITORIA_RLS_2026-10-08.md).
+
+
+### Checkpoint EWEB.P3–P5 (2026-10-08)
+- **P3 Formularios:** reutilizado motor de plantillas/versiones dentro de `HseControl`; sin carcasa autónoma, mantiene categorías y publicación con permisos owner/admin y RLS. Responsive revisado en código; prueba visual autenticada pendiente.
+- **P4 Agenda/Informes:** `/app/hse/agenda` combina recordatorios y vencimientos reales; nuevo recordatorio, completar/cancelar bajo empresa/sitio; `/app/hse/reports/[id]` comprueba empresa y sitio y conserva impresión A4 con regreso a Informes.
+- **P5 QA técnica:** Render `dep-db3spebtqb8s73f8j53g` **LIVE**, SHA `56db5d02cadc894cda5cbe165be58d0bc4adfe6c`, 4/4 tests nuevos + toda `npm run qa` (TypeScript, lint, Next build). Cabecera móvil web de cinco secciones HSE; export React Native sigue separado.
+- **No equivalen a aceptación final:** 0 ejecuciones, 0 respuestas, 0 informes, 0 recordatorios existentes, por lo que aún no se pudo validar persistencia E2E sin alterar datos. RLS intraempresa permite mutaciones amplias de inspecciones cerradas. Se preparó SQL de endurecimiento bajo `database/supabase/proposals/`, sin aplicarlo.
+- **Bloqueo para release:** staging Supabase aislado (no existe aún; crear rama requiere confirmación de costo), tests multiusuario y de fotografía, revisión visual con sesión real, decisión de merge y rollback. **No enviar a producción por defecto.**
+- [Bitácora cierre P3–P5](EWEB_P3_P5_CIERRE_2026-10-08.md), [RLS](EWEB_P2_4_AUDITORIA_RLS_2026-10-08.md).
