@@ -189,3 +189,11 @@ La E1 se ejecuta aisladamente en `feat/hse-e1-offline-resilience-2026-10-08` con
 - `scripts/hse-dashboard-metrics.test.mjs`: 4 tests nuevos, incluidos regresión visual de estados, denominador de KPI y actualización recuperable, integrados a `npm run qa`.
 - `dep-db3qsml9fdbs73eslmf0` **LIVE** a las 2026-10-08T14:54:53Z, SHA funcional `6377f727ea144c2cc4865aae313f88e66132e83a`, Next.js compilado, typecheck y lint aprobados.
 - **Próxima parte exacta al decir «seguí»:** EWEB.P1.5 verificar web con sesión en Inicio e Informes, rutas directas, retorno, diseño escritorio/móvil y estado sin registros; comprobar Render y registrar aceptación. Después EWEB.P2 Inspecciones. Sin merge a producción.
+
+
+## 2026-10-08 — EWEB.P1.5 — Transiciones suaves validadas técnicamente
+- **Nuevo QA WEB LIVE**: `https://informe360-hse-web-qa.onrender.com/app/hse`, deploy `dep-db3r3f8473hc73f1m5vg`, SHA funcional `837bd8791006fa3c23f596939211253f034c5314`.
+- `HseControl.tsx` ya no muestra splash tipo login cuando datos tardan menos de 320ms; skeleton con estructura HSE solo en espera real. Búsqueda con debounce 280ms solo consulta hallazgos, no revalida Auth/KPI/empresa en cada tecla.
+- CSS: navegación lateral con indicador activo y transición ligera, entrada del contenido sin salto; `prefers-reduced-motion` y estados de foco. 3/3 tests nuevos y `npm run qa`, ESLint, typecheck y Next build pasaron.
+- Build failures previos detectaron un test de condición y lint de React 19; ambos corregidos y registrados en [EWEB_P1_5_LOADING_SLIDER_2026-10-08.md](EWEB_P1_5_LOADING_SLIDER_2026-10-08.md).
+- **Pendiente:** comprobar percepción visual en navegador real con sesión en Inicio/Informes; no declarar EWEB.P1 finalizada ni avanzar EWEB.P2 automáticamente. PR #3 draft y Render producción intactos.
