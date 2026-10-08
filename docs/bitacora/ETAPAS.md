@@ -123,7 +123,7 @@ RAG documental con citas, EPP/visión computacional, capacitación masiva, marke
 - **P2.1 — Unificación visual [IMPLEMENTADA]:** ruta `/app/hse/inspections` usa `HseControl mode="inspections"`, con la misma sesión, cabecera, menú activo, UX y colores que Inicio/Informes.
 - **P2.2 — Operativa existente [IMPLEMENTADA]:** plantillas versionadas y ejecuciones reales de Supabase, selección por organización y sitio, instalación optativa de biblioteca estándar; no carga automática de ejemplos.
 - **P2.3 — Interacción y estados [VALIDADA EN QA RENDER; aceptación visual PENDIENTE]:** filtros de ejecución, búsqueda, estados de carga/error y capacidades de apertura/continuación de checklists con los endpoints disponibles.
-- **P2.4 — Integridad y uso real [PENDIENTE]:** RLS/sitio, flujos de operaciones reales, acceso con cuenta autenticada, responsive y errores reproducibles.
+- **P2.4 — Integridad y uso real [IMPLEMENTADA EN CÓDIGO Y QA RENDER; prueba autenticada/RLS PENDIENTE]:** RLS/sitio, flujos de operaciones reales, acceso con cuenta autenticada, responsive y errores reproducibles.
 - **P2.5 — Validación y cierre [EN CURSO]:** tests HSE, Next y deploy QA de esta primera entrega, más revisión visual antes de aprobación.
 
 [Bitácora granular EWEB.P2](EWEB_P2_INSPECCIONES_2026-10-08.md). La aceptación visual de EWEB.P1 sigue abierta; avance autorizado por el pedido de continuar, no se convierte retrospectivamente en aprobado. Producción sin despliegues.
@@ -133,3 +133,6 @@ RAG documental con citas, EPP/visión computacional, capacitación masiva, marke
 
 
 **Cierre técnico EWEB.P2.3:** Render `dep-db3s5qij9qps738rkao0` **LIVE**, commit `1504afea91e5e594bf07a7c24c3318ad57ea8f66`; nuevas pruebas de filtros y `npm run qa`, typecheck/lint y Next build aprobados. Se mantienen P2.4/P2.5 abiertas para uso real, permisos y calidad visual con sesión.
+
+
+**Checkpoint EWEB.P2.4 — 2026-10-08:** función de inicio mediante RPC publicada, apertura de ejecución por URL, campos según versión, guardado de borrador, presentación, fotos privadas y solo lectura para estados terminales. Render QA `dep-db3sg22jnfac738k47sg` **LIVE**, SHA `954ff4a155f42108b624e3c07459c95947ce9dfa`, 5 pruebas nuevas y pipeline Next aprobados. **RLS actual permite modificaciones amplias intraorganización**; no se aplica migración al Supabase compartido hasta ensayos en staging, ni se declara la prueba E2E terminada. Ver [auditoría](EWEB_P2_4_AUDITORIA_RLS_2026-10-08.md).
