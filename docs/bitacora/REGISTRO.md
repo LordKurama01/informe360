@@ -64,3 +64,13 @@
 - **PR #3:** 18 archivos modificados, sigue **draft**, sin merge. [Diff](https://github.com/LordKurama01/informe360/pull/3/files).
 - **Rama Render verificada:** `feat/hse-phases-1-5` aún en `422f8bcbce65b3e68f892d51d37b1ed0999690c5`. Sin cambios de runtime.
 - **Gate actual:** E1.P2 y E1.P3 **EN CURSO**, E1.P4 **BLOQUEADA** por CI sin runner y QA físico. Prioridad próxima: no guardar referencias locales como evidencia remota, luego pruebas reales.
+
+
+## 2026-10-07 — E1.P4 — QA aislado en Render (iniciado, sin aprobación final)
+- **Entorno QA NUEVO:** Render Static Site `srv-db3fsnnavr4c739kgeag`, URL `https://informe360-hse-e1-qa.onrender.com`; rama `feat/hse-e1-offline-resilience-2026-10-08`, `autoDeploy=no`, sin tocar `informe360-hse` ni su preview histórico.
+- **Pipeline del sitio:** normalizar lockfile → instalar web → `npm run qa` (tests, TS, ESLint, build Next) → instalar Expo → TS móvil → export web Expo. Permite probar también la rama candidata sin depender de GitHub Actions.
+- **Deploy inicial:** `dep-db3fsnvavr4c739kgf90` BUILD_FAILED. La instalación automática de Render, antes de ejecutar el buildCommand, intentó bajar un tarball npm desde una URL reescrita incorrectamente (`registry.npmjs.org/artifactory/api/npm/npm-public/...`, 404).
+- **Corrección de infraestructura:** variable `SKIP_INSTALL_DEPS=true` (mecanismo oficial de Render) para instalar **después** de normalizar el lockfile, y Node `22.16.0`. Esto generó nuevo despliegue `dep-db3ft1egekts73ek6bcg`.
+- **Evidencia parcial del segundo deploy:** npm y pruebas HSE iniciales superadas; `tsc --noEmit`, lint y compilación Next avanzaron hasta compilación de páginas. **Resultado final todavía pendiente** al momento de esta entrada.
+- **Costo:** sitio estático gratuito sujeto a uso del workspace. No se activó plan de pago ni otra base.
+- **Siguiente:** inspeccionar resultado final de `dep-db3ft1egekts73ek6bcg` y logs, corregir fallos genuinos sin modificar producción. Registrar estado real de QA y recordar que export web **no** reemplaza builds ni pruebas físicas iOS/Android.
