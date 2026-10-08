@@ -248,3 +248,9 @@ La E1 se ejecuta aisladamente en `feat/hse-e1-offline-resilience-2026-10-08` con
 - **Límites:** Render QA genera Expo **Web Preview**, no APK nativa; ver la barra de Chrome es normal y no desaparece sin instalación de Android. No se realizó prueba en teléfono con APK/micrófono/cámara/permisos. Aplicación nativa precisa build propio por `mobile/eas.json` profile `preview`.
 - **Seguridad:** npm audit de dependencias móviles reportó 28 hallazgos (10 moderados, 18 altos), pendientes de clasificación antes de release nativa; eso **no implica** automáticamente vulnerabilidades explotables en la app.
 - **Bitácora detallada:** [EAPP_P1_INICIO_NATIVO_2026-10-08.md](EAPP_P1_INICIO_NATIVO_2026-10-08.md). Producción web y DB sin cambios. PR #3 draft.
+
+
+### EAPP.P1 — QA final de rediseño móvil
+- `informe360-hse-e1-qa.onrender.com` **LIVE** sobre `1b871ad09a9dd1a920bac174d36c9392503a319e`; Render `dep-db4094nlot8c73c8l3l0`, 2026-10-08T21:02:50Z. Nuevo Inicio React Native de campo, MaterialCommunityIcons y tabbar 44 px publicados en export Expo Web.
+- **Build validado:** 4 tests del Inicio, resto de `npm run qa`, typecheck mobile, Expo web export. **No APK aún; no atribuir a la preview comportamiento de nativo.**
+- Próximo: test visual de usuario sobre la vista previa, luego empaquetar `mobile/eas.json` profile `preview` y probar Android real. Permisos, cámara, audio y uso offline de APK siguen gates abiertos. Producción web y base sin modificaciones.
