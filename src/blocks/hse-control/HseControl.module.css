@@ -144,3 +144,9 @@
 .agendaCreate>.primary{justify-self:start}
 @media(max-width:1200px){.agendaColumns{grid-template-columns:1fr}}
 @media(max-width:760px){.agendaCreate>.primary{width:100%}.agendaDate{white-space:normal}.agendaActions{justify-content:flex-start}}
+
+
+.formsTwoCol{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.formsFieldRow{display:grid;grid-template-columns:minmax(0,1fr) 150px 96px 38px;align-items:center;gap:7px;padding:9px;border:1px solid #e2e8df;border-radius:11px}
+.formsFieldRow input,.formsFieldRow select{min-width:0}
+@media(max-width:760px){.formsTwoCol{grid-template-columns:1fr}.formsFieldRow{grid-template-columns:minmax(0,1fr) 38px}.formsFieldRow>input{grid-column:1/3}.formsFieldRow>select{grid-column:1/3}.formsFieldRow>label{grid-column:1}.formsFieldRow>button{grid-column:2;grid-row:3}}
