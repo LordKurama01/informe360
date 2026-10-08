@@ -37,3 +37,13 @@ export async function createDraftVersion(workspace:HseWorkspace,templateId:strin
 export async function publishFormVersion(versionId:string){const {error}=await getBrowserSupabase().rpc('publish_form_version',{p_version_id:versionId});if(error)throw error;}
 
 export async function listFormRuns(workspace:HseWorkspace,templateId?:string):Promise<HseFormRunRow[]>{let q=getBrowserSupabase().from('form_runs').select('id,status,started_at,submitted_at,template_id,template_version_id,site_id').eq('organization_id',workspace.organizationId).order('started_at',{ascending:false}).limit(100);if(templateId)q=q.eq('template_id',templateId);const {data,error}=await q;if(error)throw error;return(data||[]) as HseFormRunRow[];}
+
+
+/** User-triggered import of standard inspection templates, not demo records. */
+export async function installStandardInspectionTemplates(workspace: HseWorkspace): Promise<number> {
+  const { data, error } = await getBrowserSupabase().rpc('seed_hse_inspection_templates', {
+    p_organization_id: workspace.organizationId,
+  });
+  if (error) throw error;
+  return typeof data === 'number' && Number.isFinite(data) ? data : 0;
+}
