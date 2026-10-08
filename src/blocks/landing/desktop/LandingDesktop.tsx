@@ -35,7 +35,7 @@ export function LandingDesktop() {
 
       <section className={styles.hero}>
         <div className={styles.heroCopy}>
-          <span className={styles.kicker}>Informes tecnicos para campo</span>
+          <span className={styles.kicker}>HSE para operaciones de campo</span>
           <h1>Informes t&eacute;cnicos listos para entregar.</h1>
           <p className={styles.lead}>
             Cargas la visita, subis evidencia y completas el checklist. Informe360 arma un informe editable con acciones SMART, normativa relacionada, PDF profesional y seguimiento.
