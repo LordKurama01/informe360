@@ -4,7 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams } from 'expo-router';
 import { DynamicForm } from '../../src/components/forms/DynamicForm';
 import { getFormRunBundle, submitFormRun } from '../../src/services/forms';
-import { removeOfflineFormDraft, saveOfflineFormDraft } from '../../src/services/form-offline';
+import { getOfflineFormDraft, removeOfflineFormDraft, saveOfflineFormDraft } from '../../src/services/form-offline';
 import { createFindingFromNonCompliance, linkedFindingsForRun } from '../../src/services/inspections';
 import type { FormRunBundle, HseFormAnswers } from '../../src/types/forms';
 import { theme } from '../../src/theme';
@@ -19,9 +19,9 @@ export default function FormRunPage() {
   const load = useCallback(async () => {
     if (!runId) return;
     try {
-      const [next, links] = await Promise.all([getFormRunBundle(runId), linkedFindingsForRun(runId)]);
+      const [next, links, local] = await Promise.all([getFormRunBundle(runId), linkedFindingsForRun(runId), getOfflineFormDraft(runId)]);
       setBundle(next);
-      setAnswers(next.answers);
+      setAnswers(local && ['draft', 'in_progress'].includes(next.run.status) ? local.answers : next.answers);
       setLinked(Object.fromEntries(links.map(item => [item.field_id, item.finding_id])));
     } catch (error) {
       Alert.alert('Formulario', error instanceof Error ? error.message : 'No se pudo cargar');
