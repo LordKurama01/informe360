@@ -226,3 +226,15 @@ La E1 se ejecuta aisladamente en `feat/hse-e1-offline-resilience-2026-10-08` con
 - Se encontró una regresión de test antiguo que exigía activo solo para listado de inspecciones; corregida y documentada. No se alteraron registros ni políticas de DB; PR #3 sigue draft, rama de producción no fusionada.
 - **Advertencia de seguridad verificable:** las RLS de actualización/borrado de form_answers y actualización de form_runs requieren endurecimiento de estados terminales y restricciones dentro de la empresa; aislamiento por sitio actualmente es del cliente, no de RLS. Ver [auditoría](EWEB_P2_4_AUDITORIA_RLS_2026-10-08.md).
 - **Próximo al decir «seguí»:** EWEB.P2.5 probar inicio → guardar → recuperar → presentar con cuenta real; verificar Storage firmado; preparar staging multiusuario y migración de inmutabilidad; inspección visual web, luego EWEB.P3 Formularios (shell todavía independiente). No declarar seguridad release aprobada hasta esos gates.
+
+
+## 2026-10-08 — EWEB.P3–P5 QA web técnica completa
+- **Render WEB QA LIVE**: https://informe360-hse-web-qa.onrender.com/app/hse, deploy `dep-db3spebtqb8s73f8j53g`, SHA `56db5d02cadc894cda5cbe165be58d0bc4adfe6c`, 2026-10-08T17:04:39Z.
+- **P3 Formularios:** integrado en el mismo `HseControl`; sigue utilizando motor real `createFormTemplate/publishFormVersion`, admin/owner y versiones publicadas. `/app/hse/forms` ya no usa app propia.
+- **P4 Agenda:** `/app/hse/agenda` separada del calendario genérico; vencimientos de hallazgos + recordatorios reales, alta explícita, cancelar/completar por empresa/sitio; informe imprimible con verificación activa y retorno a Informes.
+- **P5:** `scripts/hse-unified-web.test.mjs` 4/4 dentro del QA general, TypeScript, ESLint y Next build pasaron. Web móvil dispone de cinco secciones; no es la vista nativa Expo.
+- **Fallos de QA corregidos:** `dep-db3smkid0e5s73bdj2p0` (enlace a calendario legado), `dep-db3sn6qd0e5s73bdkmng` (llamada vieja al actualizador de recordatorios). Publicaciones siguientes exitosas.
+- **Corte DB solo lectura:** cuatro plantillas reales, sin runs/respuestas/reportes/recordatorios. No se generaron registros de demo.
+- **Bloqueo de release:** no hubo E2E en navegador autenticado, tampoco pruebas multiempresa o de Storage privado; Supabase RLS actual requiere endurecimiento para impedir edición/borrado tras enviar. Se redactó una propuesta SQL en `database/supabase/proposals/`, NO aplicada; staging Supabase no existe. P1.5, P2.5, P5 aceptación visual permanecen pendientes.
+- **Próximo paso exacto:** staging + pruebas negativas/RLS y validación funcional visual; luego aprobar PR #3 y planificar despliegue a producción. **No reprogramar pantallas de cero ni fusionar sin gate**.
+- Ver [bitácora integral](EWEB_P3_P5_CIERRE_2026-10-08.md).
