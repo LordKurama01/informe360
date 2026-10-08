@@ -17,6 +17,7 @@ export default function FormRunPage() {
   const [busy, setBusy] = useState(false);
   const [localSave, setLocalSave] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
   const saveSequence = useRef(0);
+  const scrollRef = useRef<ScrollView>(null);
 
   const load = useCallback(async () => {
     if (!runId) return;
@@ -93,7 +94,7 @@ export default function FormRunPage() {
   const statusLabel = bundle.run.status === 'submitted' ? 'ENVIADA' : bundle.run.status === 'reviewed' ? 'REVISADA' : bundle.run.status === 'cancelled' ? 'CANCELADA' : 'EN CURSO';
 
   return <SafeAreaView edges={['top', 'left', 'right']} style={styles.safe}>
-    <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+    <ScrollView ref={scrollRef} showsVerticalScrollIndicator={false} contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
       <View style={styles.top}><Pressable accessibilityRole="button" onPress={() => router.back()} style={styles.backButton}><Text style={styles.back}>‹ Volver</Text></Pressable><Text style={[styles.status, readOnly && styles.statusLocked]}>{statusLabel}</Text></View>
 
       <View style={styles.heading}>
@@ -104,7 +105,7 @@ export default function FormRunPage() {
 
       {!readOnly ? <View style={styles.localNote}><View style={styles.localDot}/><Text style={styles.localText}>{localSave === 'error' ? 'No se pudo guardar el último cambio. No salgas hasta resolverlo.' : localSave === 'saving' ? 'Guardando en el teléfono…' : localSave === 'saved' ? 'Cambios guardados en este teléfono.' : 'Tus respuestas se conservan localmente mientras completás el formulario.'}</Text></View> : null}
 
-      <DynamicForm schema={bundle.version.schema_json} initialAnswers={answers} readOnly={readOnly} submitLabel={busy ? 'Guardando…' : 'Enviar formulario'} onChange={next => { if (!readOnly) void persistLocal(next); }} onSubmit={submit}/>
+      <DynamicForm schema={bundle.version.schema_json} initialAnswers={answers} readOnly={readOnly} submitLabel={busy ? 'Guardando…' : 'Enviar formulario'} onChange={next => { if (!readOnly) void persistLocal(next); }} onSubmit={submit} onStepChange={() => scrollRef.current?.scrollTo({ y: 0, animated: true })}/>
 
       {readOnly && bundle.template.category === 'inspection' ? <View style={styles.failures}>
         <View style={styles.failuresHead}><View style={styles.failureIcon}><Text style={styles.failureIconText}>!</Text></View><View style={styles.failureHeadCopy}><Text style={styles.failuresTitle}>No conformidades</Text><Text style={styles.failuresCopy}>Nada se transforma automáticamente en hallazgo. Elegí qué requiere seguimiento formal.</Text></View></View>
