@@ -24,3 +24,10 @@
 - La APK definitiva del proyecto **no fue construida ni verificada** aquí. EAS `mobile/eas.json` tiene perfil `preview` con `android.buildType=apk`, pero su ejecución y descarga requieren un entorno/servicio de compilación Android disponible. No presentar preview como APK.
 - `feat/hse-phases-1-5` de producción web permanece intacta. PR #3 sigue draft. No modificar base de datos, registros ni usuarios.
 - Auditoría RLS de inspecciones sigue pendiente (ver `EWEB_P2_4_AUDITORIA_RLS_2026-10-08.md`).
+
+
+## ✅ Publicación final comprobada
+- Render static QA `dep-db4094nlot8c73c8l3l0` **LIVE** sobre `1b871ad09a9dd1a920bac174d36c9392503a319e`, finalizado `2026-10-08T21:02:50.818255Z`.
+- `npm run qa` aprobó cuatro pruebas nuevas sobre el Inicio móvil; `mobile npm run typecheck` y `npx expo export --platform web --output-dir dist` completaron. Íconos MaterialCommunityIcons empacados en el bundle web.
+- El visual final **no fue inspeccionado por el usuario después del cambio**, y esta exportación sigue sin ser APK Android. El próximo gate de producto es un build `preview` nativo y prueba en dispositivo.
+- Diferenciación: web escritorio `https://informe360-hse-web-qa.onrender.com/app/hse` sigue siendo un producto distinto, no fue rediseñada en esta etapa.
