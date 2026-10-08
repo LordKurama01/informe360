@@ -38,7 +38,7 @@ export function DynamicForm({ schema, initialAnswers = {}, submitLabel = 'Guarda
   return <View style={styles.form}>
     {wizard ? <View style={styles.progressPanel}>
       <View style={styles.progressHeader}><Text style={styles.progressLabel}>INSPECCIÓN EN CAMPO</Text><Text style={styles.progressCount}>Paso {step + 1} de {schema.sections.length}</Text></View>
-      <View style={styles.progressTrack}><View style={[styles.progressFill, { width: Math.round((step + 1) * 100 / schema.sections.length) + '%' }]}/></View>
+      <View style={styles.progressTrack}><View style={[styles.progressFill, { width: (Math.round((step + 1) * 100 / schema.sections.length) + '%') as `${number}%` }]}/></View>
     </View> : null}
     {schema.description ? <View style={styles.descriptionBox}><View style={styles.descriptionDot}/><Text style={styles.description}>{schema.description}</Text></View> : null}
     {schema.sections.map((section, sectionIndex) => (!wizard || sectionIndex === step) ? <View key={section.id} style={styles.section}>
