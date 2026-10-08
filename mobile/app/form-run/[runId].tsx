@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams } from 'expo-router';
@@ -15,6 +15,8 @@ export default function FormRunPage() {
   const [answers, setAnswers] = useState<HseFormAnswers>({});
   const [linked, setLinked] = useState<Record<string, string>>({});
   const [busy, setBusy] = useState(false);
+  const [localSave, setLocalSave] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
+  const saveSequence = useRef(0);
 
   const load = useCallback(async () => {
     if (!runId) return;
@@ -38,23 +40,35 @@ export default function FormRunPage() {
       .map(field => ({ id: field.id, label: field.label }));
   }, [bundle, answers]);
 
-  async function persistLocal(next: HseFormAnswers) {
-    if (!bundle || !runId) return;
+  async function persistLocal(next: HseFormAnswers): Promise<boolean> {
+    if (!bundle || !runId) return false;
+    const sequence = ++saveSequence.current;
     setAnswers(next);
-    await saveOfflineFormDraft({ clientRunId: runId, serverRunId: runId, templateVersionId: bundle.version.id, templateId: bundle.template.id, siteId: bundle.run.site_id, answers: next });
+    setLocalSave('saving');
+    try {
+      await saveOfflineFormDraft({ clientRunId: runId, serverRunId: runId, templateVersionId: bundle.version.id, templateId: bundle.template.id, siteId: bundle.run.site_id, answers: next });
+      if (sequence === saveSequence.current) setLocalSave('saved');
+      return true;
+    } catch {
+      if (sequence === saveSequence.current) setLocalSave('error');
+      return false;
+    }
   }
 
   async function submit(next: HseFormAnswers) {
     if (!bundle || !runId) return;
     setBusy(true);
     try {
+      if (!(await persistLocal(next))) {
+        Alert.alert('No se pudo guardar', 'El teléfono no confirmó el guardado local. Revisá el espacio disponible antes de salir.');
+        return;
+      }
       await submitFormRun(runId, next);
       await removeOfflineFormDraft(runId);
       await load();
       Alert.alert('Formulario enviado', bundle.template.category === 'inspection' ? 'La inspección quedó registrada. Revisá abajo los ítems No cumple y decidí cuáles deben convertirse en hallazgo.' : 'Las respuestas quedaron registradas y versionadas.');
     } catch (error) {
-      await persistLocal(next);
-      Alert.alert('Guardado en el teléfono', 'No pudimos enviar ahora. El formulario quedó guardado localmente y no se enviará sin tu confirmación.', [{ text: 'Entendido' }]);
+      Alert.alert('Envío pendiente', 'El formulario está guardado localmente. Revisá la conexión y volvé a enviarlo cuando puedas.', [{ text: 'Entendido' }]);
     } finally {
       setBusy(false);
     }
@@ -88,7 +102,7 @@ export default function FormRunPage() {
         <Text style={styles.copy}>Iniciado {new Date(bundle.run.started_at).toLocaleString('es-AR')}</Text>
       </View>
 
-      {!readOnly ? <View style={styles.localNote}><View style={styles.localDot}/><Text style={styles.localText}>Tus respuestas se conservan localmente mientras completás el formulario.</Text></View> : null}
+      {!readOnly ? <View style={styles.localNote}><View style={styles.localDot}/><Text style={styles.localText}>{localSave === 'error' ? 'No se pudo guardar el último cambio. No salgas hasta resolverlo.' : localSave === 'saving' ? 'Guardando en el teléfono…' : localSave === 'saved' ? 'Cambios guardados en este teléfono.' : 'Tus respuestas se conservan localmente mientras completás el formulario.'}</Text></View> : null}
 
       <DynamicForm schema={bundle.version.schema_json} initialAnswers={answers} readOnly={readOnly} submitLabel={busy ? 'Guardando…' : 'Enviar formulario'} onChange={next => { if (!readOnly) void persistLocal(next); }} onSubmit={submit}/>
 
