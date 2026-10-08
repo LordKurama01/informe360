@@ -7,7 +7,7 @@ import { createHseReport, getCurrentHseUser, getHseFindings, getHseSummary, getH
 import styles from './HseControl.module.css';
 import { formatClosureCompliance, formatHseCount, hseDataStatusLabel, type HseDataStatus } from '@/shared/hse/dashboard-metrics';
 import { installStandardInspectionTemplates, listFormRuns, listFormTemplates, type HseFormRunRow, type HseFormTemplate } from '@/services/hse/forms-browser';
-import { inspectionStatusLabel, selectHseInspections } from '@/shared/hse/inspection-view';
+import { filterInspectionRuns, inspectionStatusLabel, selectHseInspections, type InspectionRunFilter } from '@/shared/hse/inspection-view';
 
 type Filter = 'open'|'overdue'|'upcoming'|'critical'|'closed'|'all';
 const emptySummary: HseSummary = { open:0, overdue:0, dueNext7Days:0, closed:0, closedOnTime:0, closureCompliancePct:0, criticalOpen:0 };
@@ -27,6 +27,8 @@ export function HseControl({ mode = 'overview' }: { mode?: 'overview' | 'reports
   const [inspectionTemplates, setInspectionTemplates] = useState<HseFormTemplate[]>([]);
   const [inspectionRuns, setInspectionRuns] = useState<HseFormRunRow[]>([]);
   const [inspectionMessage, setInspectionMessage] = useState<string | null>(null);
+  const [inspectionSearch, setInspectionSearch] = useState('');
+  const [inspectionFilter, setInspectionFilter] = useState<InspectionRunFilter>('all');
   const [reportSearch, setReportSearch] = useState('');
   const [query, setQuery] = useState('');
   const latestQueryRef = useRef('');
@@ -127,6 +129,15 @@ export function HseControl({ mode = 'overview' }: { mode?: 'overview' | 'reports
   const inspectionData = useMemo(
     () => selectHseInspections(inspectionTemplates, inspectionRuns, workspace?.siteId ?? null),
     [inspectionTemplates, inspectionRuns, workspace?.siteId],
+  );
+
+  const visibleInspectionTemplates = useMemo(() => {
+    const q = inspectionSearch.trim().toLocaleLowerCase('es-AR');
+    return inspectionData.templates.filter(template => !q || template.name.toLocaleLowerCase('es-AR').includes(q));
+  }, [inspectionData.templates, inspectionSearch]);
+  const visibleInspectionRuns = useMemo(
+    () => filterInspectionRuns(inspectionData.runs, inspectionData.names, inspectionSearch, inspectionFilter),
+    [inspectionData.runs, inspectionData.names, inspectionSearch, inspectionFilter],
   );
 
   const visibleReports = useMemo(() => reports.filter(report => {
@@ -264,33 +275,43 @@ export function HseControl({ mode = 'overview' }: { mode?: 'overview' | 'reports
                 </button>
               </div>
             </div>
+            <div className={styles.toolbar}>
+              <input className={styles.search} value={inspectionSearch} onChange={event => setInspectionSearch(event.target.value)} aria-label="Buscar inspecciones" placeholder="Buscar por nombre de plantilla…" />
+            </div>
             {error ? <div className={styles.error} role="alert">{error}</div> : null}
             {inspectionMessage ? <div className={styles.inspectionSuccess} role="status">{inspectionMessage}</div> : null}
             {dataStatus === 'loading' ? <div className={styles.empty} role="status">Consultando plantillas y ejecuciones…</div> : null}
             {dataStatus === 'ready' ? <div className={styles.inspectionCards}>
-              {inspectionData.templates.map(template => <article className={styles.inspectionCard} key={template.id}>
+              {visibleInspectionTemplates.map(template => <article className={styles.inspectionCard} key={template.id}>
                 <span className={styles.code}>INSPECCIÓN · v{template.publishedVersion?.version ?? '—'}</span>
                 <h3>{template.name}</h3>
                 <p>{template.description || 'Sin descripción registrada.'}</p>
                 <span className={styles.inspectionState}>{template.status === 'active' ? 'ACTIVA' : template.status === 'draft' ? 'BORRADOR' : 'ARCHIVADA'}</span>
               </article>)}
-              {!inspectionData.templates.length ? <div className={styles.empty}>No hay plantillas de inspección para esta organización. Podés administrarlas desde Formularios.</div> : null}
+              {!visibleInspectionTemplates.length ? <div className={styles.empty}>{inspectionSearch ? 'No encontramos plantillas con ese nombre.' : 'No hay plantillas de inspección para esta organización. Podés administrarlas desde Formularios.'}</div> : null}
             </div> : null}
           </section>
           <section className={styles.listPanel}>
             <div className={styles.sectionHead}>
               <div><span className={styles.eyebrow}>HISTORIAL OPERATIVO</span><h2>Últimas inspecciones</h2></div>
-              <span className={styles.resultCount}>{dataStatus === 'ready' ? `${inspectionData.runs.length} registros` : '—'}</span>
+              <span className={styles.resultCount}>{dataStatus === 'ready' ? `${visibleInspectionRuns.length} registros` : '—'}</span>
+            </div>
+            <div className={styles.filterRow} role="group" aria-label="Filtrar ejecuciones de inspecciones">
+              {([
+                ['all', 'Todas'], ['pending', 'Pendientes'], ['submitted', 'Presentadas'],
+              ] as const).map(([value, label]) =>
+                <button key={value} className={`${styles.filter} ${inspectionFilter === value ? styles.filterActive : ''}`} aria-pressed={inspectionFilter === value} onClick={() => setInspectionFilter(value)}>{label}</button>
+              )}
             </div>
             {dataStatus === 'ready' ? <div className={styles.list}>
-              {inspectionData.runs.map(run => <article key={run.id} className={styles.reportRow}>
+              {visibleInspectionRuns.map(run => <article key={run.id} className={styles.reportRow}>
                 <div className={styles.reportRowContent}>
                   <span className={styles.code}>{new Date(run.started_at).toLocaleString('es-AR')}</span>
                   <h3>{inspectionData.names.get(run.template_id) || 'Inspección'}</h3>
                 </div>
                 <span className={styles.inspectionState}>{inspectionStatusLabel(run.status)}</span>
               </article>)}
-              {!inspectionData.runs.length ? <div className={styles.empty}>Todavía no se registraron ejecuciones de inspección para este sitio.</div> : null}
+              {!visibleInspectionRuns.length ? <div className={styles.empty}>{inspectionSearch || inspectionFilter !== 'all' ? 'No hay ejecuciones que coincidan con estos filtros.' : 'Todavía no se registraron ejecuciones de inspección para este sitio.'}</div> : null}
             </div> : null}
           </section>
         </> : mode === 'reports' ? <>
