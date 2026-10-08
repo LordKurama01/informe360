@@ -4,8 +4,8 @@
  * This is an in-process mutex; SQLite setItem is the durable commit.
  */
 export type LocalKvStore = {
-  getItem(key: string): Promise<string | null>;
-  setItem(key: string, value: string): Promise<void>;
+  getItem(key: string): Promise<string | null> | string | null;
+  setItem(key: string, value: string): Promise<void> | void;
 };
 
 const pending = new Map<string, Promise<unknown>>();
