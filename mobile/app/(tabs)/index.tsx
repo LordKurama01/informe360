@@ -4,19 +4,19 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { AiStatusPill } from '../../src/components/AiStatusPill';
 import { FindingCard } from '../../src/components/FindingCard';
-import { MetricTile } from '../../src/components/MetricTile';
-import { SectionHeader } from '../../src/components/SectionHeader';
 import { useAuth } from '../../src/providers/auth-provider';
 import { useSync } from '../../src/providers/sync-provider';
 import { useWorkspace } from '../../src/providers/workspace-provider';
 import { getAiRuntimeStatus, type AiRuntimeStatus } from '../../src/services/ai-status';
-import { seedDemoWorkspace } from '../../src/services/demo';
 import { getDashboardSummary, listFindings } from '../../src/services/findings';
 import { listPendingReviews } from '../../src/services/pending-reviews';
 import type { DashboardSummary, Finding } from '../../src/types/hse';
 import { theme } from '../../src/theme';
 
-const emptySummary: DashboardSummary = { open: 0, overdue: 0, dueNext7Days: 0, closed: 0, closedOnTime: 0, closureCompliancePct: 0, criticalOpen: 0 };
+const emptySummary: DashboardSummary = {
+  open: 0, overdue: 0, dueNext7Days: 0, closed: 0,
+  closedOnTime: 0, closureCompliancePct: 0, criticalOpen: 0,
+};
 
 function greeting() {
   const hour = new Date().getHours();
@@ -24,19 +24,23 @@ function greeting() {
 }
 
 export default function Home() {
-  const { workspace, refresh: refreshWorkspace } = useWorkspace();
+  const { workspace } = useWorkspace();
   const { signOut } = useAuth();
   const { pendingCount, syncing, syncNow, refreshPending } = useSync();
   const [items, setItems] = useState<Finding[]>([]);
   const [summary, setSummary] = useState<DashboardSummary>(emptySummary);
   const [reviewCount, setReviewCount] = useState(0);
-  const [aiStatus, setAiStatus] = useState<AiRuntimeStatus>({ state: 'manual', label: 'Comprobando IA', detail: '' });
-  const [busy, setBusy] = useState(false);
-  const [demoBusy, setDemoBusy] = useState(false);
+  const [aiStatus, setAiStatus] = useState<AiRuntimeStatus>({
+    state: 'manual', label: 'Comprobando IA', detail: '',
+  });
+  const [refreshing, setRefreshing] = useState(false);
+  const [dataState, setDataState] = useState<'loading' | 'ready' | 'error'>('loading');
+  const [loadError, setLoadError] = useState<string | null>(null);
 
-  const load = useCallback(async () => {
+  const load = useCallback(async (manual = false) => {
     if (!workspace) return;
-    setBusy(true);
+    if (manual) setRefreshing(true);
+    setLoadError(null);
     try {
       const [findings, dashboard, reviews, runtime] = await Promise.all([
         listFindings(workspace),
@@ -48,165 +52,226 @@ export default function Home() {
       setSummary(dashboard);
       setReviewCount(reviews.length);
       setAiStatus(runtime);
-      await refreshPending();
-    } catch (error) {
-      Alert.alert('No se pudo actualizar', error instanceof Error ? error.message : 'Error');
+      setDataState('ready');
+      void refreshPending().catch(() => undefined);
+    } catch (cause) {
+      const message = cause instanceof Error ? cause.message : 'No se pudieron consultar los datos.';
+      setLoadError(message);
+      setDataState('error');
+      if (manual) Alert.alert('No se pudo actualizar', message);
     } finally {
-      setBusy(false);
+      if (manual) setRefreshing(false);
     }
   }, [workspace, refreshPending]);
 
   useEffect(() => { void load(); }, [load]);
 
-  async function loadDemo() {
-    setDemoBusy(true);
-    try {
-      await seedDemoWorkspace();
-      await refreshWorkspace();
-      Alert.alert('Demo lista', 'Cargamos una empresa, un sitio, ocho hallazgos y un informe coherente para recorrer el producto.');
-    } catch (error) {
-      Alert.alert('Demo', error instanceof Error ? error.message : 'No se pudo cargar');
-    } finally {
-      setDemoBusy(false);
-    }
-  }
-
   async function manualSync() {
-    const result = await syncNow();
-    if (result.synced) Alert.alert('Sincronización completa', `${result.synced} captura${result.synced === 1 ? '' : 's'} llegó${result.synced === 1 ? '' : 'ron'} al servidor y quedó pendiente de revisión.`);
-    await load();
+    try {
+      const result = await syncNow();
+      if (result.synced) Alert.alert('Sincronización completa',
+        `${result.synced} captura${result.synced === 1 ? '' : 's'} sincronizada${result.synced === 1 ? '' : 's'}.`);
+    } catch (cause) {
+      Alert.alert('Sincronización', cause instanceof Error ? cause.message : 'No se pudo sincronizar.');
+    }
+    await load(true);
   }
 
-  return <SafeAreaView edges={['top', 'left', 'right']} style={styles.safe}>
-    <ScrollView showsVerticalScrollIndicator={false} refreshControl={<RefreshControl refreshing={busy} onRefresh={load}/>} contentContainerStyle={styles.content}>
+  const metricValue = (value: number) => dataState === 'ready' ? String(value) : '—';
+  const compliance = dataState === 'ready'
+    ? summary.closed > 0 ? `${summary.closureCompliancePct}% de cierres en plazo` : 'Sin cierres registrados'
+    : dataState === 'loading' ? 'Actualizando indicadores…' : 'Datos no disponibles';
+
+  return <SafeAreaView edges={['top','left','right']} style={styles.safe}>
+    <ScrollView
+      style={styles.scroll}
+      showsVerticalScrollIndicator={false}
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => void load(true)} tintColor={theme.colors.primary} />}
+      contentContainerStyle={styles.content}>
+
       <View style={styles.header}>
-        <View style={styles.headerCopy}>
-          <Text style={styles.kicker}>HSE COPILOT · CAMPO</Text>
-          <Text style={styles.greeting}>{greeting()}</Text>
-          <Text style={styles.site}>{workspace?.siteName || 'Sin sitio seleccionado'}</Text>
-          {workspace?.organizationName ? <Text style={styles.organization}>{workspace.organizationName}</Text> : null}
+        <View style={styles.brandRow}>
+          <Text style={styles.brand}>INFORME360 <Text style={styles.brandAccent}>/ HSE</Text></Text>
+          <Pressable accessibilityRole="button" accessibilityLabel="Cerrar sesión" onPress={() => void signOut()} style={styles.exitButton}>
+            <Text style={styles.exitText}>Salir</Text>
+          </Pressable>
         </View>
-        <View style={styles.headerActions}>
+        <Text style={styles.greeting}>{greeting()}</Text>
+        <Text style={styles.site} numberOfLines={1}>{workspace?.siteName || 'Seleccioná un sitio'}</Text>
+        {workspace?.organizationName ? <Text style={styles.organization} numberOfLines={1}>{workspace.organizationName}</Text> : null}
+        <View style={styles.headerStatus}>
           <AiStatusPill status={aiStatus}/>
-          <Pressable accessibilityRole="button" onPress={() => void signOut()} style={styles.exitButton}><Text style={styles.exit}>Salir</Text></Pressable>
+          {pendingCount > 0 ? <Text style={styles.pendingIndicator}>{pendingCount} por sincronizar</Text> : null}
         </View>
       </View>
 
-      {pendingCount > 0 ? <Pressable accessibilityRole="button" onPress={() => void manualSync()} style={styles.syncBanner}>
-        <View style={styles.bannerIcon}><Text style={styles.bannerIconText}>↻</Text></View>
-        <View style={styles.bannerBody}><Text style={styles.bannerTitle}>{syncing ? 'Sincronizando…' : `${pendingCount} captura${pendingCount === 1 ? '' : 's'} sin sincronizar`}</Text><Text style={styles.bannerCopy}>Están guardadas de forma segura en este teléfono.</Text></View>
-        <Text style={styles.bannerAction}>{syncing ? '•••' : 'Enviar'}</Text>
-      </Pressable> : null}
+      <View style={styles.body}>
+        {pendingCount > 0 ? <Pressable accessibilityRole="button" onPress={() => void manualSync()} style={styles.notice}>
+          <Text style={styles.noticeIcon}>↻</Text>
+          <View style={styles.noticeCopy}>
+            <Text style={styles.noticeTitle}>{syncing ? 'Sincronizando capturas…' : `${pendingCount} captura${pendingCount === 1 ? '' : 's'} pendiente${pendingCount === 1 ? '' : 's'}`}</Text>
+            <Text style={styles.noticeSub}>Se conservan en el teléfono hasta enviarlas.</Text>
+          </View>
+          <Text style={styles.noticeAction}>{syncing ? '•••' : 'Enviar ›'}</Text>
+        </Pressable> : null}
 
-      {reviewCount > 0 ? <Pressable accessibilityRole="button" onPress={() => router.push('/pending-reviews')} style={styles.reviewBanner}>
-        <View style={styles.reviewDot}/><View style={styles.bannerBody}><Text style={styles.reviewTitle}>{reviewCount} captura{reviewCount === 1 ? '' : 's'} para confirmar</Text><Text style={styles.reviewCopy}>Ya sincronizadas. Falta revisión humana.</Text></View><Text style={styles.chevron}>›</Text>
-      </Pressable> : null}
+        {reviewCount > 0 ? <Pressable accessibilityRole="button" onPress={() => router.push('/pending-reviews')} style={styles.notice}>
+          <Text style={styles.noticeIcon}>✓</Text>
+          <View style={styles.noticeCopy}>
+            <Text style={styles.noticeTitle}>{reviewCount} captura{reviewCount === 1 ? '' : 's'} para revisar</Text>
+            <Text style={styles.noticeSub}>Sincronizadas; falta confirmación humana.</Text>
+          </View>
+          <Text style={styles.noticeAction}>Revisar ›</Text>
+        </Pressable> : null}
 
-      <Pressable accessibilityRole="button" onPress={() => router.push('/register?mode=audio')} style={({ pressed }) => [styles.captureHero, pressed && styles.pressed]}>
-        <View style={styles.captureIcon}><Text style={styles.captureIconText}>●</Text></View>
-        <View style={styles.captureCopy}>
-          <Text style={styles.captureKicker}>CAPTURA RÁPIDA</Text>
-          <Text style={styles.captureTitle}>Registrar hablando</Text>
-          <Text style={styles.captureText}>Tocá, describí lo que encontraste y seguí caminando.</Text>
+        <Text style={styles.sectionEyebrow}>ACCESO RÁPIDO</Text>
+        <Pressable accessibilityRole="button" accessibilityLabel="Registrar un hallazgo por voz" onPress={() => router.push('/register?mode=audio')}
+          style={({pressed}) => [styles.voiceAction, pressed && styles.pressed]}>
+          <View style={styles.voiceMark}><Text style={styles.voiceGlyph}>●</Text></View>
+          <View style={styles.voiceCopy}>
+            <Text style={styles.voiceLabel}>CAPTURA DE CAMPO</Text>
+            <Text style={styles.voiceTitle}>Registrar por voz</Text>
+            <Text style={styles.voiceSub}>Hablá y seguí trabajando</Text>
+          </View>
+          <Text style={styles.voiceArrow}>›</Text>
+        </Pressable>
+
+        <View style={styles.quickRow}>
+          <QuickAction symbol="✓" title="Inspeccionar" onPress={() => router.push('/(tabs)/inspections')}/>
+          <QuickAction symbol="▣" title="Fotografía" onPress={() => router.push('/register?mode=photo')}/>
+          <QuickAction symbol="T" title="Escribir" onPress={() => router.push('/register?mode=text')}/>
         </View>
-        <Text style={styles.captureArrow}>›</Text>
-      </Pressable>
 
-      <View style={styles.quickActions}>
-        <QuickAction icon="✓" label="Inspeccionar" onPress={() => router.push('/(tabs)/inspections')}/>
-        <QuickAction icon="▣" label="Foto" onPress={() => router.push('/register?mode=photo')}/>
-        <QuickAction icon="T" label="Escribir" onPress={() => router.push('/register?mode=text')}/>
-        <QuickAction icon="⌕" label="Buscar" onPress={() => router.push('/(tabs)/findings')}/>
+        <View style={styles.sectionTop}>
+          <View>
+            <Text style={styles.sectionTitle}>Estado del sitio</Text>
+            <Text style={styles.sectionSubtitle}>{compliance}</Text>
+          </View>
+          <Pressable accessibilityRole="button" onPress={() => router.push('/(tabs)/findings')} style={styles.sectionLink}>
+            <Text style={styles.sectionLinkText}>Hallazgos ›</Text>
+          </Pressable>
+        </View>
+        <View style={styles.summaryCard}>
+          <View style={styles.summaryRow}>
+            <CompactMetric label="Abiertos" value={metricValue(summary.open)} tint={theme.colors.primary} onPress={() => router.push('/(tabs)/findings?filter=open')}/>
+            <View style={styles.verticalRule}/>
+            <CompactMetric label="Vencidos" value={metricValue(summary.overdue)} tint={theme.colors.danger} onPress={() => router.push('/(tabs)/findings?filter=overdue')}/>
+          </View>
+          <View style={styles.horizontalRule}/>
+          <View style={styles.summaryRow}>
+            <CompactMetric label="Próximos 7 días" value={metricValue(summary.dueNext7Days)} tint={theme.colors.warning} onPress={() => router.push('/(tabs)/findings?filter=upcoming')}/>
+            <View style={styles.verticalRule}/>
+            <CompactMetric label="Cerrados" value={metricValue(summary.closed)} tint={theme.colors.success} onPress={() => router.push('/(tabs)/findings?filter=closed')}/>
+          </View>
+        </View>
+
+        {loadError ? <Pressable accessibilityRole="button" onPress={() => void load(true)} style={styles.errorNotice}>
+          <Text style={styles.errorText}>No se pudo actualizar el panel. Tocá para reintentar.</Text>
+        </Pressable> : null}
+
+        {summary.criticalOpen > 0 && dataState === 'ready' ? <Pressable accessibilityRole="button"
+          onPress={() => router.push('/(tabs)/findings?filter=critical')} style={styles.critical}>
+          <View style={styles.criticalIcon}><Text style={styles.criticalSymbol}>!</Text></View>
+          <View style={styles.noticeCopy}>
+            <Text style={styles.criticalTitle}>{summary.criticalOpen} hallazgo{summary.criticalOpen === 1 ? '' : 's'} crítico{summary.criticalOpen === 1 ? '' : 's'}</Text>
+            <Text style={styles.criticalSub}>Requiere atención prioritaria</Text>
+          </View><Text style={styles.noticeAction}>Ver ›</Text>
+        </Pressable> : null}
+
+        <View style={styles.sectionTop}>
+          <Text style={styles.sectionTitle}>Actividad reciente</Text>
+          <Pressable accessibilityRole="button" onPress={() => router.push('/(tabs)/findings')} style={styles.sectionLink}>
+            <Text style={styles.sectionLinkText}>Ver todos ›</Text>
+          </Pressable>
+        </View>
+        {items.length && dataState === 'ready' ? <View style={styles.recent}>
+          {items.slice(0,3).map(item => <FindingCard key={item.id} finding={item} onPress={() => router.push(`/finding/${item.id}`)}/>)}
+        </View> : dataState === 'ready' ? <View style={styles.emptyCard}>
+          <Text style={styles.emptyTitle}>Sin actividad registrada</Text>
+          <Text style={styles.emptyText}>Los hallazgos que registres en campo aparecerán acá.</Text>
+        </View> : null}
+
+        <Text style={styles.bottomNote}>{aiStatus.detail || 'Captura disponible desde el teléfono.'}</Text>
       </View>
-
-      <SectionHeader title="Situación operativa" meta={`${summary.closureCompliancePct}% de cierres en plazo`}/>
-      <View style={styles.metricsGrid}>
-        <MetricTile label="Abiertos" value={summary.open} tone="primary" onPress={() => router.push('/(tabs)/findings?filter=open')}/>
-        <MetricTile label="Vencidos" value={summary.overdue} tone="danger" onPress={() => router.push('/(tabs)/findings?filter=overdue')}/>
-        <MetricTile label="Próximos 7 días" value={summary.dueNext7Days} tone="warning" onPress={() => router.push('/(tabs)/findings?filter=upcoming')}/>
-        <MetricTile label="Cerrados" value={summary.closed} tone="success" onPress={() => router.push('/(tabs)/findings?filter=closed')}/>
-      </View>
-
-      {summary.criticalOpen > 0 ? <Pressable accessibilityRole="button" onPress={() => router.push('/(tabs)/findings?filter=critical')} style={styles.critical}>
-        <View style={styles.criticalMark}><Text style={styles.criticalMarkText}>!</Text></View>
-        <View style={styles.bannerBody}><Text style={styles.criticalTitle}>{summary.criticalOpen} crítico{summary.criticalOpen === 1 ? '' : 's'} abierto{summary.criticalOpen === 1 ? '' : 's'}</Text><Text style={styles.criticalCopy}>Requiere atención prioritaria.</Text></View><Text style={styles.criticalAction}>Ver →</Text>
-      </Pressable> : null}
-
-      <SectionHeader title="Actividad reciente" meta="Últimos hallazgos" action={<Pressable accessibilityRole="button" onPress={() => router.push('/(tabs)/findings')} style={styles.linkButton}><Text style={styles.link}>Ver todos</Text></Pressable>}/>
-      <View style={styles.recent}>{items.slice(0, 4).map(finding => <FindingCard key={finding.id} finding={finding} onPress={() => router.push(`/finding/${finding.id}`)}/>)}</View>
-
-      {!items.length && !busy ? <View style={styles.emptyCard}>
-        <View style={styles.emptyIcon}><Text style={styles.emptyIconText}>◎</Text></View>
-        <Text style={styles.emptyTitle}>Todavía no hay actividad</Text>
-        <Text style={styles.emptyCopy}>Registrá el primer hallazgo o cargá una demo para recorrer el circuito completo.</Text>
-        <Pressable disabled={demoBusy} onPress={() => void loadDemo()} style={styles.demoButton}><Text style={styles.demoButtonText}>{demoBusy ? 'Preparando demo…' : 'Cargar demo comercial'}</Text></Pressable>
-      </View> : null}
-
-      <View style={styles.runtimeNote}><View style={[styles.runtimeDot, { backgroundColor: aiStatus.state === 'ready' ? theme.colors.success : aiStatus.state === 'offline' ? theme.colors.warning : theme.colors.primary }]}/><Text style={styles.runtimeText}>{aiStatus.detail}</Text></View>
     </ScrollView>
   </SafeAreaView>;
 }
 
-function QuickAction({ icon, label, onPress }: { icon: string; label: string; onPress: () => void }) {
-  return <Pressable accessibilityRole="button" onPress={onPress} style={({ pressed }) => [styles.quick, pressed && styles.pressed]}><View style={styles.quickIconWrap}><Text style={styles.quickIcon}>{icon}</Text></View><Text style={styles.quickLabel}>{label}</Text></Pressable>;
+function QuickAction({symbol,title,onPress}:{symbol:string;title:string;onPress:()=>void}) {
+  return <Pressable accessibilityRole="button" accessibilityLabel={title} onPress={onPress}
+    style={({pressed}) => [styles.quickAction,pressed && styles.pressed]}>
+    <View style={styles.quickIcon}><Text style={styles.quickSymbol}>{symbol}</Text></View>
+    <Text style={styles.quickText}>{title}</Text>
+  </Pressable>;
+}
+
+function CompactMetric({label,value,tint,onPress}:{label:string;value:string;tint:string;onPress:()=>void}) {
+  return <Pressable accessibilityRole="button" accessibilityLabel={`${label}: ${value}`} onPress={onPress}
+    style={({pressed})=>[styles.metric,pressed && styles.pressed]}>
+    <Text style={[styles.metricValue,{color:tint}]}>{value}</Text>
+    <Text style={styles.metricLabel}>{label}</Text>
+  </Pressable>;
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: theme.colors.bg },
-  content: { paddingHorizontal: theme.spacing.lg, paddingTop: theme.spacing.lg, paddingBottom: 112, gap: theme.spacing.lg },
-  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', gap: theme.spacing.md },
-  headerCopy: { flex: 1 },
-  headerActions: { alignItems: 'flex-end', gap: theme.spacing.sm },
-  kicker: { color: theme.colors.primary, fontWeight: '900', letterSpacing: 1.45, fontSize: theme.type.micro },
-  greeting: { fontSize: 29, lineHeight: 34, fontWeight: '900', color: theme.colors.ink, letterSpacing: -0.5, marginTop: 2 },
-  site: { color: theme.colors.inkSoft, fontWeight: '900', fontSize: 14, marginTop: 2 },
-  organization: { color: theme.colors.muted, fontSize: 11, marginTop: 1 },
-  exitButton: { minHeight: 36, paddingHorizontal: 6, justifyContent: 'center' },
-  exit: { color: theme.colors.muted, fontSize: 10, fontWeight: '900' },
-  syncBanner: { flexDirection: 'row', alignItems: 'center', gap: theme.spacing.md, backgroundColor: theme.colors.warningSoft, padding: theme.spacing.md, borderRadius: theme.radius.lg },
-  bannerIcon: { width: 38, height: 38, borderRadius: 13, backgroundColor: 'rgba(179,90,0,0.09)', alignItems: 'center', justifyContent: 'center' },
-  bannerIconText: { color: theme.colors.warning, fontSize: 20, fontWeight: '900' },
-  bannerBody: { flex: 1 },
-  bannerTitle: { color: '#8C4700', fontWeight: '900', fontSize: 13 },
-  bannerCopy: { color: theme.colors.warning, fontSize: 10, marginTop: 2 },
-  bannerAction: { color: theme.colors.warning, fontWeight: '900', fontSize: 11 },
-  reviewBanner: { flexDirection: 'row', alignItems: 'center', gap: theme.spacing.md, backgroundColor: theme.colors.infoSoft, padding: theme.spacing.md, borderRadius: theme.radius.lg },
-  reviewDot: { width: 9, height: 9, borderRadius: 5, backgroundColor: theme.colors.info },
-  reviewTitle: { color: theme.colors.info, fontWeight: '900', fontSize: 13 },
-  reviewCopy: { color: '#4B6FAF', fontSize: 10, marginTop: 2 },
-  chevron: { color: theme.colors.info, fontSize: 26, fontWeight: '300' },
-  captureHero: { minHeight: 144, borderRadius: theme.radius.xl, backgroundColor: theme.colors.primary, padding: theme.spacing.xl, flexDirection: 'row', alignItems: 'center', gap: theme.spacing.lg, ...theme.shadow.raised },
-  captureIcon: { width: 58, height: 58, borderRadius: 29, backgroundColor: 'rgba(255,255,255,0.14)', alignItems: 'center', justifyContent: 'center' },
-  captureIconText: { color: theme.colors.white, fontSize: 28 },
-  captureCopy: { flex: 1 },
-  captureKicker: { color: '#B8FFF7', fontSize: 9, fontWeight: '900', letterSpacing: 1.2 },
-  captureTitle: { color: theme.colors.white, fontSize: 21, lineHeight: 26, fontWeight: '900', marginTop: 3 },
-  captureText: { color: '#D9FFFB', fontSize: 11, lineHeight: 16, marginTop: 3 },
-  captureArrow: { color: theme.colors.white, fontSize: 34, fontWeight: '300' },
-  pressed: { opacity: 0.8, transform: [{ scale: 0.99 }] },
-  quickActions: { flexDirection: 'row', gap: theme.spacing.sm },
-  quick: { flex: 1, minHeight: 72, backgroundColor: theme.colors.surface, borderWidth: 1, borderColor: theme.colors.line, borderRadius: theme.radius.md, alignItems: 'center', justifyContent: 'center', gap: 5 },
-  quickIconWrap: { width: 30, height: 30, borderRadius: 10, backgroundColor: theme.colors.surfaceMuted, alignItems: 'center', justifyContent: 'center' },
-  quickIcon: { color: theme.colors.primary, fontSize: 14, fontWeight: '900' },
-  quickLabel: { color: theme.colors.inkSoft, fontWeight: '800', fontSize: 9 },
-  metricsGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: theme.spacing.sm },
-  critical: { flexDirection: 'row', alignItems: 'center', gap: theme.spacing.md, backgroundColor: theme.colors.dangerSoft, borderRadius: theme.radius.lg, padding: theme.spacing.md },
-  criticalMark: { width: 38, height: 38, borderRadius: 13, backgroundColor: 'rgba(180,35,24,0.1)', alignItems: 'center', justifyContent: 'center' },
-  criticalMarkText: { color: theme.colors.danger, fontSize: 20, fontWeight: '900' },
-  criticalTitle: { color: theme.colors.danger, fontWeight: '900', fontSize: 13 },
-  criticalCopy: { color: '#9F443D', fontSize: 10, marginTop: 2 },
-  criticalAction: { color: theme.colors.danger, fontWeight: '900', fontSize: 11 },
-  linkButton: { minHeight: 40, justifyContent: 'center', paddingLeft: 10 },
-  link: { color: theme.colors.primary, fontWeight: '900', fontSize: 11 },
-  recent: { gap: theme.spacing.sm },
-  emptyCard: { backgroundColor: theme.colors.surface, padding: theme.spacing.xxl, borderRadius: theme.radius.lg, borderWidth: 1, borderColor: theme.colors.line, alignItems: 'center', gap: theme.spacing.sm },
-  emptyIcon: { width: 48, height: 48, borderRadius: 16, backgroundColor: theme.colors.primarySoft, alignItems: 'center', justifyContent: 'center' },
-  emptyIconText: { color: theme.colors.primary, fontSize: 25 },
-  emptyTitle: { color: theme.colors.ink, fontSize: 17, fontWeight: '900' },
-  emptyCopy: { color: theme.colors.muted, textAlign: 'center', lineHeight: 18, fontSize: 12 },
-  demoButton: { marginTop: 4, minHeight: 44, backgroundColor: theme.colors.dark, borderRadius: theme.radius.md, paddingHorizontal: theme.spacing.lg, alignItems: 'center', justifyContent: 'center' },
-  demoButtonText: { color: theme.colors.white, fontWeight: '900', fontSize: 11 },
-  runtimeNote: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6 },
-  runtimeDot: { width: 6, height: 6, borderRadius: 3 },
-  runtimeText: { color: theme.colors.muted, fontSize: 9, flexShrink: 1, textAlign: 'center' },
+  safe:{flex:1,backgroundColor:theme.colors.dark},
+  scroll:{flex:1,backgroundColor:'#F5F7F4'},
+  content:{paddingBottom:88},
+  header:{backgroundColor:theme.colors.dark,paddingHorizontal:22,paddingTop:15,paddingBottom:22,borderBottomLeftRadius:24,borderBottomRightRadius:24},
+  brandRow:{flexDirection:'row',alignItems:'center',justifyContent:'space-between',marginBottom:13},
+  brand:{color:'#F7FAF8',fontWeight:'900',fontSize:11,letterSpacing:1.6},
+  brandAccent:{color:'#F7AB73'},
+  exitButton:{minHeight:38,minWidth:52,alignItems:'center',justifyContent:'center',borderRadius:12,borderWidth:1,borderColor:'#30413F'},
+  exitText:{color:'#DAE4DF',fontSize:11,fontWeight:'700'},
+  greeting:{fontSize:26,lineHeight:31,fontWeight:'800',letterSpacing:-0.5,color:'#FFFFFF'},
+  site:{fontSize:15,lineHeight:21,color:'#E4EDEA',fontWeight:'700',marginTop:5},
+  organization:{fontSize:11,color:'#A7B8B2',marginTop:1},
+  headerStatus:{flexDirection:'row',alignItems:'center',justifyContent:'space-between',marginTop:13,minHeight:30},
+  pendingIndicator:{color:'#FFCEA7',fontSize:11,fontWeight:'700'},
+  body:{paddingHorizontal:17,paddingTop:21,gap:13},
+  sectionEyebrow:{fontSize:10,fontWeight:'800',letterSpacing:1.3,color:'#78857F',marginBottom:-4},
+  voiceAction:{minHeight:104,backgroundColor:theme.colors.primary,borderRadius:18,paddingHorizontal:16,paddingVertical:17,flexDirection:'row',alignItems:'center',gap:12},
+  voiceMark:{width:45,height:45,borderRadius:15,backgroundColor:'rgba(255,255,255,0.15)',alignItems:'center',justifyContent:'center'},
+  voiceGlyph:{fontSize:22,color:'#FFFFFF',fontWeight:'800'},
+  voiceCopy:{flex:1,gap:3},
+  voiceLabel:{fontSize:9,color:'#FFE4D0',fontWeight:'900',letterSpacing:1.1},
+  voiceTitle:{fontSize:19,lineHeight:23,color:'#FFFFFF',fontWeight:'900'},
+  voiceSub:{fontSize:11,color:'#FFF1E8'},
+  voiceArrow:{fontSize:30,color:'#FFFFFF',fontWeight:'300'},
+  quickRow:{flexDirection:'row',gap:10},
+  quickAction:{flex:1,minHeight:86,borderRadius:16,backgroundColor:'#FFFFFF',borderWidth:1,borderColor:'#DFE5E1',alignItems:'center',justifyContent:'center',gap:8},
+  quickIcon:{width:29,height:29,borderRadius:10,backgroundColor:'#F2F5F2',justifyContent:'center',alignItems:'center'},
+  quickSymbol:{fontSize:18,fontWeight:'800',color:'#A84000'},
+  quickText:{fontSize:11,color:'#27372F',fontWeight:'800'},
+  sectionTop:{flexDirection:'row',alignItems:'center',justifyContent:'space-between',gap:10,marginTop:7},
+  sectionTitle:{fontSize:18,lineHeight:22,color:'#15231F',fontWeight:'900',letterSpacing:-0.4},
+  sectionSubtitle:{fontSize:11,color:'#697973',marginTop:3},
+  sectionLink:{minHeight:38,justifyContent:'center',paddingLeft:8},
+  sectionLinkText:{fontSize:11,fontWeight:'800',color:theme.colors.primary},
+  summaryCard:{backgroundColor:'#FFFFFF',borderWidth:1,borderColor:'#E0E6E2',borderRadius:18,paddingHorizontal:12,paddingVertical:4},
+  summaryRow:{flexDirection:'row',alignItems:'center',minHeight:82},
+  metric:{flex:1,paddingHorizontal:12,paddingVertical:13},
+  metricValue:{fontSize:26,fontWeight:'900',lineHeight:30},
+  metricLabel:{color:'#5E6B65',fontSize:11,fontWeight:'700',marginTop:1},
+  verticalRule:{width:1,height:43,backgroundColor:'#E4EAE5'},
+  horizontalRule:{height:1,backgroundColor:'#E8ECE8',marginHorizontal:12},
+  notice:{backgroundColor:'#FFF4E9',borderWidth:1,borderColor:'#F8D8C2',minHeight:69,borderRadius:14,padding:12,flexDirection:'row',alignItems:'center',gap:11},
+  noticeIcon:{fontSize:23,color:theme.colors.primary,fontWeight:'700'},
+  noticeCopy:{flex:1,gap:3},
+  noticeTitle:{fontSize:12,fontWeight:'800',color:'#563B2E'},
+  noticeSub:{fontSize:11,lineHeight:16,color:'#806C61'},
+  noticeAction:{fontSize:11,fontWeight:'900',color:theme.colors.primary},
+  critical:{backgroundColor:'#FFF2F1',borderColor:'#F6D8D3',borderWidth:1,minHeight:64,borderRadius:14,padding:12,flexDirection:'row',gap:10,alignItems:'center'},
+  criticalIcon:{width:29,height:29,borderRadius:10,backgroundColor:'#F9DCD7',alignItems:'center',justifyContent:'center'},
+  criticalSymbol:{fontSize:16,color:theme.colors.danger,fontWeight:'900'},
+  criticalTitle:{fontSize:12,fontWeight:'900',color:theme.colors.danger},
+  criticalSub:{fontSize:11,color:'#895B54'},
+  errorNotice:{borderRadius:12,borderWidth:1,borderColor:'#F1C2BE',backgroundColor:'#FFF2F1',padding:14},
+  errorText:{color:theme.colors.danger,fontSize:12,fontWeight:'700'},
+  recent:{gap:9},
+  emptyCard:{backgroundColor:'#FFFFFF',borderWidth:1,borderColor:'#E0E6E2',borderRadius:17,padding:19,gap:5},
+  emptyTitle:{fontSize:14,fontWeight:'850',color:'#20312A'},
+  emptyText:{fontSize:12,lineHeight:18,color:'#74827C'},
+  bottomNote:{fontSize:10,lineHeight:15,color:'#76857C',textAlign:'center',paddingVertical:8},
+  pressed:{opacity:0.77,transform:[{scale:0.985}]},
 });
