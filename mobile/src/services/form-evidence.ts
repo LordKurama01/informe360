@@ -36,6 +36,7 @@ export async function preparePhotoAnswers(
   };
   for (const section of schema.sections) {
     for (const field of section.fields) {
+      if (!Object.prototype.hasOwnProperty.call(answers, field.id)) continue;
       const current = answers[field.id];
       if (field.type !== 'repeater') {
         result[field.id] = await transform(field, current, field.id);
@@ -46,7 +47,9 @@ export async function preparePhotoAnswers(
         if (!item || typeof item !== 'object' || Array.isArray(item)) return item;
         const row = { ...(item as Record<string, unknown>) };
         for (const nested of field.fields) {
-          if (nested.type === 'photo') row[nested.id] = await transform(nested, row[nested.id], field.id + '-' + index + '-' + nested.id);
+          if (nested.type === 'photo' && Object.prototype.hasOwnProperty.call(row, nested.id)) {
+            row[nested.id] = await transform(nested, row[nested.id], field.id + '-' + index + '-' + nested.id);
+          }
         }
         return row;
       }));
