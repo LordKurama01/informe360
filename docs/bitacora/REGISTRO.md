@@ -224,3 +224,9 @@
 - No se realizan nuevos requests por cada tecla, ni se genera contenido ficticio. Los registros reales siguen filtrados por organización y sitio.
 - **QA P2.3:** Render `dep-db3s5qij9qps738rkao0` SHA `1504afea91e5e594bf07a7c24c3318ad57ea8f66`, validación en curso. No declarar LIVE antes de confirmarlo.
 - **Siguiente al «seguí»:** confirmar deploy, después verificar flujo autenticado en Inspecciones, RLS y rutas, y avanzar P2.4–P2.5. Producción intacta.
+
+
+## 2026-10-08 — EWEB.P2.3 — Render QA LIVE
+- `dep-db3s5qij9qps738rkao0` pasó pruebas y compilación Next, alcanzó **LIVE** 2026-10-08T16:22:41Z. SHA funcional `1504afea91e5e594bf07a7c24c3318ad57ea8f66`.
+- Checkpoint: P2.1–P2.3 listas técnicamente; permisos/RLS en usuarios reales, acciones de checklists y aceptación visual de Inspecciones aún requieren validación P2.4/P2.5.
+- No hubo cambio de datos, credenciales ni deploy a producción.
