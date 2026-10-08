@@ -146,3 +146,15 @@
 - **Readiness:** se añadió un contrato explícito al health de E1 QA para separar liveness de readiness/capacidades.
 - **QA final:** `dep-db3hr9ei0phs73a8h3tg` SUCCEEDED sobre `646e70a28e4c1a459ec1ce66d372a8d6f09fc545`.
 - **Producción web:** sigue sin promoción de E1. El runtime actualmente publicado reporta ausencia de credencial server-side de Supabase, WhatsApp no configurado y AI en fallback manual; mantener release bloqueado hasta resolver configuración y smoke real.
+
+
+## 2026-10-08 — QA acceso WEB-01: SecureStore no soportado en navegador
+- **Hallazgo reproducido por captura de pantalla:** desde `/onboarding`, al elegir «Entrar al panel», aparecía `getValueWithKeyAsync is not a function`.
+- **Causa confirmada en código:** `mobile/src/lib/secure-storage.ts` y `mobile/src/services/workspace.ts` llamaban `expo-secure-store` también cuando Expo Router se ejecutaba como web. El módulo nativo no tiene esa implementación disponible en React Native Web.
+- **Corrección:** `secure-storage.ts` selecciona `localStorage` de origen solamente en `Platform.OS === 'web'`; Android/iOS siguen con SecureStore y fragmentación de sesiones. `workspace.ts` usa el adaptador compartido. El navegador indica fallo explícito si impide almacenar sesión; no simula persistencia.
+- **Commits código:** `32eb1d767557fd4e81030b4f1b6958250ec4a82e`, `593d8de80f78348d01b1ca5e0728502d6c4d79c4`, `a39fdb3defdd57742958a07d43b54b45e0a99cef`, `5f5d2bc5c227933b738616f0a700029c389086f8`.
+- **QA automatizada:** `scripts/hse-web-storage.test.mjs` + script agregado a `npm run qa`. **3/3 pruebas OK:** persistencia de sesión y workspace tras recarga de adaptador; almacenamiento bloqueado no indica escritura exitosa; workspace web evita SecureStore. También pasaron TypeScript mobile y `expo export --platform web`.
+- **Render QA:** `dep-db3piqss728c73foqbfg` **LIVE** en `informe360-hse-e1-qa`, SHA funcional `38ee8d271477d96edac74420dea53e36977f30bc`, terminado 2026-10-08T13:25:37Z. URL: https://informe360-hse-e1-qa.onrender.com.
+- **Sin impacto productivo:** no se desplegó `feat/hse-phases-1-5`, no se crearon usuarios ni se alteró Supabase en este paso; PR #3 permanece en borrador.
+- **Limitación:** QA de compilación y lógica del adaptador superada. No se probó una sesión autenticada del usuario con navegador automatizado, por lo que falta confirmar el recorrido real a tabs y el funcionamiento de cada módulo.
+- **Próximo:** pedir reabrir el sitio actualizado; si el panel aún falla, recoger error actualizado y revisar el siguiente servicio implicado. Después continuar E1.P3 offline, E1.P4 APK/iOS.
