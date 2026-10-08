@@ -207,8 +207,14 @@ La E1 se ejecuta aisladamente en `feat/hse-e1-offline-resilience-2026-10-08` con
 - Gate no cerrado hasta comprobar estado LIVE y QA final. Resto P2.3/P2.4 y prueba visual pendiente. [Detalle](EWEB_P2_INSPECCIONES_2026-10-08.md). Producción y PR #3 draft intactos.
 
 
-## 2026-10-08 — EWEB.P2.3 — Filtros de inspecciones [VALIDACIÓN QA EN CURSO]
+## 2026-10-08 — EWEB.P2.3 — Filtros de inspecciones [QA RENDER APROBADA]
 - Inspecciones funciona dentro de `HseControl`, no otra app. Plantillas y ejecuciones reales de Supabase por organización/sitio.
 - Busca por nombre de plantilla, filtra ejecuciones Todas/Pendientes/Presentadas sin llamar otra vez a Auth o la base; mensajes vacíos adecuados. `scripts/hse-inspections.test.mjs` cubre esta funcionalidad.
 - Primer deploy `dep-db3s40jncjis73bjlevg` **LIVE**; segundo deploy `dep-db3s5qij9qps738rkao0` todavía pendiente de estado final al redactar. No confundir Next build con confirmación de disponibilidad Live.
 - Restan P2.4/P2.5 (rutas operativas, roles/RLS y prueba de diseño con sesión). Etapa móvil separada sigue pendiente; PR #3 no fusionada y producción no modificada.
+
+
+### Última QA Inspecciones
+- Deploy `dep-db3s5qij9qps738rkao0` **LIVE** sobre `1504afea91e5e594bf07a7c24c3318ad57ea8f66`, finalizado 2026-10-08T16:22:41Z; tests, lint, TypeScript y build Next aprobados.
+- P2.1/P2.2/P2.3 desarrolladas. P2.4 (flujo real/RLS) y P2.5 (revisión visual completa) pendientes; Inicio/Informes mantienen aceptación visual P1.5 abierta.
+- Continuar con integridad de sitio y pruebas con sesión; no prometer APK/iOS ni alterar producción.
