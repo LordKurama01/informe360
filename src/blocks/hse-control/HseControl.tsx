@@ -136,7 +136,7 @@ export function HseControl() {
 
       <div className={styles.workspace}>
         <section className={styles.hero}>
-          <Image className={styles.heroMark} src="/brand/informe360-hse/mark-light.png" alt="" aria-hidden="true" width={512} height={512}/>
+          <Image className={styles.heroMark} src="/brand/informe360-hse/informe360-hse-oscuro.svg" alt="" aria-hidden="true" width={1200} height={1200} unoptimized/>
           <div><span className={styles.eyebrowLight}>ESTADO OPERATIVO</span><h2>Lo importante, primero.</h2><p>Hallazgos, acciones y vencimientos sincronizados con el trabajo de campo.</p></div>
           <div className={styles.heroSummary}><strong>{summary.open}</strong><span>hallazgos abiertos</span><small>{summary.criticalOpen} críticos · {summary.overdue} vencidos</small></div>
         </section>
@@ -166,13 +166,13 @@ export function HseControl() {
     </section>
 
     <nav className={styles.mobileDock} aria-label="Navegación HSE móvil">
-      <Link href="/app/hse">Inicio</Link><Link href="/app/hse/inspections">Inspecciones</Link><Link className={styles.mobileDockPrimary} href="/app/hse"><Image src="/brand/informe360-hse/mark.png" alt="HSE" width={512} height={512}/></Link><Link href="/app/calendar">Agenda</Link><Link href="/app/reports">Informes</Link>
+      <Link href="/app/hse">Inicio</Link><Link href="/app/hse/inspections">Inspecciones</Link><Link className={styles.mobileDockPrimary} href="/app/hse"><Image src="/brand/informe360-hse/informe360-hse-claro.svg" alt="HSE" width={1200} height={1200} unoptimized/></Link><Link href="/app/calendar">Agenda</Link><Link href="/app/reports">Informes</Link>
     </nav>
   </main>;
 }
 
 function Brand({variant='onDark'}:{variant?:'onDark'|'onLight'}){
-  const src=variant==='onDark'?'/brand/informe360-hse/logo-dark.png':'/brand/informe360-hse/logo-light.png';
-  return <div className={styles.brandLockup}><Image className={styles.brandLogo} src={src} alt="Informe360 HSE" width={900} height={300} priority/></div>;
+  const src=variant==='onDark'?'/brand/informe360-hse/informe360-hse-oscuro.svg':'/brand/informe360-hse/informe360-hse-claro.svg';
+  return <div className={styles.brandLockup}><Image className={styles.brandLogo} src={src} alt="Informe360 HSE" width={1200} height={1200} priority unoptimized/></div>;
 }
 function Metric({label,value,tone,onClick}:{label:string;value:number|string;tone:'primary'|'danger'|'warn'|'good';onClick:()=>void}){return <button className={`${styles.metric} ${styles[tone]}`} onClick={onClick}><strong>{value}</strong><span>{label}</span></button>}
