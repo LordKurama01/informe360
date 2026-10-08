@@ -66,6 +66,12 @@ RAG documental con citas, EPP/visión computacional, capacitación masiva, marke
 
 **Primera tarea al recibir «seguí» tras cerrar E0:** E1.P1 — auditoría de brechas offline frente a `FolderITDev/mobile-field-inspections`, con tests de regresión propuestos, sin reescritura de la app.
 
+**Actualización E1.P2 — 2026-10-07:** fotos de formularios a Storage privado y visualización firmada implementadas en PR #3; wizard de formularios por pasos añadido. [Bitácora E1.P2](E1_P2_FOTOS_UX_NATIVE_2026-10-07.md). Requiere build QA, pruebas nativas, seguridad y flujo offline integral antes de validarlo o habilitar E2.
+
+**Gate de calidad nativa:** cada pantalla debe sentirse como aplicación React Native real (navegación por pasos, accesibilidad, botones táctiles, validación y estado de guardado explícitos), no una webview. Validar Android e iOS en hardware antes de release.
+
+**Gate de seguridad adicional:** corregir/validar integridad de políticas RLS de formularios mediante pruebas negativas con dos organizaciones; no desbloquear release solo porque la UI compila.
+
 ## Checkpoint de QA E1 — Render
 
 - [QA_RENDER_2026-10-07.md](QA_RENDER_2026-10-07.md) prueba que `npm run qa` + TS Expo + export web pasaron en el entorno de Render QA.
