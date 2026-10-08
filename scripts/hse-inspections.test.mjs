@@ -37,7 +37,7 @@ test('Inspecciones route uses the exact HSE shell, authentic data and navigation
 
   assert.match(route, /<HseControl mode="inspections"/, 'the route must not render a separate app');
   assert.match(control, /mode === 'inspections' \? <>/, 'inspection view must reuse authenticated workspace shell');
-  assert.match(control, /mode === 'inspections' \? styles\.navItemActive/, 'the active sidebar section must match the route');
+  assert.match(control, /mode === 'inspections' \|\| mode === 'inspection-run' \? styles\.navItemActive/, 'both inspection history and details must share the active sidebar section');
   assert.match(control, /listFormTemplates\(nextWorkspace\)/);
   assert.match(control, /listFormRuns\(nextWorkspace\)/);
   assert.match(control, /dataStatus === 'ready' \? <div className=\{styles\.inspectionCards\}>/, 'empty state must not appear on failed load');
