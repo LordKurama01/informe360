@@ -260,3 +260,8 @@
 - Render Expo QA primera build `dep-db40886i0phs73egus90` LIVE 21:00:59Z, commit `cd911fe38`. Segunda build iconos `dep-db4094nlot8c73c8l3l0` pendiente de estado definitivo. No se cambiaron otras plataformas ni Supabase.
 - El usuario deberá revisar `https://informe360-hse-e1-qa.onrender.com` **desde el teléfono**, pero no confundir la vista browser con una APK. Siguiente paso: empaquetado nativo Android y revisión visual/cámara/audio.
 - NPM audit móvil encontró 28 hallazgos (10 moderados/18 altos) al instalar dependencias; registrar para triage de seguridad, no inferir exposición directa sin análisis.
+
+
+### EAPP.P1 — Resultado QA de íconos y navegación
+- Segundo despliegue `dep-db4094nlot8c73c8l3l0` **LIVE** 2026-10-08T21:02:50Z SHA `1b871ad09a9dd1a920bac174d36c9392503a319e`. Cuatro pruebas de Inicio mobile pasaron, TypeScript web/mobile y Expo export listos.
+- La pantalla renovada está visible desde teléfono por **Expo Web Preview**. Para verificar la app Android hay que construir e instalar una APK, actividad no realizada en este checkpoint.
