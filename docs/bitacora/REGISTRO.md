@@ -250,3 +250,13 @@
 - **Pruebas faltantes:** inspección real start/save/resume/submit/evidencia, cierre inmutable garantizado por DB, multiempresa y examen visual con sesión en resoluciones PC y móvil. Producción `feat/hse-phases-1-5` sin merge; PR #3 continúa borrador.
 - **Rollback:** al ser ramas y servicios QA independientes, desactivar QA o volver al commit anterior desde Render/GitHub sin tocar DB. La propuesta SQL no requiere rollback porque no fue aplicada.
 - **Punto de reanudación:** [bitácora P3-P5](EWEB_P3_P5_CIERRE_2026-10-08.md), [auditoría RLS](EWEB_P2_4_AUDITORIA_RLS_2026-10-08.md). No afirmar producto habilitado en producción.
+
+
+## 2026-10-08 — EAPP.P1 — Inicio de aplicación móvil (corrección de captura de usuario)
+- Se revisó código real Expo: `(tabs)/index.tsx`, `(tabs)/_layout.tsx`, componentes, theme, EAS preview y actual Render static site. Confirmado que screenshot pertenece a **Expo Web QA**, no APK.
+- Cambios `50b6c284` y `6f3f2190`: cabecera, CTA voz 104 px, accesos útiles 86 px, KPI compacto, estado de carga real/errores, separación de pull-to-refresh inicial, eliminación Demo.
+- `9d839eeb`: tabbar compacta. `2403dbfd` 4 tests; `cd911fe38` QA integrado al pipeline.
+- `cfc43078`: vector icons dependencia; `86a9af85` micrófono/cámara/inspección/escritura; `1b871ad0` tabs con íconos reales.
+- Render Expo QA primera build `dep-db40886i0phs73egus90` LIVE 21:00:59Z, commit `cd911fe38`. Segunda build iconos `dep-db4094nlot8c73c8l3l0` pendiente de estado definitivo. No se cambiaron otras plataformas ni Supabase.
+- El usuario deberá revisar `https://informe360-hse-e1-qa.onrender.com` **desde el teléfono**, pero no confundir la vista browser con una APK. Siguiente paso: empaquetado nativo Android y revisión visual/cámara/audio.
+- NPM audit móvil encontró 28 hallazgos (10 moderados/18 altos) al instalar dependencias; registrar para triage de seguridad, no inferir exposición directa sin análisis.
