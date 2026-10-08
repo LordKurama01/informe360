@@ -82,3 +82,12 @@ La E1 se ejecuta aisladamente en `feat/hse-e1-offline-resilience-2026-10-08` con
 - Producción Render `informe360-hse` permanece LIVE en `422f8bcbce65b3e68f892d51d37b1ed0999690c5`, sin cambios de código/servicio.
 - **Faltan:** fotos de formularios en Storage privado y firma/visualización remota; arranque de nuevas inspecciones sin red; QA Android/iOS físico; revisión real de RLS y 28 avisos npm (10 moderate, 18 high).
 - **Reanudación:** E1.P2 y E1.P3 restantes, no habilitar E2 ni release. AutoDeploy desactivado en QA para evitar gasto innecesario de minutos.
+
+## 9. Estado E1.P2 — fotografías y UX móvil (actualización)
+
+- Fotos de formularios y repetidores se preparan para Storage privado y se referencian con `hse-evidence:`, no rutas locales persistidas en respuestas cloud; firmado temporal y visualización en app. Implementado en [PR #3](https://github.com/LordKurama01/informe360/pull/3), **NO desplegado a producción ni probado con imagen real en móvil**.
+- Formularios divididos en pasos nativos con validación, barra de progreso y auto-scroll al paso siguiente. QA funcional táctil pendiente.
+- Render QA `dep-db3g4ufavr4c739leo6g`: LIVE para motor de fotos; builds posteriores detectaron tipado incorrecto del ancho del progreso, corregido en `941247fa...` y pendiente de verificación del deploy `dep-db3g6l7avr4c739lltog`.
+- **Seguridad release gate:** revisar integridad referencial y permisos de modificación RLS para `form_answers`, sin cambiar producción antes de una migración auditada y QA negativa multi-organización. Bucket `hse-evidence` confirmado privado.
+- **Próximo:** terminar E1.P3 (inicio offline desde plantillas persistidas y pruebas de sincronización), y E1.P4 en dispositivos Android/iOS y revisión de dependencias.
+
