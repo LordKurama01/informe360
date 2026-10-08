@@ -238,3 +238,15 @@
 - **Falla registrada:** deploy `dep-db3sfh0473hc73f675ag` BUILD_FAILED por test antiguo de navegación; arreglo `954ff4a`. **Resultado definitivo:** Render QA `dep-db3sg22jnfac738k47sg` **LIVE** (commit `954ff4a155f42108b624e3c07459c95947ce9dfa`, terminado 16:44:29Z), 5/5 nuevas pruebas, conjunto QA y Next compilado.
 - **Limitaciones honestas:** sin prueba real de cuenta guardando y presentando; `repeater` exige app móvil; falta QA de foto privada con login y staging multiempresa. El servicio QA apunta al Supabase compartido, por lo que no se generaron registros de ejemplo.
 - **Estado:** EWEB.P2.4 implementación técnica validada; cierre funcional y release bloqueados hasta [auditoría RLS](EWEB_P2_4_AUDITORIA_RLS_2026-10-08.md) y EWEB.P2.5. Producción Render `feat/hse-phases-1-5` intacta, PR #3 borrador.
+
+
+## 2026-10-08 — EWEB.P3–P5 — Integración final de web HSE
+- **Antes de comenzar:** leído `AGENTS.md`, `ETAPAS/ESTADO/REGISTRO`, PR #3 draft, Render QA LIVE `dep-db3sg22jnfac738k47sg` y árbol real. Formulario previo tenía shell independiente; nav agenda enviaba a calendario genérico; informe detalle necesitaba validación de sitio.
+- **P3 commits principales:** `2619c7a` extrae constructor/preview real, `ed2fb60` conecta datos, `c9283c1` añade panel+nav, `24d08e7` ruta única, `1740e79` estilos, `60b46c5` y `1348290` grillas responsive.
+- **P4 commits principales:** `b56c935` guarda org/sitio/estado al cambiar recordatorios; `717e43c` agenda real; `3620a318` integra workspace; `08aa348` nueva ruta; `dcf8847` estilos; `483f3da` protege consulta del informe y retorno.
+- **P5 commits principales:** `9ef0836` tests 4 casos, `47553ad` QA, `15d7e10` corrige el antiguo dock responsive, `bae6ac8` evita romper la agenda genérica, `cda1b9c` + `27f3c44` + `56db5d0` finalizan los cinco accesos del header web móvil.
+- **Seguridad:** `113ab4c` agregó `database/supabase/proposals/20261008_guard_hse_form_run_answer_integrity.sql` como **propuesta staging**. Sin migración aplicada, sin cambio de política RLS ni alteración de datos. No se creó staging (requiere confirmación de costo).
+- **QA y fallos honestos:** `dep-db3smkid0e5s73bdj2p0` BUILD_FAILED por ruta antigua, `dep-db3sn6qd0e5s73bdkmng` BUILD_FAILED por firma antigua del método. `dep-db3snro473hc73f729tg` LIVE tras correcciones; **final `dep-db3spebtqb8s73f8j53g` LIVE** `56db5d02cadc894cda5cbe165be58d0bc4adfe6c` a las 17:04:39Z; 4/4 tests nuevos, todos los tests anteriores, typecheck, ESLint y Next build sin errores.
+- **Pruebas faltantes:** inspección real start/save/resume/submit/evidencia, cierre inmutable garantizado por DB, multiempresa y examen visual con sesión en resoluciones PC y móvil. Producción `feat/hse-phases-1-5` sin merge; PR #3 continúa borrador.
+- **Rollback:** al ser ramas y servicios QA independientes, desactivar QA o volver al commit anterior desde Render/GitHub sin tocar DB. La propuesta SQL no requiere rollback porque no fue aplicada.
+- **Punto de reanudación:** [bitácora P3-P5](EWEB_P3_P5_CIERRE_2026-10-08.md), [auditoría RLS](EWEB_P2_4_AUDITORIA_RLS_2026-10-08.md). No afirmar producto habilitado en producción.
