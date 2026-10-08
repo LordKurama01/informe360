@@ -5,12 +5,14 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { createHseReport, getCurrentHseUser, getHseFindings, getHseSummary, getHseWorkspace, hseSignIn, hseSignOut, hseSignUp, listHseReports, type HseReportRow, type HseFinding, type HseSummary, type HseWorkspace } from '@/services/hse/browser';
 import styles from './HseControl.module.css';
+import { formatClosureCompliance, formatHseCount, hseDataStatusLabel, type HseDataStatus } from '@/shared/hse/dashboard-metrics';
 
 type Filter = 'open'|'overdue'|'upcoming'|'critical'|'closed'|'all';
 const emptySummary: HseSummary = { open:0, overdue:0, dueNext7Days:0, closed:0, closedOnTime:0, closureCompliancePct:0, criticalOpen:0 };
 
 export function HseControl({ mode = 'overview' }: { mode?: 'overview' | 'reports' }) {
   const [booting, setBooting] = useState(true);
+  const [dataStatus, setDataStatus] = useState<HseDataStatus>('loading');
   const [signedIn, setSignedIn] = useState(false);
   const [workspace, setWorkspace] = useState<HseWorkspace|null>(null);
   const [summary, setSummary] = useState<HseSummary>(emptySummary);
@@ -30,6 +32,7 @@ export function HseControl({ mode = 'overview' }: { mode?: 'overview' | 'reports
 
   const loadWorkspace = useCallback(async () => {
     setError(null);
+    setDataStatus('loading');
     const user = await getCurrentHseUser();
     setSignedIn(Boolean(user));
     if (!user) { setWorkspace(null); setBooting(false); return; }
@@ -44,11 +47,18 @@ export function HseControl({ mode = 'overview' }: { mode?: 'overview' | 'reports
         setFindings(nextFindings);
         setNowMs(new Date().getTime());
       }
+      setDataStatus('ready');
     }
     setBooting(false);
   }, [query, mode]);
 
-  useEffect(() => { const timer=setTimeout(() => void loadWorkspace().catch(e => { setError(e instanceof Error?e.message:'Error'); setBooting(false); }), query ? 250 : 0); return () => clearTimeout(timer); }, [loadWorkspace, query]);
+  const handleLoadError = useCallback((reason: unknown) => {
+    setError(reason instanceof Error ? reason.message : 'No se pudo actualizar la información HSE.');
+    setDataStatus('error');
+    setBooting(false);
+  }, []);
+
+  useEffect(() => { const timer=setTimeout(() => void loadWorkspace().catch(handleLoadError), query ? 250 : 0); return () => clearTimeout(timer); }, [loadWorkspace, query, handleLoadError]);
 
   const visible = useMemo(() => {
     const next7=nowMs+7*86400000;
@@ -135,14 +145,14 @@ export function HseControl({ mode = 'overview' }: { mode?: 'overview' | 'reports
     <section className={styles.mainArea}>
       <header className={styles.topbar}>
         <div><span className={styles.eyebrow}>OPERACIÓN HSE</span><h1>{workspace.siteName||workspace.organizationName}</h1></div>
-        <div className={styles.topActions}><span className={styles.syncBadge}><i/>En línea</span><button className={styles.secondary} onClick={()=>void loadWorkspace()} disabled={busy} aria-label="Actualizar datos HSE">Actualizar</button></div>
+        <div className={styles.topActions}><span className={`${styles.syncBadge} ${dataStatus === 'error' ? styles.syncBadgeError : dataStatus === 'loading' ? styles.syncBadgeLoading : ''}`} role="status"><i aria-hidden="true"/>{hseDataStatusLabel(dataStatus)}</span><button className={styles.secondary} onClick={()=>void loadWorkspace().catch(handleLoadError)} disabled={busy || dataStatus === 'loading'} aria-label="Actualizar datos HSE">Actualizar</button></div>
       </header>
 
       <div className={styles.workspace}>
         {mode === 'reports' ? <>
           <section className={styles.hero}>
             <div><span className={styles.eyebrowLight}>INFORMES TÉCNICOS</span><h2>Informes de tu operación.</h2><p>Historial generado desde hallazgos reales, organizado por empresa y sitio.</p></div>
-            <div className={styles.heroSummary}><strong>{reports.length}</strong><span>informes registrados</span><small>{workspace.siteName || workspace.organizationName}</small></div>
+            <div className={styles.heroSummary}><strong>{formatHseCount(reports.length, dataStatus)}</strong><span>informes registrados</span><small>{workspace.siteName || workspace.organizationName}</small></div>
           </section>
           <section className={styles.listPanel}>
             <div className={styles.sectionHead}>
@@ -151,6 +161,7 @@ export function HseControl({ mode = 'overview' }: { mode?: 'overview' | 'reports
             </div>
             <div className={styles.toolbar}><input className={styles.search} aria-label="Buscar informes" placeholder="Buscar por título, tipo o estado…" value={reportSearch} onChange={e=>setReportSearch(e.target.value)}/></div>
             {error ? <div className={styles.error} role="alert">{error}</div> : null}
+            {dataStatus === 'loading' ? <div className={styles.empty} role="status">Consultando informes registrados…</div> : null}
             <div className={styles.list}>
               {visibleReports.map(report => <Link key={report.id} className={styles.reportRow} href={`/app/hse/reports/${report.id}`}>
                 <div className={styles.reportRowContent}>
@@ -160,7 +171,7 @@ export function HseControl({ mode = 'overview' }: { mode?: 'overview' | 'reports
                 </div>
                 <span className={styles.reportRowAction}>{report.status} <span aria-hidden="true">↗</span></span>
               </Link>)}
-              {!visibleReports.length ? <div className={styles.empty}>
+              {dataStatus === 'ready' && !visibleReports.length ? <div className={styles.empty}>
                 <p>{reportSearch ? 'No encontramos informes que coincidan con tu búsqueda.' : 'Todavía no hay informes generados para este espacio.'}</p>
                 {!reportSearch ? <Link className={styles.reportStartLink} href="/app/hse">Ir a Hallazgos para crear el primer informe →</Link> : null}
               </div> : null}
@@ -170,7 +181,7 @@ export function HseControl({ mode = 'overview' }: { mode?: 'overview' | 'reports
         <section className={styles.hero}>
           <Image className={styles.heroMark} src="/brand/informe360-hse/informe360-hse-oscuro.svg" alt="" aria-hidden="true" width={1200} height={1200} unoptimized/>
           <div><span className={styles.eyebrowLight}>ESTADO OPERATIVO</span><h2>Lo importante, primero.</h2><p>Hallazgos, acciones y vencimientos sincronizados con el trabajo de campo.</p></div>
-          <div className={styles.heroSummary}><strong>{summary.open}</strong><span>hallazgos abiertos</span><small>{summary.criticalOpen} críticos · {summary.overdue} vencidos</small></div>
+          <div className={styles.heroSummary}><strong>{formatHseCount(summary.open, dataStatus)}</strong><span>hallazgos abiertos</span><small>{summary.criticalOpen} críticos · {summary.overdue} vencidos</small></div>
         </section>
 
         <section className={styles.quickCapture}>
@@ -179,15 +190,16 @@ export function HseControl({ mode = 'overview' }: { mode?: 'overview' | 'reports
         </section>
 
         <section className={styles.metrics}>
-          <Metric label="Abiertos" value={summary.open} tone="primary" onClick={()=>setFilter('open')}/><Metric label="Vencidos" value={summary.overdue} tone="danger" onClick={()=>setFilter('overdue')}/><Metric label="Próx. 7 días" value={summary.dueNext7Days} tone="warn" onClick={()=>setFilter('upcoming')}/><Metric label="Críticos" value={summary.criticalOpen} tone="danger" onClick={()=>setFilter('critical')}/><Metric label="Cierre en plazo" value={`${summary.closureCompliancePct}%`} tone="good" onClick={()=>setFilter('closed')}/>
+          <Metric label="Abiertos" value={formatHseCount(summary.open,dataStatus)} tone="primary" onClick={()=>setFilter('open')}/><Metric label="Vencidos" value={formatHseCount(summary.overdue,dataStatus)} tone="danger" onClick={()=>setFilter('overdue')}/><Metric label="Próx. 7 días" value={formatHseCount(summary.dueNext7Days,dataStatus)} tone="warn" onClick={()=>setFilter('upcoming')}/><Metric label="Críticos" value={formatHseCount(summary.criticalOpen,dataStatus)} tone="danger" onClick={()=>setFilter('critical')}/><Metric label="Cierre en plazo" value={formatClosureCompliance(summary,dataStatus)} tone="good" title={summary.closed === 0 ? 'Sin cierres registrados: indicador no aplicable' : undefined} onClick={()=>setFilter('closed')}/>
         </section>
 
         <section className={styles.contentGrid}>
           <div className={styles.listPanel}>
             <div className={styles.sectionHead}><div><span className={styles.eyebrow}>HALLAZGOS</span><h2>Seguimiento operativo</h2></div><span className={styles.resultCount}>{visible.length} registros</span></div>
             <div className={styles.toolbar}><input className={styles.search} value={query} onChange={e=>setQuery(e.target.value)} placeholder="Buscar código, sector, equipo o responsable…"/><div className={styles.filterRow}>{(['open','overdue','upcoming','critical','closed','all'] as Filter[]).map(item=><button key={item} className={`${styles.filter} ${filter===item?styles.filterActive:''}`} onClick={()=>setFilter(item)}>{({open:'Abiertos',overdue:'Vencidos',upcoming:'7 días',critical:'Críticos',closed:'Cerrados',all:'Todos'} as const)[item]}</button>)}</div></div>
-            {error?<div className={styles.error}>{error}</div>:null}
-            <div className={styles.list}>{visible.map(finding=>{const overdue=!['closed','cancelled'].includes(finding.status)&&!!finding.due_at&&new Date(finding.due_at).getTime()<nowMs;const checked=selected.has(finding.id);return <article key={finding.id} className={`${styles.finding} ${checked?styles.findingSelected:''}`}><button aria-label={`Seleccionar ${finding.code}`} className={`${styles.check} ${checked?styles.checkOn:''}`} onClick={()=>toggle(finding.id)}>{checked?'✓':''}</button><div><div className={styles.code}>{finding.code} · {finding.priority.toUpperCase()}</div><h3>{finding.title}</h3><div className={styles.meta}>{finding.location_text||finding.element_text||finding.category||'Sin ubicación'} · {finding.responsible_text||'Sin responsable'}{finding.due_at?` · ${new Date(finding.due_at).toLocaleDateString('es-AR')}`:''}</div></div><span className={`${styles.status} ${overdue?styles.overdue:''}`}>{overdue?'VENCIDO':finding.status==='closed'?'CERRADO':finding.status==='in_progress'?'EN CURSO':'ABIERTO'}</span></article>})}{!visible.length?<div className={styles.empty}>No hay hallazgos para esta vista.</div>:null}</div>
+            {error?<div className={styles.error} role="alert">{error}</div>:null}
+            {dataStatus === 'loading' ? <div className={styles.empty} role="status">Actualizando hallazgos…</div> : null}
+            <div className={styles.list}>{visible.map(finding=>{const overdue=!['closed','cancelled'].includes(finding.status)&&!!finding.due_at&&new Date(finding.due_at).getTime()<nowMs;const checked=selected.has(finding.id);return <article key={finding.id} className={`${styles.finding} ${checked?styles.findingSelected:''}`}><button aria-label={`Seleccionar ${finding.code}`} className={`${styles.check} ${checked?styles.checkOn:''}`} onClick={()=>toggle(finding.id)}>{checked?'✓':''}</button><div><div className={styles.code}>{finding.code} · {finding.priority.toUpperCase()}</div><h3>{finding.title}</h3><div className={styles.meta}>{finding.location_text||finding.element_text||finding.category||'Sin ubicación'} · {finding.responsible_text||'Sin responsable'}{finding.due_at?` · ${new Date(finding.due_at).toLocaleDateString('es-AR')}`:''}</div></div><span className={`${styles.status} ${overdue?styles.overdue:''}`}>{overdue?'VENCIDO':finding.status==='closed'?'CERRADO':finding.status==='in_progress'?'EN CURSO':'ABIERTO'}</span></article>})}{dataStatus === 'ready' && !visible.length?<div className={styles.empty}>No hay hallazgos para esta vista.</div>:null}</div>
           </div>
 
           <aside className={styles.side}>
@@ -208,4 +220,4 @@ function Brand({variant='onDark'}:{variant?:'onDark'|'onLight'}){
   const src=variant==='onDark'?'/brand/informe360-hse/informe360-hse-oscuro.svg':'/brand/informe360-hse/informe360-hse-claro.svg';
   return <div className={styles.brandLockup}><Image className={styles.brandLogo} src={src} alt="Informe360 HSE" width={1200} height={1200} priority unoptimized/></div>;
 }
-function Metric({label,value,tone,onClick}:{label:string;value:number|string;tone:'primary'|'danger'|'warn'|'good';onClick:()=>void}){return <button className={`${styles.metric} ${styles[tone]}`} onClick={onClick}><strong>{value}</strong><span>{label}</span></button>}
+function Metric({label,value,tone,onClick,title}:{label:string;value:number|string;tone:'primary'|'danger'|'warn'|'good';onClick:()=>void;title?:string}){return <button className={`${styles.metric} ${styles[tone]}`} onClick={onClick} title={title}><strong>{value}</strong><span>{label}</span></button>}
