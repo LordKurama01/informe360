@@ -6,11 +6,13 @@ import Link from 'next/link';
 import { createHseReport, getCurrentHseUser, getHseFindings, getHseSummary, getHseWorkspace, hseSignIn, hseSignOut, hseSignUp, listHseReports, type HseReportRow, type HseFinding, type HseSummary, type HseWorkspace } from '@/services/hse/browser';
 import styles from './HseControl.module.css';
 import { formatClosureCompliance, formatHseCount, hseDataStatusLabel, type HseDataStatus } from '@/shared/hse/dashboard-metrics';
+import { listFormRuns, listFormTemplates, type HseFormRunRow, type HseFormTemplate } from '@/services/hse/forms-browser';
+import { inspectionStatusLabel, selectHseInspections } from '@/shared/hse/inspection-view';
 
 type Filter = 'open'|'overdue'|'upcoming'|'critical'|'closed'|'all';
 const emptySummary: HseSummary = { open:0, overdue:0, dueNext7Days:0, closed:0, closedOnTime:0, closureCompliancePct:0, criticalOpen:0 };
 
-export function HseControl({ mode = 'overview' }: { mode?: 'overview' | 'reports' }) {
+export function HseControl({ mode = 'overview' }: { mode?: 'overview' | 'reports' | 'inspections' }) {
   const [booting, setBooting] = useState(true);
   const [showSlowBoot, setShowSlowBoot] = useState(false);
   const [dataStatus, setDataStatus] = useState<HseDataStatus>('loading');
@@ -22,6 +24,8 @@ export function HseControl({ mode = 'overview' }: { mode?: 'overview' | 'reports
   const [searchPending, setSearchPending] = useState(false);
   const [searchError, setSearchError] = useState<string | null>(null);
   const [reports, setReports] = useState<HseReportRow[]>([]);
+  const [inspectionTemplates, setInspectionTemplates] = useState<HseFormTemplate[]>([]);
+  const [inspectionRuns, setInspectionRuns] = useState<HseFormRunRow[]>([]);
   const [reportSearch, setReportSearch] = useState('');
   const [query, setQuery] = useState('');
   const latestQueryRef = useRef('');
@@ -46,6 +50,13 @@ export function HseControl({ mode = 'overview' }: { mode?: 'overview' | 'reports
     if (nextWorkspace) {
       if (mode === 'reports') {
         setReports(await listHseReports(nextWorkspace));
+      } else if (mode === 'inspections') {
+        const [templates, runs] = await Promise.all([
+          listFormTemplates(nextWorkspace),
+          listFormRuns(nextWorkspace),
+        ]);
+        setInspectionTemplates(templates);
+        setInspectionRuns(runs);
       } else {
         const [nextSummary, nextFindings] = await Promise.all([getHseSummary(nextWorkspace), getHseFindings(nextWorkspace)]);
         setSummary(nextSummary);
@@ -111,6 +122,11 @@ export function HseControl({ mode = 'overview' }: { mode?: 'overview' | 'reports
     catch(e){setError(e instanceof Error?e.message:'No se pudo autenticar');}
     finally{setBusy(false);}
   }
+
+  const inspectionData = useMemo(
+    () => selectHseInspections(inspectionTemplates, inspectionRuns, workspace?.siteId ?? null),
+    [inspectionTemplates, inspectionRuns, workspace?.siteId],
+  );
 
   const visibleReports = useMemo(() => reports.filter(report => {
     const search = reportSearch.trim().toLocaleLowerCase('es-AR');
@@ -189,7 +205,7 @@ export function HseControl({ mode = 'overview' }: { mode?: 'overview' | 'reports
       <nav className={styles.navList}>
         <Link className={`${styles.navItem} ${mode === 'overview' ? styles.navItemActive : ''}`} href="/app/hse"><span>01</span>Inicio</Link>
         {mode === 'overview' ? <button className={styles.navItem} onClick={()=>setFilter('open')}><span>02</span>Hallazgos</button> : <Link className={styles.navItem} href="/app/hse"><span>02</span>Hallazgos</Link>}
-        <Link className={styles.navItem} href="/app/hse/inspections"><span>03</span>Inspecciones</Link>
+        <Link className={`${styles.navItem} ${mode === 'inspections' ? styles.navItemActive : ''}`} aria-current={mode === 'inspections' ? 'page' : undefined} href="/app/hse/inspections"><span>03</span>Inspecciones</Link>
         <Link className={styles.navItem} href="/app/hse/forms"><span>04</span>Formularios</Link>
         <Link className={styles.navItem} href="/app/calendar"><span>05</span>Agenda</Link>
         <Link className={`${styles.navItem} ${mode === 'reports' ? styles.navItemActive : ''}`} href="/app/hse/reports" aria-current={mode === 'reports' ? 'page' : undefined}><span>06</span>Informes</Link>
@@ -205,7 +221,56 @@ export function HseControl({ mode = 'overview' }: { mode?: 'overview' | 'reports
       </header>
 
       <div className={styles.workspace}>
-        {mode === 'reports' ? <>
+        {mode === 'inspections' ? <>
+          <section className={styles.hero}>
+            <div>
+              <span className={styles.eyebrowLight}>INSPECCIONES HSE</span>
+              <h2>Inspecciones de campo.</h2>
+              <p>Plantillas publicadas y ejecuciones registradas en tu organización.</p>
+            </div>
+            <div className={styles.heroSummary}>
+              <strong>{formatHseCount(inspectionData.runs.length, dataStatus)}</strong>
+              <span>inspecciones registradas</span>
+              <small>{workspace.siteName || workspace.organizationName}</small>
+            </div>
+          </section>
+          <section className={styles.listPanel}>
+            <div className={styles.sectionHead}>
+              <div>
+                <span className={styles.eyebrow}>BIBLIOTECA OPERATIVA</span>
+                <h2>Plantillas de inspección</h2>
+              </div>
+              <Link className={styles.reportStartLink} href="/app/hse/forms">Administrar plantillas →</Link>
+            </div>
+            {error ? <div className={styles.error} role="alert">{error}</div> : null}
+            {dataStatus === 'loading' ? <div className={styles.empty} role="status">Consultando plantillas y ejecuciones…</div> : null}
+            {dataStatus === 'ready' ? <div className={styles.inspectionCards}>
+              {inspectionData.templates.map(template => <article className={styles.inspectionCard} key={template.id}>
+                <span className={styles.code}>INSPECCIÓN · v{template.publishedVersion?.version ?? '—'}</span>
+                <h3>{template.name}</h3>
+                <p>{template.description || 'Sin descripción registrada.'}</p>
+                <span className={styles.inspectionState}>{template.status === 'active' ? 'ACTIVA' : template.status === 'draft' ? 'BORRADOR' : 'ARCHIVADA'}</span>
+              </article>)}
+              {!inspectionData.templates.length ? <div className={styles.empty}>No hay plantillas de inspección para esta organización. Podés administrarlas desde Formularios.</div> : null}
+            </div> : null}
+          </section>
+          <section className={styles.listPanel}>
+            <div className={styles.sectionHead}>
+              <div><span className={styles.eyebrow}>HISTORIAL OPERATIVO</span><h2>Últimas inspecciones</h2></div>
+              <span className={styles.resultCount}>{dataStatus === 'ready' ? `${inspectionData.runs.length} registros` : '—'}</span>
+            </div>
+            {dataStatus === 'ready' ? <div className={styles.list}>
+              {inspectionData.runs.map(run => <article key={run.id} className={styles.reportRow}>
+                <div className={styles.reportRowContent}>
+                  <span className={styles.code}>{new Date(run.started_at).toLocaleString('es-AR')}</span>
+                  <h3>{inspectionData.names.get(run.template_id) || 'Inspección'}</h3>
+                </div>
+                <span className={styles.inspectionState}>{inspectionStatusLabel(run.status)}</span>
+              </article>)}
+              {!inspectionData.runs.length ? <div className={styles.empty}>Todavía no se registraron ejecuciones de inspección para este sitio.</div> : null}
+            </div> : null}
+          </section>
+        </> : mode === 'reports' ? <>
           <section className={styles.hero}>
             <div><span className={styles.eyebrowLight}>INFORMES TÉCNICOS</span><h2>Informes de tu operación.</h2><p>Historial generado desde hallazgos reales, organizado por empresa y sitio.</p></div>
             <div className={styles.heroSummary}><strong>{formatHseCount(reports.length, dataStatus)}</strong><span>informes registrados</span><small>{workspace.siteName || workspace.organizationName}</small></div>
