@@ -69,15 +69,15 @@ export function LandingMobile() {
           <strong>Informe360</strong>
         </div>
         <article className={styles.reportBlock}>
-          <small>Informe generado</small>
-          <h2>Mejoras y mantenimiento de unidad</h2>
-          <p>Resumen, hallazgos, detalle tecnico y conclusion.</p>
+          <small>Inspección cerrada</small>
+          <h2>Recorrida HSE · Área operativa</h2>
+          <p>Hallazgos, evidencia, responsables y cierre técnico.</p>
         </article>
         <div className={styles.miniGrid}>
           <article>
             <small>Evidencia</small>
-            <strong>3 fotos</strong>
-            <span>Checklist HSE</span>
+            <strong>3 evidencias</strong>
+            <span>Registro trazable</span>
           </article>
           <article>
             <small>Acciones</small>
@@ -87,15 +87,15 @@ export function LandingMobile() {
         </div>
         <article className={styles.delivery}>
           <small>Entrega</small>
-          <strong>PDF listo + resumen para compartir</strong>
+          <strong>PDF profesional + historial operativo</strong>
         </article>
       </section>
 
       <section id="resultado" className={styles.section}>
         <span className={styles.kicker}>Resultado</span>
-        <h2>Menos armado manual.</h2>
+        <h2>Del campo al cierre.</h2>
         <div className={styles.listCards}>
-          <article><strong>Informe editable</strong><span>Texto listo para revisar y entregar.</span></article>
+          <article><strong>Informe editable</strong><span>Hallazgos listos para revisar y entregar.</span></article>
           <article><strong>PDF profesional</strong><span>Salida preparada para descargar y enviar.</span></article>
           <article><strong>Acciones SMART</strong><span>Responsable, prioridad y vencimiento.</span></article>
           <article><strong>Seguimiento</strong><span>Pendientes despues de cada visita.</span></article>
