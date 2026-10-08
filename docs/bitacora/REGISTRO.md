@@ -87,3 +87,15 @@
 - **Estatus:** E1.P4 **VALIDADA PARCIAL** solo para pipeline Render web/JS; **BLOQUEADA PARA LIBERACIÓN** nativa.
 - **Documento fuente:** [QA Render](QA_RENDER_2026-10-07.md).
 - **Siguiente paso:** E1.P2 subir imágenes privadas y reabrirlas, E1.P3 idempotencia y offline-start; E1.P4 pruebas en dispositivos, seguridad y auditoría de vulnerabilidades.
+
+
+## 2026-10-07 — E1.P2 — Fotografías privadas + pasos móviles nativos
+- **Fuente:** [E1_P2_FOTOS_UX_NATIVE_2026-10-07.md](E1_P2_FOTOS_UX_NATIVE_2026-10-07.md).
+- **Foto remota segura:** `e7b509f` motor de transformación por tipos, `65fdd18` subida a Storage privado y URL firmada, `b7ed84a` integración antes de persistir respuestas, `caff004` previsualización privada, `1d40a54`/`aa3e207` aislamiento de referencias por organización/inspección.
+- **QA automatizada:** `f15629f`, `2b0808a`, `e85cb1d`: tests de fotos y seguridad registrados en pipeline Render.
+- **Bugs detectados y corregidos:** `b110d01` respuestas ausentes se conservan ausentes (no se introducen `undefined`); `941247f` width de progreso con tipado React Native compatible.
+- **Experiencia nativa:** `58876e4` formularios por secciones con barra de progreso, validación y botones grandes; `32e7b25` scroll al comienzo, `ac3fbb0` aviso explícito ante fotos pendientes de envío.
+- **Render QA:** build `dep-db3g488m7kps73ehqm70` FAIL de test; después `dep-db3g4ufavr4c739leo6g` LIVE y QA/TS/Expo export OK. Build `dep-db3g5td9fdbs73dldia0` FAIL por TypeScript del progreso (corregido). Nuevo build `dep-db3g6l7avr4c739lltog` disparado, resultado **por comprobar**.
+- **Supabase:** bucket privado `hse-evidence` verificado, no se realizaron cambios en DB ni migraciones. Se identificó revisión adicional de RLS en formularios como gate de seguridad; NO corregido ni validado aún.
+- **Estado:** E1.P2 IMPLEMENTADA EN CÓDIGO, QA NATIVA PENDIENTE, no integrar a producción. E1.P3 inicio offline pendiente.
+- **Próximo:** comprobar resultado exacto de Render QA y continuar E1.P3 con caché de plantillas/arranque offline y pruebas multiusuario.
