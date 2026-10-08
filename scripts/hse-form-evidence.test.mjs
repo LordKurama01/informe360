@@ -40,3 +40,18 @@ test('invalid photo refs fail closed without passing local URIs to DB', async ()
   assert.equal(photoStoragePath('hse-evidence:../secret'), null);
   assert.equal(photoStoragePath('file:///local.jpg'), null);
 });
+
+test('photo refs cannot point into another tenant or another form run', async () => {
+  const prefix = 'org1/form-runs/run1/';
+  const allowed = 'hse-evidence:' + prefix + 'photo.jpg';
+  const own = await preparePhotoAnswers(schema, { photo: allowed }, async () => { throw Error('uploaded twice'); }, prefix);
+  assert.equal(own.photo, allowed);
+  await assert.rejects(
+    preparePhotoAnswers(schema, { photo: 'hse-evidence:org2/form-runs/run1/photo.jpg' }, async () => 'x', prefix),
+    /ajena/,
+  );
+  await assert.rejects(
+    preparePhotoAnswers(schema, { photo: 'file:///photo.jpg' }, async () => 'org2/form-runs/run1/photo.jpg', prefix),
+    /ruta/,
+  );
+});
