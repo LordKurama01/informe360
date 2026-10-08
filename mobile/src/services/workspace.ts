@@ -1,12 +1,12 @@
-import * as SecureStore from 'expo-secure-store';
+import { secureStorage } from '../lib/secure-storage';
 import { supabase } from '../lib/supabase';
 
 export type Workspace = { organizationId: string; organizationName: string; siteId: string | null; siteName: string | null; role: string };
 const KEY = 'hse_workspace';
 
-export async function saveWorkspace(workspace: Workspace) { await SecureStore.setItemAsync(KEY, JSON.stringify(workspace)); }
-export async function clearWorkspace() { await SecureStore.deleteItemAsync(KEY); }
-export async function loadStoredWorkspace(): Promise<Workspace | null> { const raw = await SecureStore.getItemAsync(KEY); if (!raw) return null; try { return JSON.parse(raw) as Workspace; } catch { return null; } }
+export async function saveWorkspace(workspace: Workspace) { await secureStorage.setItem(KEY, JSON.stringify(workspace)); }
+export async function clearWorkspace() { await secureStorage.removeItem(KEY); }
+export async function loadStoredWorkspace(): Promise<Workspace | null> { const raw = await secureStorage.getItem(KEY); if (!raw) return null; try { return JSON.parse(raw) as Workspace; } catch { return null; } }
 
 export async function resolveWorkspace(): Promise<Workspace | null> {
   const { data: userData } = await supabase.auth.getUser();
