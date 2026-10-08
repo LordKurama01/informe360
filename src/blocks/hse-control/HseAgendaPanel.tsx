@@ -13,7 +13,7 @@ export function HseAgendaPanel({workspace,findings,reminders,onRefresh}:{
   const [error,setError]=useState<string|null>(null);
   const [notice,setNotice]=useState<string|null>(null);
   const [filter,setFilter]=useState<'upcoming'|'all'>('upcoming');
-  const today = Date.now();
+  const [today] = useState(() => Date.now());
   const due = useMemo(() => findings
     .filter(x => x.due_at && x.status !== 'closed' && x.status !== 'cancelled')
     .sort((a,b)=>new Date(a.due_at!).getTime()-new Date(b.due_at!).getTime()),
