@@ -10,7 +10,7 @@
     "splash": {
       "image": "./assets/brand/splash-icon.png",
       "resizeMode": "contain",
-      "backgroundColor": "#0B1110"
+      "backgroundColor": "#07131F"
     },
     "ios": {
       "bundleIdentifier": "com.informe360.hsecopilot",
@@ -21,7 +21,7 @@
       "predictiveBackGestureEnabled": false,
       "adaptiveIcon": {
         "foregroundImage": "./assets/brand/adaptive-icon.png",
-        "backgroundColor": "#0B1110"
+        "backgroundColor": "#07131F"
       }
     },
     "plugins": [
