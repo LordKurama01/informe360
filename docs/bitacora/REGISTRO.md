@@ -199,3 +199,12 @@
 - **Seguridad:** no se escribieron registros de negocio ni se alteraron políticas RLS; se mantuvo `feat/hse-phases-1-5` sin cambios. PR #3 continúa borrador.
 - **QA pendiente:** revisión real de UI con sesión, navegación Inicio → Informes → informe, móvil web, logos y reportes de cero registros. No afirmar aceptación funcional E2E solo por Render.
 - **Próximo checkpoint:** EWEB.P1.5. Ver [desglose](EWEB_P1_INICIO_INFORMES_2026-10-08.md).
+
+
+## 2026-10-08 — EWEB.P1.5 — Loader corto y slider de navegación
+- El usuario observó un loader muy rápido y pidió mejorar la transición del slider/sidebar. **Auditoría previa:** `booting` mostraba toda la pantalla de autenticación como splash; cada tecla del filtro `query` activaba nuevamente Auth + workspace + KPI + listado.
+- **Código implementado:** `2f257fed` skeleton diferido 320 ms que no sustituye la web por un login fugaz; `8889e7a` CSS de skeleton, entrada suave y posición activa accesible, respeta reduced-motion; `e868322a` búsqueda desacoplada con 280 ms de debounce y preservación de filas; `32d98261` atenuación solo del listado; `f291add7` 3 tests nuevos, `c6b88cda` integración QA.
+- **Errores de QA y soluciones:** Render `dep-db3r272j9qps738o1mr0` falló test estructural de estado vacío; `76dcce7` corrigió orden lógico. Render `dep-db3r2n7avr4c73ashjmg` falló reglas de lint React 19; `837bd879` corrigió mutación de refs en render y estado sincrónico en efecto.
+- **QA definitiva:** `dep-db3r3f8473hc73f1m5vg` **LIVE** sobre commit `837bd8791006fa3c23f596939211253f034c5314`, completado 2026-10-08T15:09:13Z; 3 tests específicos, QA completa Next, TypeScript, ESLint, build y arranque pasaron.
+- **EWEB.P1.5:** mejora técnica VALIDADA EN QA; aceptación visual con sesión **PENDIENTE**. No se alteraron datos Supabase, credenciales, ni producción.
+- **Siguiente:** inspección real del usuario de Inicio/Informes tras recargar; ajustar cualquier parpadeo remanente antes de EWEB.P2.
