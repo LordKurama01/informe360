@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { createHseReport, getCurrentHseUser, getHseFindings, getHseSummary, getHseWorkspace, hseSignIn, hseSignOut, hseSignUp, listHseReports, type HseReportRow, type HseFinding, type HseSummary, type HseWorkspace } from '@/services/hse/browser';
@@ -18,9 +18,14 @@ export function HseControl({ mode = 'overview' }: { mode?: 'overview' | 'reports
   const [workspace, setWorkspace] = useState<HseWorkspace|null>(null);
   const [summary, setSummary] = useState<HseSummary>(emptySummary);
   const [findings, setFindings] = useState<HseFinding[]>([]);
+  const [baseFindings, setBaseFindings] = useState<HseFinding[]>([]);
+  const [searchPending, setSearchPending] = useState(false);
+  const [searchError, setSearchError] = useState<string | null>(null);
   const [reports, setReports] = useState<HseReportRow[]>([]);
   const [reportSearch, setReportSearch] = useState('');
   const [query, setQuery] = useState('');
+  const latestQueryRef = useRef('');
+  latestQueryRef.current = query;
   const [filter, setFilter] = useState<Filter>('open');
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [email, setEmail] = useState('');
@@ -43,15 +48,16 @@ export function HseControl({ mode = 'overview' }: { mode?: 'overview' | 'reports
       if (mode === 'reports') {
         setReports(await listHseReports(nextWorkspace));
       } else {
-        const [nextSummary, nextFindings] = await Promise.all([getHseSummary(nextWorkspace), getHseFindings(nextWorkspace, query)]);
+        const [nextSummary, nextFindings] = await Promise.all([getHseSummary(nextWorkspace), getHseFindings(nextWorkspace)]);
         setSummary(nextSummary);
-        setFindings(nextFindings);
+        setBaseFindings(nextFindings);
+        if (!latestQueryRef.current.trim()) setFindings(nextFindings);
         setNowMs(new Date().getTime());
       }
       setDataStatus('ready');
     }
     setBooting(false);
-  }, [query, mode]);
+  }, [mode]);
 
   const handleLoadError = useCallback((reason: unknown) => {
     setError(reason instanceof Error ? reason.message : 'No se pudo actualizar la información HSE.');
@@ -59,7 +65,32 @@ export function HseControl({ mode = 'overview' }: { mode?: 'overview' | 'reports
     setBooting(false);
   }, []);
 
-  useEffect(() => { const timer=setTimeout(() => void loadWorkspace().catch(handleLoadError), query ? 250 : 0); return () => clearTimeout(timer); }, [loadWorkspace, query, handleLoadError]);
+  useEffect(() => { const timer=setTimeout(() => void loadWorkspace().catch(handleLoadError), 0); return () => clearTimeout(timer); }, [loadWorkspace, handleLoadError]);
+
+  // Search only refreshes the findings list. It must not revalidate session,
+  // flash the entire dashboard, or make repeated summary/organization requests.
+  useEffect(() => {
+    if (mode !== 'overview' || !workspace || dataStatus !== 'ready') return;
+    const searchText = query.trim();
+    if (!searchText) {
+      setFindings(baseFindings);
+      setSearchPending(false);
+      setSearchError(null);
+      return;
+    }
+    let active = true;
+    const timer = window.setTimeout(() => {
+      setSearchPending(true);
+      setSearchError(null);
+      void getHseFindings(workspace, searchText)
+        .then(results => { if (active) setFindings(results); })
+        .catch(reason => {
+          if (active) setSearchError(reason instanceof Error ? reason.message : 'No se pudo buscar hallazgos.');
+        })
+        .finally(() => { if (active) setSearchPending(false); });
+    }, 280);
+    return () => { active = false; window.clearTimeout(timer); };
+  }, [query, workspace, baseFindings, mode, dataStatus]);
 
   // Fast route transitions must not flash a full-screen login-like loading page.
   // Only render a subtle dashboard-shaped skeleton when the first request is slow.
@@ -92,7 +123,7 @@ export function HseControl({ mode = 'overview' }: { mode?: 'overview' | 'reports
     return !search || [report.title, report.report_type, report.status].some(value => (value || '').toLocaleLowerCase('es-AR').includes(search));
   }), [reports, reportSearch]);
 
-  async function signOut(){await hseSignOut();setSignedIn(false);setWorkspace(null);setFindings([]);setSummary(emptySummary);}
+  async function signOut(){await hseSignOut();setSignedIn(false);setWorkspace(null);setFindings([]);setBaseFindings([]);setQuery('');setSearchError(null);setSummary(emptySummary);}
   function toggle(id:string){setSelected(current=>{const next=new Set(current);next.has(id)?next.delete(id):next.add(id);return next;});}
 
   async function createReport(){
@@ -216,11 +247,12 @@ export function HseControl({ mode = 'overview' }: { mode?: 'overview' | 'reports
 
         <section className={styles.contentGrid}>
           <div className={styles.listPanel}>
-            <div className={styles.sectionHead}><div><span className={styles.eyebrow}>HALLAZGOS</span><h2>Seguimiento operativo</h2></div><span className={styles.resultCount}>{visible.length} registros</span></div>
+            <div className={styles.sectionHead}><div><span className={styles.eyebrow}>HALLAZGOS</span><h2>Seguimiento operativo</h2></div><span className={styles.resultCount}>{searchPending ? 'Buscando…' : `${visible.length} registros`}</span></div>
             <div className={styles.toolbar}><input className={styles.search} value={query} onChange={e=>setQuery(e.target.value)} placeholder="Buscar código, sector, equipo o responsable…"/><div className={styles.filterRow}>{(['open','overdue','upcoming','critical','closed','all'] as Filter[]).map(item=><button key={item} className={`${styles.filter} ${filter===item?styles.filterActive:''}`} onClick={()=>setFilter(item)}>{({open:'Abiertos',overdue:'Vencidos',upcoming:'7 días',critical:'Críticos',closed:'Cerrados',all:'Todos'} as const)[item]}</button>)}</div></div>
             {error?<div className={styles.error} role="alert">{error}</div>:null}
+            {searchError?<div className={styles.error} role="alert">{searchError}</div>:null}
             {dataStatus === 'loading' ? <div className={styles.empty} role="status">Actualizando hallazgos…</div> : null}
-            <div className={styles.list}>{visible.map(finding=>{const overdue=!['closed','cancelled'].includes(finding.status)&&!!finding.due_at&&new Date(finding.due_at).getTime()<nowMs;const checked=selected.has(finding.id);return <article key={finding.id} className={`${styles.finding} ${checked?styles.findingSelected:''}`}><button aria-label={`Seleccionar ${finding.code}`} className={`${styles.check} ${checked?styles.checkOn:''}`} onClick={()=>toggle(finding.id)}>{checked?'✓':''}</button><div><div className={styles.code}>{finding.code} · {finding.priority.toUpperCase()}</div><h3>{finding.title}</h3><div className={styles.meta}>{finding.location_text||finding.element_text||finding.category||'Sin ubicación'} · {finding.responsible_text||'Sin responsable'}{finding.due_at?` · ${new Date(finding.due_at).toLocaleDateString('es-AR')}`:''}</div></div><span className={`${styles.status} ${overdue?styles.overdue:''}`}>{overdue?'VENCIDO':finding.status==='closed'?'CERRADO':finding.status==='in_progress'?'EN CURSO':'ABIERTO'}</span></article>})}{dataStatus === 'ready' && !visible.length?<div className={styles.empty}>No hay hallazgos para esta vista.</div>:null}</div>
+            <div className={`${styles.list} ${searchPending ? styles.listSearching : ''}`} aria-busy={searchPending}>{visible.map(finding=>{const overdue=!['closed','cancelled'].includes(finding.status)&&!!finding.due_at&&new Date(finding.due_at).getTime()<nowMs;const checked=selected.has(finding.id);return <article key={finding.id} className={`${styles.finding} ${checked?styles.findingSelected:''}`}><button aria-label={`Seleccionar ${finding.code}`} className={`${styles.check} ${checked?styles.checkOn:''}`} onClick={()=>toggle(finding.id)}>{checked?'✓':''}</button><div><div className={styles.code}>{finding.code} · {finding.priority.toUpperCase()}</div><h3>{finding.title}</h3><div className={styles.meta}>{finding.location_text||finding.element_text||finding.category||'Sin ubicación'} · {finding.responsible_text||'Sin responsable'}{finding.due_at?` · ${new Date(finding.due_at).toLocaleDateString('es-AR')}`:''}</div></div><span className={`${styles.status} ${overdue?styles.overdue:''}`}>{overdue?'VENCIDO':finding.status==='closed'?'CERRADO':finding.status==='in_progress'?'EN CURSO':'ABIERTO'}</span></article>})}{dataStatus === 'ready' && !searchPending && !searchError && !visible.length?<div className={styles.empty}>No hay hallazgos para esta vista.</div>:null}</div>
           </div>
 
           <aside className={styles.side}>
