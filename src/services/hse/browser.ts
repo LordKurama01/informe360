@@ -138,9 +138,13 @@ export async function createHseReminder(
   return data as HseReminder;
 }
 
-export async function updateHseReminderStatus(reminderId: string, status: 'pending'|'cancelled'|'completed'): Promise<void> {
-  const { error } = await getBrowserSupabase().from('reminders').update({ status }).eq('id', reminderId);
+export async function updateHseReminderStatus(workspace: HseWorkspace, reminderId: string, status: 'pending'|'cancelled'|'completed'): Promise<void> {
+  let query = getBrowserSupabase().from('reminders').update({ status })
+    .eq('id', reminderId).eq('organization_id', workspace.organizationId).eq('status', 'pending');
+  if (workspace.siteId) query = query.or(`site_id.eq.${workspace.siteId},site_id.is.null`);
+  const { data, error } = await query.select('id');
   if (error) throw error;
+  if (!data?.length) throw new Error('El recordatorio no está pendiente o no pertenece al espacio activo.');
 }
 
 export async function seedHseDemo(): Promise<void> {
