@@ -3,16 +3,19 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { createHseReport, getCurrentHseUser, getHseFindings, getHseSummary, getHseWorkspace, hseSignIn, hseSignOut, hseSignUp, listHseReports, type HseReportRow, type HseFinding, type HseSummary, type HseWorkspace } from '@/services/hse/browser';
 import styles from './HseControl.module.css';
 import { formatClosureCompliance, formatHseCount, hseDataStatusLabel, type HseDataStatus } from '@/shared/hse/dashboard-metrics';
-import { installStandardInspectionTemplates, listFormRuns, listFormTemplates, type HseFormRunRow, type HseFormTemplate } from '@/services/hse/forms-browser';
+import { installStandardInspectionTemplates, listFormRuns, listFormTemplates, startHseInspection, type HseFormRunRow, type HseFormTemplate } from '@/services/hse/forms-browser';
 import { filterInspectionRuns, inspectionStatusLabel, selectHseInspections, type InspectionRunFilter } from '@/shared/hse/inspection-view';
+import { HseInspectionRunPanel } from './HseInspectionRunPanel';
 
 type Filter = 'open'|'overdue'|'upcoming'|'critical'|'closed'|'all';
 const emptySummary: HseSummary = { open:0, overdue:0, dueNext7Days:0, closed:0, closedOnTime:0, closureCompliancePct:0, criticalOpen:0 };
 
-export function HseControl({ mode = 'overview' }: { mode?: 'overview' | 'reports' | 'inspections' }) {
+export function HseControl({ mode = 'overview', inspectionRunId }: { mode?: 'overview' | 'reports' | 'inspections' | 'inspection-run'; inspectionRunId?: string }) {
+  const router = useRouter();
   const [booting, setBooting] = useState(true);
   const [showSlowBoot, setShowSlowBoot] = useState(false);
   const [dataStatus, setDataStatus] = useState<HseDataStatus>('loading');
@@ -60,7 +63,7 @@ export function HseControl({ mode = 'overview' }: { mode?: 'overview' | 'reports
         ]);
         setInspectionTemplates(templates);
         setInspectionRuns(runs);
-      } else {
+      } else if (mode !== 'inspection-run') {
         const [nextSummary, nextFindings] = await Promise.all([getHseSummary(nextWorkspace), getHseFindings(nextWorkspace)]);
         setSummary(nextSummary);
         setBaseFindings(nextFindings);
@@ -158,6 +161,20 @@ export function HseControl({ mode = 'overview' }: { mode?: 'overview' | 'reports
   async function signOut(){await hseSignOut();setSignedIn(false);setWorkspace(null);setFindings([]);setBaseFindings([]);latestQueryRef.current='';setQuery('');setSearchError(null);setSummary(emptySummary);}
   function toggle(id:string){setSelected(current=>{const next=new Set(current);next.has(id)?next.delete(id):next.add(id);return next;});}
 
+  async function beginInspection(template: HseFormTemplate) {
+    if (!workspace || busy) return;
+    setBusy(true);
+    setError(null);
+    try {
+      const id = await startHseInspection(workspace, template);
+      router.push('/app/hse/inspections/' + id);
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : 'No se pudo iniciar la inspección.');
+    } finally {
+      setBusy(false);
+    }
+  }
+
   async function installStandards() {
     if (!workspace || busy || mode !== 'inspections') return;
     setBusy(true);
@@ -233,7 +250,7 @@ export function HseControl({ mode = 'overview' }: { mode?: 'overview' | 'reports
       <nav className={styles.navList}>
         <Link className={`${styles.navItem} ${mode === 'overview' ? styles.navItemActive : ''}`} href="/app/hse"><span>01</span>Inicio</Link>
         {mode === 'overview' ? <button className={styles.navItem} onClick={()=>setFilter('open')}><span>02</span>Hallazgos</button> : <Link className={styles.navItem} href="/app/hse"><span>02</span>Hallazgos</Link>}
-        <Link className={`${styles.navItem} ${mode === 'inspections' ? styles.navItemActive : ''}`} aria-current={mode === 'inspections' ? 'page' : undefined} href="/app/hse/inspections"><span>03</span>Inspecciones</Link>
+        <Link className={`${styles.navItem} ${mode === 'inspections' || mode === 'inspection-run' ? styles.navItemActive : ''}`} aria-current={mode === 'inspections' || mode === 'inspection-run' ? 'page' : undefined} href="/app/hse/inspections"><span>03</span>Inspecciones</Link>
         <Link className={styles.navItem} href="/app/hse/forms"><span>04</span>Formularios</Link>
         <Link className={styles.navItem} href="/app/calendar"><span>05</span>Agenda</Link>
         <Link className={`${styles.navItem} ${mode === 'reports' ? styles.navItemActive : ''}`} href="/app/hse/reports" aria-current={mode === 'reports' ? 'page' : undefined}><span>06</span>Informes</Link>
@@ -249,7 +266,7 @@ export function HseControl({ mode = 'overview' }: { mode?: 'overview' | 'reports
       </header>
 
       <div className={styles.workspace}>
-        {mode === 'inspections' ? <>
+        {mode === 'inspection-run' && inspectionRunId ? <HseInspectionRunPanel workspace={workspace} runId={inspectionRunId}/> : mode === 'inspections' ? <>
           <section className={styles.hero}>
             <div>
               <span className={styles.eyebrowLight}>INSPECCIONES HSE</span>
@@ -286,7 +303,11 @@ export function HseControl({ mode = 'overview' }: { mode?: 'overview' | 'reports
                 <span className={styles.code}>INSPECCIÓN · v{template.publishedVersion?.version ?? '—'}</span>
                 <h3>{template.name}</h3>
                 <p>{template.description || 'Sin descripción registrada.'}</p>
-                <span className={styles.inspectionState}>{template.status === 'active' ? 'ACTIVA' : template.status === 'draft' ? 'BORRADOR' : 'ARCHIVADA'}</span>
+                <div className={styles.inspectionCardFooter}>
+                  <span className={styles.inspectionState}>{template.status === 'active' ? 'ACTIVA' : template.status === 'draft' ? 'BORRADOR' : 'ARCHIVADA'}</span>
+                  <button className={styles.secondary} disabled={busy || dataStatus !== 'ready' || template.status !== 'active' || !template.publishedVersion}
+                    onClick={() => void beginInspection(template)}>Iniciar inspección →</button>
+                </div>
               </article>)}
               {!visibleInspectionTemplates.length ? <div className={styles.empty}>{inspectionSearch ? 'No encontramos plantillas con ese nombre.' : 'No hay plantillas de inspección para esta organización. Podés administrarlas desde Formularios.'}</div> : null}
             </div> : null}
@@ -304,13 +325,13 @@ export function HseControl({ mode = 'overview' }: { mode?: 'overview' | 'reports
               )}
             </div>
             {dataStatus === 'ready' ? <div className={styles.list}>
-              {visibleInspectionRuns.map(run => <article key={run.id} className={styles.reportRow}>
+              {visibleInspectionRuns.map(run => <Link key={run.id} className={styles.reportRow} href={`/app/hse/inspections/${run.id}`}>
                 <div className={styles.reportRowContent}>
                   <span className={styles.code}>{new Date(run.started_at).toLocaleString('es-AR')}</span>
                   <h3>{inspectionData.names.get(run.template_id) || 'Inspección'}</h3>
                 </div>
-                <span className={styles.inspectionState}>{inspectionStatusLabel(run.status)}</span>
-              </article>)}
+                <span className={styles.inspectionState}>{inspectionStatusLabel(run.status)} ↗</span>
+              </Link>)}
               {!visibleInspectionRuns.length ? <div className={styles.empty}>{inspectionSearch || inspectionFilter !== 'all' ? 'No hay ejecuciones que coincidan con estos filtros.' : 'Todavía no se registraron ejecuciones de inspección para este sitio.'}</div> : null}
             </div> : null}
           </section>
