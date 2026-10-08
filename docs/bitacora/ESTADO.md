@@ -135,3 +135,11 @@ La E1 se ejecuta aisladamente en `feat/hse-e1-offline-resilience-2026-10-08` con
 - **Recordatorios WhatsApp:** el dispatcher existe y Vault contiene la referencia `hse_jobs_secret`, pero `cron.job` está vacío. Una prueba controlada sin recordatorios pendientes terminó en timeout del cliente y Render registró 503; no reactivar scheduler hasta corregir configuración runtime del servicio.
 - **Dependencias móviles:** continúan 28 advisories npm (10 moderate, 18 high); no se ejecutó actualización forzada.
 - **Release gate:** NO promover a producción mientras falten configuración server-side, hardening RLS aplicado/verificado, triage de dependencias y QA nativa física Android/iOS.
+
+
+## 14. Corrección posterior — RLS aplicado y readiness explícita
+
+- **RLS Supabase aplicado:** las siete políticas objetivo de formularios fueron endurecidas mediante migraciones pequeñas y no destructivas. Supabase registra las migraciones `fix_form_answers_insert_tenant_guard`, `fix_form_versions_insert_tenant_guard_v2`, `fix_form_versions_update_tenant_guard_v2`, `fix_form_answers_update_tenant_guard_v2`, `fix_form_run_findings_insert_tenant_guard_v2`, `fix_form_runs_insert_tenant_guard_v2` y `fix_form_runs_update_tenant_guard_v2`. Se verificó directamente que las políticas críticas ya comparan contra la organización de la fila externa, no contra sí mismas.
+- **Health mejorado en E1 QA:** el endpoint ahora conserva `ok=true` como liveness pero expone `ready` y capacidades separadas para datos server-side, IA mejorada y WhatsApp, evitando interpretar un HTTP 200 como configuración completa.
+- **QA final de esta pasada:** Render `informe360-hse-e1-qa`, deploy `dep-db3hr9ei0phs73a8h3tg`, SHA `646e70a28e4c1a459ec1ce66d372a8d6f09fc545`: BUILD y DEPLOY **SUCCEEDED**.
+- **Bloqueos restantes para producción:** configuración server-side del servicio Render continúa incompleta en el runtime actualmente publicado; WhatsApp y proveedor AI real no están configurados; no hay cron activo; quedan advisories npm y QA nativa física.
