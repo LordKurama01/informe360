@@ -205,3 +205,10 @@ La E1 se ejecuta aisladamente en `feat/hse-e1-offline-resilience-2026-10-08` con
 - Se preservó acción explícita para instalar plantillas estándar desde Supabase; nunca se siembra automáticamente. Estados carga/error/vacío, tarjetas y responsive HSE.
 - Tests nuevos en `scripts/hse-inspections.test.mjs` incorporados a `npm run qa`; Render QA deployment `dep-db3s40jncjis73bjlevg` iniciado sobre commit `9837a84faa3e273e83a73962dd6d0185c5bc54b2`.
 - Gate no cerrado hasta comprobar estado LIVE y QA final. Resto P2.3/P2.4 y prueba visual pendiente. [Detalle](EWEB_P2_INSPECCIONES_2026-10-08.md). Producción y PR #3 draft intactos.
+
+
+## 2026-10-08 — EWEB.P2.3 — Filtros de inspecciones [VALIDACIÓN QA EN CURSO]
+- Inspecciones funciona dentro de `HseControl`, no otra app. Plantillas y ejecuciones reales de Supabase por organización/sitio.
+- Busca por nombre de plantilla, filtra ejecuciones Todas/Pendientes/Presentadas sin llamar otra vez a Auth o la base; mensajes vacíos adecuados. `scripts/hse-inspections.test.mjs` cubre esta funcionalidad.
+- Primer deploy `dep-db3s40jncjis73bjlevg` **LIVE**; segundo deploy `dep-db3s5qij9qps738rkao0` todavía pendiente de estado final al redactar. No confundir Next build con confirmación de disponibilidad Live.
+- Restan P2.4/P2.5 (rutas operativas, roles/RLS y prueba de diseño con sesión). Etapa móvil separada sigue pendiente; PR #3 no fusionada y producción no modificada.
