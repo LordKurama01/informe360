@@ -1,60 +1,142 @@
-import { useState } from 'react';
-import { Alert, StyleSheet, Text, TextInput, View } from 'react-native';
+import { useEffect, useState } from 'react';
+import { ActivityIndicator, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { router } from 'expo-router';
-import { Screen } from '../src/components/Screen';
-import { PrimaryButton } from '../src/components/PrimaryButton';
-import { createWorkspace } from '../src/services/workspace';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { createWorkspace, resolveWorkspace } from '../src/services/workspace';
 import { useWorkspace } from '../src/providers/workspace-provider';
 import { theme } from '../src/theme';
 
+function readableError(error: unknown): string {
+  return error instanceof Error ? error.message : 'No se pudo completar la operación. Volvé a intentar.';
+}
+
 export default function Onboarding() {
-  const { refresh } = useWorkspace();
+  const { workspace, refresh, loading } = useWorkspace();
   const [company, setCompany] = useState('');
   const [site, setSite] = useState('');
   const [busy, setBusy] = useState(false);
+  const [checking, setChecking] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  async function create() {
-    if (!company.trim() || !site.trim()) return Alert.alert('Faltan datos', 'Ingresá empresa y sitio.');
+  // An organization can be provisioned after the user first reached this route.
+  // Always re-check membership instead of forcing an additional organization signup.
+  useEffect(() => {
+    let active = true;
+    setChecking(true);
+    void refresh().catch(reason => {
+      if (active) setError(readableError(reason));
+    }).finally(() => {
+      if (active) setChecking(false);
+    });
+    return () => { active = false; };
+  }, [refresh]);
+
+  useEffect(() => {
+    if (workspace) router.replace('/(tabs)');
+  }, [workspace]);
+
+  async function enterExisting() {
+    if (busy) return;
     setBusy(true);
+    setError(null);
     try {
-      await createWorkspace(company, site);
+      const existing = await resolveWorkspace();
+      if (!existing) {
+        setError('Todavía no encontramos un espacio asociado a tu cuenta. Podés reintentar o crear uno abajo.');
+        return;
+      }
       await refresh();
       router.replace('/(tabs)');
-    } catch (error) {
-      Alert.alert('No se pudo crear', error instanceof Error ? error.message : 'Error');
+    } catch (reason) {
+      setError(readableError(reason));
     } finally {
       setBusy(false);
     }
   }
 
-  return <Screen style={styles.root}>
-    <View style={styles.step}><Text style={styles.stepNumber}>1</Text><Text style={styles.stepText}>PREPARAR ESPACIO DE CAMPO</Text></View>
-    <Text style={styles.title}>Decinos dónde vas a trabajar</Text>
-    <Text style={styles.copy}>Con una empresa y un sitio alcanza para empezar. Después podés registrar hallazgos e inspecciones reales.</Text>
+  async function create() {
+    if (busy) return;
+    setError(null);
+    if (!company.trim() || !site.trim()) {
+      setError('Completá el nombre de empresa y el sitio para continuar.');
+      return;
+    }
+    setBusy(true);
+    try {
+      // Prevent duplicate organizations when a workspace has already been assigned.
+      const existing = await resolveWorkspace();
+      if (!existing) await createWorkspace(company, site);
+      await refresh();
+      router.replace('/(tabs)');
+    } catch (reason) {
+      setError(readableError(reason));
+    } finally {
+      setBusy(false);
+    }
+  }
 
-    <View style={styles.form}>
-      <View style={styles.field}><Text style={styles.label}>Empresa / contratista</Text><TextInput placeholder="Ej.: Contratista Norte" placeholderTextColor={theme.colors.muted} value={company} onChangeText={setCompany} style={styles.input}/></View>
-      <View style={styles.field}><Text style={styles.label}>Sitio / equipo / obra</Text><TextInput placeholder="Ej.: Equipo 12 · Planta Sur" placeholderTextColor={theme.colors.muted} value={site} onChangeText={setSite} style={styles.input}/></View>
-      <PrimaryButton title="Crear espacio HSE" busy={busy} onPress={() => void create()}/>
-    </View>
+  if (checking || loading || workspace) {
+    return <SafeAreaView edges={['top', 'left', 'right']} style={styles.loadingRoot}>
+      <View style={styles.loadingMark}><Text style={styles.loadingMarkText}>HSE</Text></View>
+      <ActivityIndicator color="#6FD6C4" size="large"/>
+      <Text style={styles.loadingTitle}>Abriendo tu espacio de trabajo</Text>
+      <Text style={styles.loadingHint}>Estamos recuperando la empresa y el sitio asociados a tu cuenta.</Text>
+    </SafeAreaView>;
+  }
 
-    <View style={styles.note}><View style={styles.noteIcon}><Text style={styles.noteIconText}>✓</Text></View><Text style={styles.noteText}>Podés cambiar de contexto más adelante. Esto sólo crea el primer espacio operativo.</Text></View>
-  </Screen>;
+  return <SafeAreaView edges={['top', 'left', 'right']} style={styles.safe}>
+    <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={styles.flex}>
+      <ScrollView keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false} contentContainerStyle={styles.scroll}>
+        <View style={styles.heading}>
+          <Text style={styles.kicker}>INFORME360  /  ACCESO</Text>
+          <Text style={styles.title}>Entrá a tu espacio HSE.</Text>
+          <Text style={styles.intro}>Si ya te asignamos una empresa, podés continuar sin configurar nada.</Text>
+        </View>
+        <Pressable accessibilityRole="button" disabled={busy} onPress={() => void enterExisting()} style={({ pressed }) => [styles.enter, (pressed || busy) && styles.dim]}>
+          <Text style={styles.enterText}>{busy ? 'Comprobando acceso…' : 'Entrar al panel  ›'}</Text>
+        </Pressable>
+        {error ? <View accessibilityLiveRegion="polite" style={styles.feedback}><Text style={styles.feedbackText}>{error}</Text></View> : null}
+        <View style={styles.divider}/>
+        <Text style={styles.secondaryTitle}>¿Es tu primera empresa?</Text>
+        <Text style={styles.secondaryCopy}>La siguiente opción es solo para cuentas nuevas que todavía no tengan un espacio asignado.</Text>
+        <View style={styles.form}>
+          <Text style={styles.label}>Empresa o contratista</Text>
+          <TextInput accessibilityLabel="Empresa o contratista" editable={!busy} placeholder="Nombre de empresa" placeholderTextColor="#819299" value={company} onChangeText={setCompany} style={styles.input}/>
+          <Text style={styles.label}>Sitio, equipo u obra</Text>
+          <TextInput accessibilityLabel="Sitio, equipo u obra" editable={!busy} placeholder="Nombre del sitio" placeholderTextColor="#819299" value={site} onChangeText={setSite} style={styles.input}/>
+          <Pressable accessibilityRole="button" disabled={busy} onPress={() => void create()} style={({ pressed }) => [styles.createButton, (pressed || busy) && styles.dim]}>
+            <Text style={styles.createText}>Crear un espacio nuevo</Text>
+          </Pressable>
+        </View>
+      </ScrollView>
+    </KeyboardAvoidingView>
+  </SafeAreaView>;
 }
 
 const styles = StyleSheet.create({
-  root: { justifyContent: 'center', paddingBottom: theme.spacing.xxl },
-  step: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  stepNumber: { width: 28, height: 28, lineHeight: 28, textAlign: 'center', borderRadius: 9, overflow: 'hidden', backgroundColor: theme.colors.primarySoft, color: theme.colors.primary, fontWeight: '900', fontSize: 12 },
-  stepText: { color: theme.colors.primary, fontWeight: '900', fontSize: 10, letterSpacing: 1.2 },
-  title: { fontSize: 30, lineHeight: 35, fontWeight: '900', color: theme.colors.ink, letterSpacing: -0.5 },
-  copy: { color: theme.colors.muted, fontSize: 14, lineHeight: 20, marginBottom: theme.spacing.sm },
-  form: { backgroundColor: theme.colors.surface, borderWidth: 1, borderColor: theme.colors.line, borderRadius: theme.radius.xl, padding: theme.spacing.lg, gap: theme.spacing.md, ...theme.shadow.card },
-  field: { gap: 6 },
-  label: { color: theme.colors.inkSoft, fontWeight: '900', fontSize: 11 },
-  input: { backgroundColor: theme.colors.bg, borderWidth: 1, borderColor: theme.colors.line, borderRadius: theme.radius.md, minHeight: 54, paddingHorizontal: theme.spacing.lg, color: theme.colors.ink, fontSize: 15 },
-  note: { flexDirection: 'row', alignItems: 'flex-start', gap: 9, backgroundColor: theme.colors.surfaceMuted, borderRadius: theme.radius.md, padding: theme.spacing.md, marginTop: theme.spacing.sm },
-  noteIcon: { width: 26, height: 26, borderRadius: 9, backgroundColor: theme.colors.successSoft, alignItems: 'center', justifyContent: 'center' },
-  noteIconText: { color: theme.colors.success, fontWeight: '900' },
-  noteText: { flex: 1, color: theme.colors.muted, fontSize: 11, lineHeight: 16 },
+  flex: { flex: 1 },
+  safe: { flex: 1, backgroundColor: '#F2F5F5' },
+  loadingRoot: { flex: 1, justifyContent: 'center', alignItems: 'center', paddingHorizontal: 28, gap: 20, backgroundColor: '#10282D' },
+  loadingMark: { width: 66, height: 66, alignItems: 'center', justifyContent: 'center', borderRadius: 20, backgroundColor: '#0B6F67' },
+  loadingMarkText: { color: '#FFFFFF', fontSize: 20, fontWeight: '900', letterSpacing: 0.8 },
+  loadingTitle: { color: '#FFFFFF', fontSize: 19, fontWeight: '900', textAlign: 'center' },
+  loadingHint: { color: '#AAC5C5', fontSize: 13, lineHeight: 20, textAlign: 'center' },
+  scroll: { flexGrow: 1, paddingTop: 34, paddingBottom: 65, paddingHorizontal: 23, gap: 17, maxWidth: 560, width: '100%', alignSelf: 'center' },
+  heading: { gap: 13, paddingTop: 16, paddingBottom: 7 },
+  kicker: { color: '#0B6F67', letterSpacing: 1.7, fontSize: 11, fontWeight: '900' },
+  title: { color: '#10232D', fontSize: 31, fontWeight: '900', lineHeight: 37, letterSpacing: -0.5 },
+  intro: { color: '#62737D', fontSize: 15, lineHeight: 22 },
+  enter: { minHeight: 58, backgroundColor: '#0B6F67', borderRadius: 14, alignItems: 'center', justifyContent: 'center', marginTop: 2 },
+  enterText: { color: '#FFFFFF', fontSize: 16, fontWeight: '900' },
+  dim: { opacity: 0.64 },
+  feedback: { borderRadius: 12, backgroundColor: '#FFF0ED', borderWidth: 1, borderColor: '#F4D7D1', padding: 13 },
+  feedbackText: { color: '#9D271C', fontSize: 13, lineHeight: 20, fontWeight: '700' },
+  divider: { height: 1, backgroundColor: '#D7E0E2', marginTop: 13, marginBottom: 4 },
+  secondaryTitle: { fontSize: 18, fontWeight: '900', color: theme.colors.ink },
+  secondaryCopy: { fontSize: 13, lineHeight: 20, color: theme.colors.muted },
+  form: { backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#E0E8EA', borderRadius: 20, padding: 18, gap: 11 },
+  label: { color: '#344550', fontSize: 13, fontWeight: '800', marginTop: 3 },
+  input: { height: 52, borderRadius: 12, borderWidth: 1, borderColor: '#DCE5E8', backgroundColor: '#F6F8F8', paddingHorizontal: 14, color: '#0B1720', fontSize: 15 },
+  createButton: { minHeight: 52, borderRadius: 13, borderWidth: 1, borderColor: '#CBDCDA', backgroundColor: '#E4F4F0', alignItems: 'center', justifyContent: 'center', marginTop: 5 },
+  createText: { color: '#07554F', fontSize: 14, fontWeight: '900' },
 });
