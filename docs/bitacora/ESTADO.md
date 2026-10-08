@@ -143,3 +143,12 @@ La E1 se ejecuta aisladamente en `feat/hse-e1-offline-resilience-2026-10-08` con
 - **Health mejorado en E1 QA:** el endpoint ahora conserva `ok=true` como liveness pero expone `ready` y capacidades separadas para datos server-side, IA mejorada y WhatsApp, evitando interpretar un HTTP 200 como configuración completa.
 - **QA final de esta pasada:** Render `informe360-hse-e1-qa`, deploy `dep-db3hr9ei0phs73a8h3tg`, SHA `646e70a28e4c1a459ec1ce66d372a8d6f09fc545`: BUILD y DEPLOY **SUCCEEDED**.
 - **Bloqueos restantes para producción:** configuración server-side del servicio Render continúa incompleta en el runtime actualmente publicado; WhatsApp y proveedor AI real no están configurados; no hay cron activo; quedan advisories npm y QA nativa física.
+
+
+## 2026-10-08 — QA WEB-01: autenticación y workspace en navegador
+- Se corrigió el error `getValueWithKeyAsync is not a function`: Expo SecureStore sólo se usa en Android/iOS; navegador usa adaptador `localStorage` aislado por origen para sesión y selección del espacio.
+- Commit funcional `38ee8d271477d96edac74420dea53e36977f30bc` publicado en Render QA deploy `dep-db3piqss728c73foqbfg` **LIVE**; 3/3 tests browser storage pasan, TypeScript/Expo web export OK.
+- Código `mobile/src/lib/{secure-storage,web-storage}.ts`, `mobile/src/services/workspace.ts`; test `scripts/hse-web-storage.test.mjs`.
+- Sin deploy a producción ni intervención de DB. El workspace de evaluación creado previamente existe, con usuario owner y sitio; no volver a crearlo.
+- **Siguiente punto exacto:** comprobar entrada al panel en la nueva versión desde sesión real. Si hay otro error, capturarlo antes de continuar. Después E1.P3 inicio de inspección offline y E1.P4 QA física Android/iOS.
+- Ver [registro cronológico](REGISTRO.md); no afirmar test E2E autenticado hasta realizarlo.
