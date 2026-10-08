@@ -106,3 +106,14 @@
 - **Ramas:** `feat/hse-phases-1-5` HEAD `422f8b...` sin cambios; PR #3 draft sin merge.
 - **Pendientes release E1:** prueba real de subida y vista firmada, iniciar inspecciones sin red, seguridad de RLS/estado, auditoría de dependencias, APK/IPA y QA físico. La prueba Render **no cierra E1.P4 nativa**.
 - **Siguiente:** E1.P3 plantillas cacheadas y creación de ejecuciones offline; volver a Render tras cambios; no desplegar a producción.
+
+
+## 2026-10-07 — E1.UX.P1 — Corrección visual del acceso (captura del usuario)
+- **Diagnóstico:** login anterior con gran espacio vacío, ícono de texto “360”, tipografía/inputs sobredimensionados, botón piloto de igual peso y leyenda inferior dispersa. La captura se mantuvo en el chat; no se publicó en GitHub.
+- **Implementación:** `mobile/app/login.tsx` `3c0fb39` rediseño con header industrial oscuro, tarjeta compacta, acceso principal, piloto secundario, validación inline, teclado, visibilidad de contraseña. Las funciones Supabase Auth no cambiaron.
+- **Pruebas:** `01770ed` nuevo test contractual de login, `a755607` agregado a pipeline.
+- **Bug observado en Render:** `dep-db3gan7avr4c739m52f0` **BUILD_FAILED**: PNG de ícono histórico inválido en Metro. Se quitó la dependencia y se dibujó casco de seguridad con componentes RN nativos (`1f5e3d5`), test actualizado (`ede4b81`).
+- **QA validada:** `dep-db3gbu3tqb8s73dsunf0` **LIVE** sobre `ede4b812da2713282fe85c773b6fde7553d38776`, completado 2026-10-08T02:56:22Z. QA web, test de login, TypeScript RN y export Expo Web pasan.
+- **Protección:** Render `informe360-hse` producción no alterado; PR #3 sigue borrador y sin merge.
+- **Gate pendiente:** comprobar visual en teléfono, onboarding coherente, reparación de íconos APK/iOS, compilación nativa y flujos Auth con credenciales de prueba.
+- **Punto de reanudación:** https://github.com/LordKurama01/informe360/blob/feat/hse-e1-offline-resilience-2026-10-08/docs/bitacora/E1_UX_LOGIN_2026-10-07.md ; después avanzar E1.P3 offline.
