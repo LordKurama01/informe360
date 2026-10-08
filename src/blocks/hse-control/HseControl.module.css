@@ -74,3 +74,7 @@
 .navItem:focus-visible{outline:2px solid #f4a259;outline-offset:2px}
 @media(max-width:760px){.bootFrame{display:block}.bootAside{display:none}.bootMain{padding:22px 14px}.bootHero{height:150px}.bootCards{grid-template-columns:repeat(2,minmax(0,1fr))}.bootCards div:last-child{display:none}}
 @media(prefers-reduced-motion:reduce){.bootAside,.bootMain,.workspace{animation:none}.navItem{transition:none}.navItem:hover{transform:none}}
+
+/* Keep prior results visible while a narrow server-side search completes. */
+.listSearching{opacity:.6;transition:opacity .18s ease}
+@media(prefers-reduced-motion:reduce){.listSearching{transition:none}}
