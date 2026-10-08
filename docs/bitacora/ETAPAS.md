@@ -108,9 +108,11 @@ RAG documental con citas, EPP/visión computacional, capacitación masiva, marke
 - **EWEB.P1.2 — Eliminar accesos de demostración [VALIDADA EN QA]:** sacar el botón «Demo», el llamado a `seed_hse_demo` desde la UI y los accesos que crean datos ficticios en el HSE real. Contrato `test:hse:reports`.
 - **EWEB.P1.3 — Informes dentro del mismo producto [VALIDADA EN QA]:** navegación y visual HSE común, consulta real de `reports` por organización/sitio, ruta `/app/hse/reports`, redirección legada solo en web QA. Render `dep-db3qf0ad0e5s73b6jh4g` LIVE.
 - **EWEB.P1.4 — Calidad de indicadores y estados [VALIDADA EN QA RENDER]:** evitar métricas engañosas sin muestra; distinguir datos actualizados de una conexión no verificada; mejorar mensajes de error y estados vacíos sin inventar registros; añadir pruebas automáticas.
-- **EWEB.P1.5 — Gate de cierre [PENDIENTE]:** verificar test y compilación Next en Render QA, rutas y logos web, contenido sin registros falsos; comprobar visual en resolución de escritorio y móvil con sesión real. Cerrar únicamente con prueba del usuario o navegación autenticada. **Sin merge a producción.**
+- **EWEB.P1.5 — Gate de cierre [MEJORA DE LOADER/SLIDER VALIDADA EN QA; ACEPTACIÓN VISUAL PENDIENTE]:** verificar test y compilación Next en Render QA, rutas y logos web, contenido sin registros falsos; comprobar visual en resolución de escritorio y móvil con sesión real. Cerrar únicamente con prueba del usuario o navegación autenticada. **Sin merge a producción.**
 
 **Regla:** ejecutar una parte a la vez y registrar commit, deploy, pruebas, errores y siguiente parte en `REGISTRO.md` y `ESTADO.md` antes de continuar a EWEB.P2.
 
 
 **Checkpoint EWEB.P1.4:** Render QA deploy `dep-db3qsml9fdbs73eslmf0` **LIVE**, SHA `6377f727ea144c2cc4865aae313f88e66132e83a`. `npm run qa` (incluye cuatro pruebas de dashboard), TypeScript, ESLint y Next.js build aprobados. EWEB.P1.5 sigue pendiente de validación visual y recorrido autenticado.
+
+**Checkpoint UX EWEB.P1.5:** la pantalla de carga rápida se suprimió (<320 ms) y el buscador dejó de recargar sesión/KPI en cada letra. Indicador de navegación lateral y transiciones mejorados. Render `dep-db3r3f8473hc73f1m5vg` **LIVE**, SHA `837bd8791006fa3c23f596939211253f034c5314`, 3 tests nuevos y Next QA completos. Ver [bitácora UX](EWEB_P1_5_LOADING_SLIDER_2026-10-08.md). No cerrar etapa antes de prueba visual autenticada ni fusionar a producción.
