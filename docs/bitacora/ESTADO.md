@@ -91,3 +91,9 @@ La E1 se ejecuta aisladamente en `feat/hse-e1-offline-resilience-2026-10-08` con
 - **Seguridad release gate:** revisar integridad referencial y permisos de modificación RLS para `form_answers`, sin cambiar producción antes de una migración auditada y QA negativa multi-organización. Bucket `hse-evidence` confirmado privado.
 - **Próximo:** terminar E1.P3 (inicio offline desde plantillas persistidas y pruebas de sincronización), y E1.P4 en dispositivos Android/iOS y revisión de dependencias.
 
+
+## 10. Confirmación QA UX y fotos
+
+- Último deploy funcional certificado en Render QA: `dep-db3g6l7avr4c739lltog`, estado **LIVE**, SHA `941247fa11bc249ec90f0247473db414a2dbb500`. Cubre media privada y wizard por pasos; tests y compilación RN/Web correctos.
+- Fuente: [QA_RENDER_2026-10-07.md](QA_RENDER_2026-10-07.md). Es una prueba técnica, **no una APK/iOS ni un test funcional con credenciales**.
+- **Foco de continuidad E1.P3:** creación y reanudación de inspecciones 100% offline con plantillas cacheadas, aislamiento por cuenta y sincronización; RLS form_answers antes del release. E1.P4 dispositivos pendientes.
