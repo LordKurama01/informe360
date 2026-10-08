@@ -19,10 +19,11 @@
     "test:mobile:ui": "node scripts/check-mobile-premium-ui.mjs",
     "hse:whatsapp:link": "node scripts/link-hse-whatsapp-identity.mjs",
     "evidence:init": "node scripts/init-evidence.mjs",
-    "qa": "npm run test:structure && npm run test:hse && npm run test:hse:offline && npm run test:hse:sync && npm run test:hse:form-evidence && npm run test:forms && npm run test:inspections && npm run test:hse:whatsapp && npm run test:hse:web && npm run test:hse:branding && npm run test:mobile:structure && npm run test:mobile:ui && npm run typecheck && npm run lint && npm run build",
+    "qa": "npm run test:structure && npm run test:hse && npm run test:hse:offline && npm run test:hse:sync && npm run test:hse:form-evidence && npm run test:forms && npm run test:inspections && npm run test:hse:whatsapp && npm run test:hse:web && npm run test:hse:branding && npm run test:mobile:structure && npm run test:mobile:ui && npm run test:mobile:login && npm run typecheck && npm run lint && npm run build",
     "test:hse:offline": "node --experimental-strip-types --test scripts/hse-local-kv.test.mjs",
     "test:hse:sync": "node --experimental-strip-types --test scripts/hse-sync-scope.test.mjs",
-    "test:hse:form-evidence": "node --experimental-strip-types --test scripts/hse-form-evidence.test.mjs"
+    "test:hse:form-evidence": "node --experimental-strip-types --test scripts/hse-form-evidence.test.mjs",
+    "test:mobile:login": "node scripts/check-mobile-login.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.45.4",
