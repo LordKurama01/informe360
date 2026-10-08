@@ -36,3 +36,9 @@ Render Web QA `srv-db3pmdbncjis73bbrvig`; deploy `dep-db3qsml9fdbs73eslmf0` sobr
 - Render QA `dep-db3qsml9fdbs73eslmf0` **LIVE**, SHA `6377f727ea144c2cc4865aae313f88e66132e83a`, completado a las `14:54:53Z`.
 - Pruebas HSE Dashboard (4/4), `npm run qa`, TypeScript web, lint y Next.js build pasaron. Resultados de prueba visibles en logs Render.
 - **EWEB.P1.4 VALIDADA EN QA**; EWEB.P1.5 permanece pendiente de aceptación visual con sesión. No modificar producción.
+
+
+## Verificación de base en EWEB.P1.5 (parcial)
+- Consulta de **solo lectura** directamente a Supabase Informe360: `select count(*) from public.reports` dio **0 registros** (corte 2026-10-08). Por lo tanto, la nueva pantalla HSE no debe mostrar los tres informes de la antigua página legacy: eran ejemplos escritos en el código, no informes reales.
+- No se crearon informes de muestra ni se alteraron tablas, cuentas o permisos.
+- El smoke de datos está comprobado, pero faltan captura visual y navegación autenticada para completar EWEB.P1.5.
