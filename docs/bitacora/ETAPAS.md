@@ -100,3 +100,14 @@ RAG documental con citas, EPP/visión computacional, capacitación masiva, marke
 - **EWEB.P5 — QA visual / funcional [PENDIENTE]:** accesibilidad, logo, escritorio 1366/1440/1920, móvil web 360–430, rutas profundas y refresh, sesión, RLS por empresa, informes de muestra **no**, pruebas Next en Render, regresión sin alterar producción.
 
 **Invariante:** no hay botones públicos de siembra de registros «Demo» en HSE. Los ambientes QA pueden tener una empresa de evaluación explícitamente identificada, pero solo registros guardados en DB real; nunca métricas fabricadas. No fusionar a `feat/hse-phases-1-5` auto-deploy hasta gates.
+
+
+### Desglose operativo de EWEB.P1 — Inicio + Informes (5 partes)
+
+- **EWEB.P1.1 — Auditoría de navegación y datos [VALIDADA]:** comparar captura del usuario, `/app/hse` y `/app/reports`; localizar CSS ajeno y los informes hardcodeados. Evidencia: `REGISTRO.md` 2026-10-08.
+- **EWEB.P1.2 — Eliminar accesos de demostración [VALIDADA EN QA]:** sacar el botón «Demo», el llamado a `seed_hse_demo` desde la UI y los accesos que crean datos ficticios en el HSE real. Contrato `test:hse:reports`.
+- **EWEB.P1.3 — Informes dentro del mismo producto [VALIDADA EN QA]:** navegación y visual HSE común, consulta real de `reports` por organización/sitio, ruta `/app/hse/reports`, redirección legada solo en web QA. Render `dep-db3qf0ad0e5s73b6jh4g` LIVE.
+- **EWEB.P1.4 — Calidad de indicadores y estados [EN CURSO]:** evitar métricas engañosas sin muestra; distinguir datos actualizados de una conexión no verificada; mejorar mensajes de error y estados vacíos sin inventar registros; añadir pruebas automáticas.
+- **EWEB.P1.5 — Gate de cierre [PENDIENTE]:** verificar test y compilación Next en Render QA, rutas y logos web, contenido sin registros falsos; comprobar visual en resolución de escritorio y móvil con sesión real. Cerrar únicamente con prueba del usuario o navegación autenticada. **Sin merge a producción.**
+
+**Regla:** ejecutar una parte a la vez y registrar commit, deploy, pruebas, errores y siguiente parte en `REGISTRO.md` y `ESTADO.md` antes de continuar a EWEB.P2.
