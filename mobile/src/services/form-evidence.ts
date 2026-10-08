@@ -17,14 +17,21 @@ export async function preparePhotoAnswers(
   schema: HseFormSchema,
   answers: HseFormAnswers,
   upload: (key: string, uri: string) => Promise<string>,
+  allowedPathPrefix?: string,
 ): Promise<HseFormAnswers> {
   const result: HseFormAnswers = { ...answers };
   const transform = async (field: HseLeafField, value: unknown, key: string): Promise<unknown> => {
     if (field.type !== 'photo' || value === null || value === undefined || value === '') return value;
-    if (photoStoragePath(value)) return value;
+    const existingPath = photoStoragePath(value);
+    if (existingPath) {
+      if (allowedPathPrefix && !existingPath.startsWith(allowedPathPrefix)) throw new Error('Evidencia ajena a esta inspección.');
+      return value;
+    }
     if (!isLocalPhoto(value)) throw new Error('Formato de evidencia fotográfica no reconocido.');
     const path = await upload(key, value);
-    if (!path || path.includes('..') || path.includes('://')) throw new Error('La evidencia no obtuvo una ruta de almacenamiento válida.');
+    if (!path || path.includes('..') || path.includes('://') || (allowedPathPrefix && !path.startsWith(allowedPathPrefix))) {
+      throw new Error('La evidencia no obtuvo una ruta de almacenamiento válida.');
+    }
     return FORM_PHOTO_PREFIX + path;
   };
   for (const section of schema.sections) {
