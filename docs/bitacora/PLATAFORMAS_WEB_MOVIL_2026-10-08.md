@@ -37,3 +37,11 @@ Ambos nuevos entornos QA en plan Render **free** y `autoDeploy=no`. La web usa e
 
 ## Reanudación
 Cuando se diga «seguí»: leer `REGISTRO.md`, `ESTADO.md` y este archivo; comprobar ambos servicios QA LIVE con HEAD verificado; confirmar web responsive real sin tabs Expo; continuar E1.P3 offline + gate Android/iOS, y auditar experiencia visual del Next HSE. Mantener `feat/hse-phases-1-5` sin merge/despliegue durante QA.
+
+
+## Cierre de QA de esta separación
+- **Web QA inicial:** deploy `dep-db3pmgbncjis73bbs980` LIVE (Next.js, misma cuenta Supabase); `dep-db3poaflk1mc73cfvd5g` LIVE con `HSE_WEB_QA_MODE=1`, Next levantando en puerto Render 10000.
+- **Web QA final:** deploy `dep-db3pp8c9v7es73e11rf0` **LIVE**, SHA `6ca8c11d6b8ba6c84bc5976779b92fd7b9c99f84`, finalizado `2026-10-08T13:39:16Z`. QA completa incluye `test:hse:platforms` (OK), TS, lint, Next build. CSS responsive mueve navegación web a cabecera en vez de dock nativo flotante.
+- **App QA Expo Web:** deploy `dep-db3pn8tg1s2s73bddac0` LIVE, SHA `e00b68bb8d5a2aa3dfa518042dd0808781506732` a las `2026-10-08T13:35:12Z`. En desktop redirect configurado; no se alteró runtime Android/iOS.
+- **QA visual real:** no realizada automáticamente. El usuario debe comprobar desktop en URL de Next, y Android/iOS instalados tras futuras compilaciones nativas.
+- **Control de producción:** ambas QA se mantienen `autoDeploy=no`; producción `informe360-hse` no fue modificada.
