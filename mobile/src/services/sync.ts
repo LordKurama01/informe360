@@ -5,14 +5,21 @@ import { processCapture } from './capture-pipeline';
 
 export type SyncResult = { attempted: number; synced: number; failed: number; pending: number; online: boolean };
 
-export async function syncOfflineCaptures(): Promise<SyncResult> {
+export type SyncScope = { organizationId: string; userId: string };
+let inFlight: Promise<SyncResult> | null = null;
+
+async function performSync(scope: SyncScope): Promise<SyncResult> {
   const online = await hasInternetConnection();
   const items = await listOfflineCaptures();
-  if (!online || !items.length) return { attempted: 0, synced: 0, failed: 0, pending: items.length, online };
+  // Legacy captures without an owner remain on-device for deliberate recovery.
+  const eligible = items.filter(item =>
+    item.ownerUserId === scope.userId && item.workspace.organizationId === scope.organizationId
+  );
+  if (!online || !eligible.length) return { attempted: 0, synced: 0, failed: 0, pending: items.length, online };
 
   let synced = 0;
   let failed = 0;
-  for (const item of [...items].reverse()) {
+  for (const item of [...eligible].reverse()) {
     try {
       await processCapture(item, false);
       await removeOfflineCapture(item.id);
@@ -24,5 +31,17 @@ export async function syncOfflineCaptures(): Promise<SyncResult> {
     }
   }
   const pending = (await listOfflineCaptures()).length;
-  return { attempted: items.length, synced, failed, pending, online: true };
+  return { attempted: eligible.length, synced, failed, pending, online: true };
+}
+
+/** Only one uploader may process the local queue at a time. */
+export function syncOfflineCaptures(scope: SyncScope): Promise<SyncResult> {
+  if (inFlight) return inFlight;
+  const running = performSync(scope);
+  inFlight = running;
+  void running.then(
+    () => { if (inFlight === running) inFlight = null; },
+    () => { if (inFlight === running) inFlight = null; },
+  );
+  return running;
 }
