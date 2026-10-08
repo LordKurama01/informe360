@@ -216,3 +216,11 @@
 - **QA inicial:** Render web QA `informe360-hse-web-qa` `dep-db3s40jncjis73bjlevg` sobre `9837a84faa3e273e83a73962dd6d0185c5bc54b2`. Compilación Next completada; confirmar despliegue LIVE antes de cerrar.
 - **No se hizo:** merge a producción, migraciones Supabase, inserción de plantillas ni datos inventados. Cuenta y DB originales, PR #3 draft.
 - **Próximo:** confirmar Render QA, anotar prueba completa, terminar EWEB.P2.3 estados/filtros/continuación de ejecución y QA visual EWEB.P2.4–P2.5. Bitácora completa [EWEB.P2](EWEB_P2_INSPECCIONES_2026-10-08.md).
+
+
+## 2026-10-08 — EWEB.P2.3 — Búsqueda de inspecciones y filtros locales
+- **Base comprobada:** P2.1/P2.2 en Render QA `dep-db3s40jncjis73bjlevg` **LIVE**; Next + tests estructurales de plantillas por sitio correctos.
+- **Commits P2.3:** `970d6a3` filtro puro de ejecuciones, `e7ea8f6` buscador y tabs Todas/Pendientes/Presentadas dentro del HSE unificado, `1504afe` pruebas de texto/estado y vacíos.
+- No se realizan nuevos requests por cada tecla, ni se genera contenido ficticio. Los registros reales siguen filtrados por organización y sitio.
+- **QA P2.3:** Render `dep-db3s5qij9qps738rkao0` SHA `1504afea91e5e594bf07a7c24c3318ad57ea8f66`, validación en curso. No declarar LIVE antes de confirmarlo.
+- **Siguiente al «seguí»:** confirmar deploy, después verificar flujo autenticado en Inspecciones, RLS y rutas, y avanzar P2.4–P2.5. Producción intacta.
