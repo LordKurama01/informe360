@@ -46,3 +46,12 @@ Render `informe360-hse` realiza deploy automático al recibir commits en `feat/h
 - `docs/superpowers/plans/2026-09-13-hse-mobile-first-premium-ui.md`
 - `docs/HSE_COPILOT_REPOS_Y_COMPONENTES_2026-09-12_ADDENDUM.md`
 - `.github/workflows/ci.yml`
+
+
+## WEB y APP son productos de interfaz distintos
+
+- **[Web HSE de escritorio — QA](https://informe360-hse-web-qa.onrender.com/app/hse)**: aplicación Next.js, diseñada para navegador de PC/tablet, menú lateral y operaciones de gestión.
+- **[Vista técnica de la app móvil](https://informe360-hse-e1-qa.onrender.com)**: compilación Expo Web para revisar desarrollo React Native. En escritorio redirige a la verdadera web; las APK/IPA siguen pendientes de QA nativa.
+- **[Decisión técnica, despliegues y tests](PLATAFORMAS_WEB_MOVIL_2026-10-08.md)**.
+
+Ambas interfaces comparten Supabase, no necesitan dos cuentas ni bases. Al abrir otro dominio puede ser necesario iniciar sesión otra vez con las mismas credenciales.
