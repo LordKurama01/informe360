@@ -18,7 +18,7 @@ Fecha de inicio: **2026-10-08**. Estado: **implementación aislada en QA, valida
 | P2.1 | Inspecciones reutiliza HseControl, login, workspace, menú lateral, topbar, carga discreta y navegación coherente | IMPLEMENTADA |
 | P2.2 | Plantillas versionadas y últimas inspecciones con datos reales, filtradas por organización y sitio; conservar instalación optativa de estándares | IMPLEMENTADA |
 | P2.3 | Estados vacío/error/carga y filtros Todas/Pendientes/Presentadas, búsqueda de plantillas y ejecuciones sin consultar servidor en cada tecla | VALIDADA EN QA RENDER; revisión visual pendiente |
-| P2.4 | Prueba funcional con cuenta real, integridad/RLS y rutas web responsive; ver si hay ejecución web completa o solo móvil | PENDIENTE |
+| P2.4 | Inicio, reanudación, borrador y envío web implementados; bloqueador RLS documentado, test autenticado pendiente | IMPLEMENTADA + QA técnica; seguridad E2E PENDIENTE |
 | P2.5 | Gate Render, QA visual escritorio/móvil y cierre documentado | EN CURSO (gate técnico inicial) |
 
 ## Código de P2.1–P2.2
@@ -86,3 +86,11 @@ Fecha de inicio: **2026-10-08**. Estado: **implementación aislada en QA, valida
 2. Comprobar en sesión real «Iniciar» → «Guardar borrador» → salir y reingresar → «Presentar», campos foto, estado de solo lectura; revisar errores de Storage.
 3. Preparar y probar endurecimiento RLS/triggers en staging aislado con dos organizaciones y roles distintos. No tocar Supabase compartido sin este gate.
 4. Cerrar EWEB.P2.5 solo con aceptación visual/funcional y después abordar EWEB.P3 Formularios.
+
+
+## Resultado verificado EWEB.P2.4
+- Primer Render `dep-db3sfh0473hc73f675ag` **BUILD_FAILED** debido a regresión del antiguo contrato que no contemplaba la ruta de detalle en el menú activo. Corregido en `954ff4a155f42108b624e3c07459c95947ce9dfa`.
+- Segundo Render `dep-db3sg22jnfac738k47sg` **LIVE**, completado 2026-10-08T16:44:29Z, sobre commit `954ff4a155f42108b624e3c07459c95947ce9dfa`. `test:hse:inspection-run` 5/5, `npm run qa`, typecheck, lint y Next build correctos.
+- **URLs:** [historial](https://informe360-hse-web-qa.onrender.com/app/hse/inspections) y `/app/hse/inspections/[runId]` para continuar registros reales.
+- **Sin creación de registros de prueba:** cuatro plantillas estándar existentes, cero runs antes de pruebas según consulta solo lectura. La UI usa el RPC de producción compartida únicamente cuando el usuario acciona el botón.
+- **Bloqueo de producción:** [auditoría RLS](EWEB_P2_4_AUDITORIA_RLS_2026-10-08.md); no confirmar integridad de ejecuciones presentadas ni separación por sitio a nivel RLS sin una migración probada y pruebas negativas multiusuario. P2.5 visual/funcional sigue pendiente.
