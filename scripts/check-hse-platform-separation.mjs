@@ -14,6 +14,8 @@ assert.match(mobile, /<AuthProvider><WorkspaceProvider><SyncProvider>/, 'native 
 assert.match(web, /className=\{styles\.sideNav\}/, 'web command center must preserve desktop sidebar');
 assert.match(web, /getHseWorkspace/, 'web must share Supabase organization context');
 assert.match(webCss, /\.appShell\{[^}]*grid-template-columns:/, 'web command center should have desktop column layout');
+assert.match(webCss, /The browser UI stays a responsive website/, 'browser must have responsive web navigation');
+assert.match(webCss, /\.mobileDockPrimary \{ display:none !important; \}/, 'web mobile must hide the Expo-style floating capture action');
 assert.match(nextPage, /HseControl/, 'real Next.js web route must point at HSE command center');
 assert.match(webHome, /HSE_WEB_QA_MODE === '1'/, 'dedicated QA web instance should open HSE command center');
 assert.match(webHome, /redirect\('\/app\/hse'\)/, 'redirect web QA homepage to its own HSE route');
