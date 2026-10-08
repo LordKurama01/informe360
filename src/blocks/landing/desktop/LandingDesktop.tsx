@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import Link from 'next/link';
 import styles from './LandingDesktop.module.css';
 
@@ -20,8 +21,8 @@ export function LandingDesktop() {
     <main className={styles.page}>
       <header className={styles.header}>
         <Link href="/" className={styles.brand} aria-label="Informe360 inicio">
-          <span className={styles.logo}>360</span>
-          <strong>Informe360</strong>
+          <Image src="/brand/informe360-hse/mark-light.png" alt="" width={42} height={42} className={styles.logoImage} priority />
+          <span className={styles.brandText}><strong>Informe360</strong><small>HSE Copilot</small></span>
         </Link>
 
         <nav className={styles.nav} aria-label="Navegacion principal">
@@ -36,9 +37,9 @@ export function LandingDesktop() {
       <section className={styles.hero}>
         <div className={styles.heroCopy}>
           <span className={styles.kicker}>HSE para operaciones de campo</span>
-          <h1>Informes t&eacute;cnicos listos para entregar.</h1>
+          <h1>Inspecciones, evidencia y acciones en un solo flujo.</h1>
           <p className={styles.lead}>
-            Cargas la visita, subis evidencia y completas el checklist. Informe360 arma un informe editable con acciones SMART, normativa relacionada, PDF profesional y seguimiento.
+            Registrás la recorrida, capturás evidencia y completás formularios desde el campo. Informe360 organiza hallazgos, acciones, trazabilidad y el informe final sin reconstruir la operación después.
           </p>
 
           <div id="planes" className={styles.planBox}>
