@@ -69,7 +69,7 @@ export default function FormRunPage() {
       await load();
       Alert.alert('Formulario enviado', bundle.template.category === 'inspection' ? 'La inspección quedó registrada. Revisá abajo los ítems No cumple y decidí cuáles deben convertirse en hallazgo.' : 'Las respuestas quedaron registradas y versionadas.');
     } catch (error) {
-      Alert.alert('Envío pendiente', 'El formulario está guardado localmente. Revisá la conexión y volvé a enviarlo cuando puedas.', [{ text: 'Entendido' }]);
+      Alert.alert('Envío pendiente', 'El formulario permanece guardado en el teléfono. No se completó el envío de respuestas o fotografías; revisá la conexión y volvé a intentar.', [{ text: 'Entendido' }]);
     } finally {
       setBusy(false);
     }
