@@ -96,17 +96,17 @@ export function LandingMobile() {
         <h2>Del campo al cierre.</h2>
         <div className={styles.listCards}>
           <article><strong>Informe editable</strong><span>Hallazgos listos para revisar y entregar.</span></article>
-          <article><strong>PDF profesional</strong><span>Salida preparada para descargar y enviar.</span></article>
+          <article><strong>PDF profesional</strong><span>Salida consistente con la evidencia registrada.</span></article>
           <article><strong>Acciones SMART</strong><span>Responsable, prioridad y vencimiento.</span></article>
-          <article><strong>Seguimiento</strong><span>Pendientes despues de cada visita.</span></article>
+          <article><strong>Seguimiento</strong><span>Pendientes visibles después de cada recorrida.</span></article>
         </div>
       </section>
 
       <section id="flujo" className={styles.section}>
         <span className={styles.kicker}>Como funciona</span>
-        <h2>Tres pasos.</h2>
+        <h2>Tres pasos. Un solo registro.</h2>
         <div className={styles.steps}>
-          <article><b>01</b><strong>Cargas visita</strong><span>Empresa, fecha, sector y observaciones.</span></article>
+          <article><b>01</b><strong>Abrís la recorrida</strong><span>Sitio, sector, fecha y tipo de inspección.</span></article>
           <article><b>02</b><strong>Subis evidencia</strong><span>Fotos, documentos y checklist.</span></article>
           <article><b>03</b><strong>Revisas y entregas</strong><span>Informe editable, PDF y acciones.</span></article>
         </div>
