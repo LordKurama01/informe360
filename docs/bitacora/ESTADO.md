@@ -238,3 +238,13 @@ La E1 se ejecuta aisladamente en `feat/hse-e1-offline-resilience-2026-10-08` con
 - **Bloqueo de release:** no hubo E2E en navegador autenticado, tampoco pruebas multiempresa o de Storage privado; Supabase RLS actual requiere endurecimiento para impedir edición/borrado tras enviar. Se redactó una propuesta SQL en `database/supabase/proposals/`, NO aplicada; staging Supabase no existe. P1.5, P2.5, P5 aceptación visual permanecen pendientes.
 - **Próximo paso exacto:** staging + pruebas negativas/RLS y validación funcional visual; luego aprobar PR #3 y planificar despliegue a producción. **No reprogramar pantallas de cero ni fusionar sin gate**.
 - Ver [bitácora integral](EWEB_P3_P5_CIERRE_2026-10-08.md).
+
+
+## 2026-10-08 — EAPP.P1 — Inicio móvil rediseñado (vista previa técnica)
+- **Motivo:** captura de Android por browser `informe360-hse-e1-qa.onrender.com` mostraba una página de Expo Web, con acción «Registrar hablando» gigante, cuatro atajos + «Capturar» flotante redundante, números enormes y barra del navegador. El usuario indicó «no parece una app».
+- **Acción:** `mobile/app/(tabs)/index.tsx` ahora usa cabecera oscura compacta con contexto de sitio, tarjeta voz reducida, tres atajos principales, indicador de estado operacional agrupado en un panel 2×2, actividad reciente y cola offline. Se eliminó el botón de siembra Demo del Inicio móvil y se corrigió el KPI de porcentaje sin cierres.
+- **Navegación:** `mobile/app/(tabs)/_layout.tsx` usa tabs de 69 px con botón central 44 px, sin superposición de gran círculo. Iconografía MaterialCommunityIcons mediante `@expo/vector-icons` en `mobile/package.json`.
+- **Pruebas:** `scripts/hse-mobile-field-home.test.mjs` (4 tests de contrato) integrado a `npm run qa`. Primer deploy previo a iconos `dep-db40886i0phs73egus90` **LIVE**, `cd911fe387e52b6fb7a4274c77a650285d026b15`, 2026-10-08T21:00:59Z. Segundo deploy final con iconos `dep-db4094nlot8c73c8l3l0` iniciado sobre `1b871ad09a9dd1a920bac174d36c9392503a319e`; estado final a verificar.
+- **Límites:** Render QA genera Expo **Web Preview**, no APK nativa; ver la barra de Chrome es normal y no desaparece sin instalación de Android. No se realizó prueba en teléfono con APK/micrófono/cámara/permisos. Aplicación nativa precisa build propio por `mobile/eas.json` profile `preview`.
+- **Seguridad:** npm audit de dependencias móviles reportó 28 hallazgos (10 moderados, 18 altos), pendientes de clasificación antes de release nativa; eso **no implica** automáticamente vulnerabilidades explotables en la app.
+- **Bitácora detallada:** [EAPP_P1_INICIO_NATIVO_2026-10-08.md](EAPP_P1_INICIO_NATIVO_2026-10-08.md). Producción web y DB sin cambios. PR #3 draft.
