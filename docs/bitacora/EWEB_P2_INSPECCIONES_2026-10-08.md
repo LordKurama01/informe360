@@ -17,7 +17,7 @@ Fecha de inicio: **2026-10-08**. Estado: **implementación aislada en QA, valida
 |---|---|---|
 | P2.1 | Inspecciones reutiliza HseControl, login, workspace, menú lateral, topbar, carga discreta y navegación coherente | IMPLEMENTADA |
 | P2.2 | Plantillas versionadas y últimas inspecciones con datos reales, filtradas por organización y sitio; conservar instalación optativa de estándares | IMPLEMENTADA |
-| P2.3 | Estados vacío/error/carga y filtros Todas/Pendientes/Presentadas, búsqueda de plantillas y ejecuciones sin consultar servidor en cada tecla | IMPLEMENTADA; QA EN CURSO |
+| P2.3 | Estados vacío/error/carga y filtros Todas/Pendientes/Presentadas, búsqueda de plantillas y ejecuciones sin consultar servidor en cada tecla | VALIDADA EN QA RENDER; revisión visual pendiente |
 | P2.4 | Prueba funcional con cuenta real, integridad/RLS y rutas web responsive; ver si hay ejecución web completa o solo móvil | PENDIENTE |
 | P2.5 | Gate Render, QA visual escritorio/móvil y cierre documentado | EN CURSO (gate técnico inicial) |
 
@@ -52,3 +52,9 @@ Fecha de inicio: **2026-10-08**. Estado: **implementación aislada en QA, valida
 - **Primer deploy P2.1/P2.2:** `dep-db3s40jncjis73bjlevg` **LIVE** con `9837a84faa3e273e83a73962dd6d0185c5bc54b2`, build Next aprobado.
 - **Segundo deploy P2.3:** `dep-db3s5qij9qps738rkao0`, commit `1504afea91e5e594bf07a7c24c3318ad57ea8f66`. Estado pendiente hasta confirmación de la API de Render.
 - P2.4/P2.5 no están cerradas, y EWEB.P1 sigue esperando la aceptación visual presencial. No se hicieron cambios productivos.
+
+
+## Resultado confirmado del segundo deploy
+- `dep-db3s5qij9qps738rkao0` **LIVE**, commit `1504afea91e5e594bf07a7c24c3318ad57ea8f66`, finalizado el 2026-10-08T16:22:41Z. `npm run qa`, TypeScript, ESLint y Next build pasaron, incluidas las pruebas de filtros.
+- Abrir https://informe360-hse-web-qa.onrender.com/app/hse/inspections para revisar la interfaz. No se ejecutaron pruebas de interacción con credenciales ni se ha aprobado visualmente.
+- La rama Render de producción sigue sin merge y sin despliegues nuevos.
