@@ -176,3 +176,8 @@ La E1 se ejecuta aisladamente en `feat/hse-e1-offline-resilience-2026-10-08` con
 - **QA:** Render Web QA `dep-db3qf0ad0e5s73b6jh4g` LIVE, código `5b8f1d3a0fbd565f11b5a6157c35c9187d1f3aa8`, 2026-10-08T14:25:54Z. `test:hse:reports` OK y pipeline `npm run qa` + Next build completos.
 - **URL para revisión:** https://informe360-hse-web-qa.onrender.com/app/hse/reports. Esta evidencia **no confirma todavía aceptación visual del usuario** ni una prueba de navegación manual autenticada en escritorio.
 - **Próximos bloques:** EWEB.P2 Inspecciones, EWEB.P3 Formularios, EWEB.P4 Agenda/lectura, EWEB.P5 QA visual. La etapa móvil E1.P3 sigue abierta. Producción intacta.
+
+## 2026-10-08 — EWEB.P1.4 — Calidad de indicadores y estados [EN CURSO]
+- Se auditó `HseControl.tsx`: KPI «Cierre en plazo» presentaba `0%` aun cuando no había cierres; etiqueta «En línea» era fija, incluso ante errores de lectura; cero informes también podía presentarse antes de completar consultas. Estas señales pueden inducir al usuario a conclusiones falsas.
+- Alcance del siguiente commit: distinguir `loading/ready/error`, no mostrar porcentaje sin denominador, reportar errores de lectura de manera visible y comprobar con unit tests. No introducir datos ficticios, nuevas tablas ni cambios de Auth/producción.
+- Dependencia: `EWEB.P1.3` verificada por Render QA sobre `5b8f1d3...`, `PR #3` sigue draft.
