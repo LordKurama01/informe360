@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { createHseReport, getCurrentHseUser, getHseFindings, getHseSummary, getHseWorkspace, hseSignIn, hseSignOut, hseSignUp, listHseReports, type HseReportRow, type HseFinding, type HseSummary, type HseWorkspace } from '@/services/hse/browser';
 import styles from './HseControl.module.css';
 import { formatClosureCompliance, formatHseCount, hseDataStatusLabel, type HseDataStatus } from '@/shared/hse/dashboard-metrics';
-import { listFormRuns, listFormTemplates, type HseFormRunRow, type HseFormTemplate } from '@/services/hse/forms-browser';
+import { installStandardInspectionTemplates, listFormRuns, listFormTemplates, type HseFormRunRow, type HseFormTemplate } from '@/services/hse/forms-browser';
 import { inspectionStatusLabel, selectHseInspections } from '@/shared/hse/inspection-view';
 
 type Filter = 'open'|'overdue'|'upcoming'|'critical'|'closed'|'all';
@@ -26,6 +26,7 @@ export function HseControl({ mode = 'overview' }: { mode?: 'overview' | 'reports
   const [reports, setReports] = useState<HseReportRow[]>([]);
   const [inspectionTemplates, setInspectionTemplates] = useState<HseFormTemplate[]>([]);
   const [inspectionRuns, setInspectionRuns] = useState<HseFormRunRow[]>([]);
+  const [inspectionMessage, setInspectionMessage] = useState<string | null>(null);
   const [reportSearch, setReportSearch] = useState('');
   const [query, setQuery] = useState('');
   const latestQueryRef = useRef('');
@@ -146,6 +147,22 @@ export function HseControl({ mode = 'overview' }: { mode?: 'overview' | 'reports
   async function signOut(){await hseSignOut();setSignedIn(false);setWorkspace(null);setFindings([]);setBaseFindings([]);latestQueryRef.current='';setQuery('');setSearchError(null);setSummary(emptySummary);}
   function toggle(id:string){setSelected(current=>{const next=new Set(current);next.has(id)?next.delete(id):next.add(id);return next;});}
 
+  async function installStandards() {
+    if (!workspace || busy || mode !== 'inspections') return;
+    setBusy(true);
+    setError(null);
+    setInspectionMessage(null);
+    try {
+      const added = await installStandardInspectionTemplates(workspace);
+      setInspectionMessage(added > 0 ? `Se agregaron ${added} plantillas estándar.` : 'La biblioteca de plantillas estándar ya está actualizada.');
+      await loadWorkspace();
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : 'No se pudieron incorporar las plantillas estándar.');
+    } finally {
+      setBusy(false);
+    }
+  }
+
   async function createReport(){
     if(!workspace||!selected.size)return;
     setBusy(true);setError(null);
@@ -240,9 +257,15 @@ export function HseControl({ mode = 'overview' }: { mode?: 'overview' | 'reports
                 <span className={styles.eyebrow}>BIBLIOTECA OPERATIVA</span>
                 <h2>Plantillas de inspección</h2>
               </div>
-              <Link className={styles.reportStartLink} href="/app/hse/forms">Administrar plantillas →</Link>
+              <div className={styles.inspectionActions}>
+                <Link className={styles.reportStartLink} href="/app/hse/forms">Administrar plantillas →</Link>
+                <button className={styles.secondary} disabled={busy || dataStatus === 'loading'} onClick={() => void installStandards()}>
+                  {busy ? 'Preparando…' : 'Agregar estándares'}
+                </button>
+              </div>
             </div>
             {error ? <div className={styles.error} role="alert">{error}</div> : null}
+            {inspectionMessage ? <div className={styles.inspectionSuccess} role="status">{inspectionMessage}</div> : null}
             {dataStatus === 'loading' ? <div className={styles.empty} role="status">Consultando plantillas y ejecuciones…</div> : null}
             {dataStatus === 'ready' ? <div className={styles.inspectionCards}>
               {inspectionData.templates.map(template => <article className={styles.inspectionCard} key={template.id}>
