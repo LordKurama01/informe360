@@ -47,9 +47,30 @@
   box-shadow: 0 16px 40px rgba(205, 151, 50, .18);
 }
 
+.logoImage {
+  width: 42px;
+  height: 42px;
+  object-fit: contain;
+  flex: 0 0 auto;
+}
+
+.brandText {
+  display: grid;
+  gap: 1px;
+}
+
 .brand strong {
   font-size: 14px;
-  font-weight: 720;
+  font-weight: 800;
+  letter-spacing: -.015em;
+}
+
+.brandText small {
+  color: #9eabc9;
+  font-size: 9px;
+  font-weight: 750;
+  letter-spacing: .11em;
+  text-transform: uppercase;
 }
 
 .nav {
