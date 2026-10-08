@@ -126,3 +126,14 @@
 - **PASS:** contratos HSE, formularios, inspecciones, branding, landing, UI móvil, assets PNG, login, onboarding, typecheck, lint, Next build, TypeScript móvil y Expo Web export.
 - **Pendientes:** 28 advisories npm móviles (10 moderate, 18 high), QA físico Android/iOS y pruebas de seguridad/runtime. No se aplicó actualización forzada de dependencias.
 - **Integración:** PR #4 aún no fusionado. Siguiente: integrar solamente a E1 QA y repetir el gate antes de evaluar producción.
+
+
+## 2026-10-08 — Integración hardening + auditoría runtime y RLS
+- **Integración:** PR #4 fusionado en rama E1 QA; merge `b1fe12062d4f46eb325f054daa59ddcb4cf0ed40`. Luego se alineó splash/adaptive background y se añadieron gates de RLS.
+- **QA final integrada:** Render deploy `dep-db3hpi59fdbs73ds5dog` en `3c8a86357b8c1e114ffe91d472ffbc7024496448`: SUCCEEDED. El gate `HSE current form RLS tenant-integrity contract OK` pasó junto con branding, assets, login, onboarding, offline/sync, TS, lint, Next build y Expo Web export.
+- **Base real auditada:** Supabase Informe360 ACTIVE_HEALTHY; Storage `hse-evidence` privado y protegido por organización.
+- **RLS:** detectadas referencias ambiguas en políticas vigentes de formularios que permiten relaciones inter-organización inconsistentes. Se agregaron migraciones correctivas no destructivas y tests en GitHub. La aplicación de DDL al proyecto productivo quedó bloqueada por el control de la herramienta; no afirmar migración aplicada.
+- **Runtime producción:** health HTTP 200 pero `supabaseAdminConfigured=false`, WhatsApp no configurado y AI en fallback manual. Recordatorios: función dispatcher y secret reference existen, pero no hay cron activo; prueba sin recordatorios pendientes terminó en 503 del endpoint después de cold start/timeout.
+- **Dependencias:** npm móvil continúa informando 28 advisories (10 moderate, 18 high). No se usó `--force`.
+- **Producción web:** no se desplegó la rama E1 ni se cambió el servicio `informe360-hse`.
+- **Siguiente:** obtener autorización/medio seguro para configurar secretos runtime y aplicar/verificar hardening RLS; después repetir smoke y recién entonces evaluar promoción. QA Android/iOS físico sigue pendiente.
