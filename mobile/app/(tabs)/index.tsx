@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState, type ComponentProps } from 'react';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Alert, Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
@@ -127,7 +128,7 @@ export default function Home() {
         <Text style={styles.sectionEyebrow}>ACCESO RÁPIDO</Text>
         <Pressable accessibilityRole="button" accessibilityLabel="Registrar un hallazgo por voz" onPress={() => router.push('/register?mode=audio')}
           style={({pressed}) => [styles.voiceAction, pressed && styles.pressed]}>
-          <View style={styles.voiceMark}><Text style={styles.voiceGlyph}>●</Text></View>
+          <View style={styles.voiceMark}><MaterialCommunityIcons name="microphone" size={25} color="#FFFFFF"/></View>
           <View style={styles.voiceCopy}>
             <Text style={styles.voiceLabel}>CAPTURA DE CAMPO</Text>
             <Text style={styles.voiceTitle}>Registrar por voz</Text>
@@ -137,9 +138,9 @@ export default function Home() {
         </Pressable>
 
         <View style={styles.quickRow}>
-          <QuickAction symbol="✓" title="Inspeccionar" onPress={() => router.push('/(tabs)/inspections')}/>
-          <QuickAction symbol="▣" title="Fotografía" onPress={() => router.push('/register?mode=photo')}/>
-          <QuickAction symbol="T" title="Escribir" onPress={() => router.push('/register?mode=text')}/>
+          <QuickAction icon="clipboard-check-outline" title="Inspeccionar" onPress={() => router.push('/(tabs)/inspections')}/>
+          <QuickAction icon="camera-outline" title="Fotografía" onPress={() => router.push('/register?mode=photo')}/>
+          <QuickAction icon="pencil-outline" title="Escribir" onPress={() => router.push('/register?mode=text')}/>
         </View>
 
         <View style={styles.sectionTop}>
@@ -197,10 +198,10 @@ export default function Home() {
   </SafeAreaView>;
 }
 
-function QuickAction({symbol,title,onPress}:{symbol:string;title:string;onPress:()=>void}) {
+function QuickAction({icon,title,onPress}:{icon:ComponentProps<typeof MaterialCommunityIcons>['name'];title:string;onPress:()=>void}) {
   return <Pressable accessibilityRole="button" accessibilityLabel={title} onPress={onPress}
     style={({pressed}) => [styles.quickAction,pressed && styles.pressed]}>
-    <View style={styles.quickIcon}><Text style={styles.quickSymbol}>{symbol}</Text></View>
+    <View style={styles.quickIcon}><MaterialCommunityIcons name={icon} size={19} color={theme.colors.primary}/></View>
     <Text style={styles.quickText}>{title}</Text>
   </Pressable>;
 }
@@ -232,7 +233,6 @@ const styles = StyleSheet.create({
   sectionEyebrow:{fontSize:10,fontWeight:'800',letterSpacing:1.3,color:'#78857F',marginBottom:-4},
   voiceAction:{minHeight:104,backgroundColor:theme.colors.primary,borderRadius:18,paddingHorizontal:16,paddingVertical:17,flexDirection:'row',alignItems:'center',gap:12},
   voiceMark:{width:45,height:45,borderRadius:15,backgroundColor:'rgba(255,255,255,0.15)',alignItems:'center',justifyContent:'center'},
-  voiceGlyph:{fontSize:22,color:'#FFFFFF',fontWeight:'800'},
   voiceCopy:{flex:1,gap:3},
   voiceLabel:{fontSize:9,color:'#FFE4D0',fontWeight:'900',letterSpacing:1.1},
   voiceTitle:{fontSize:19,lineHeight:23,color:'#FFFFFF',fontWeight:'900'},
@@ -241,7 +241,6 @@ const styles = StyleSheet.create({
   quickRow:{flexDirection:'row',gap:10},
   quickAction:{flex:1,minHeight:86,borderRadius:16,backgroundColor:'#FFFFFF',borderWidth:1,borderColor:'#DFE5E1',alignItems:'center',justifyContent:'center',gap:8},
   quickIcon:{width:29,height:29,borderRadius:10,backgroundColor:'#F2F5F2',justifyContent:'center',alignItems:'center'},
-  quickSymbol:{fontSize:18,fontWeight:'800',color:'#A84000'},
   quickText:{fontSize:11,color:'#27372F',fontWeight:'800'},
   sectionTop:{flexDirection:'row',alignItems:'center',justifyContent:'space-between',gap:10,marginTop:7},
   sectionTitle:{fontSize:18,lineHeight:22,color:'#15231F',fontWeight:'900',letterSpacing:-0.4},
