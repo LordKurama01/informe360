@@ -177,7 +177,15 @@ La E1 se ejecuta aisladamente en `feat/hse-e1-offline-resilience-2026-10-08` con
 - **URL para revisión:** https://informe360-hse-web-qa.onrender.com/app/hse/reports. Esta evidencia **no confirma todavía aceptación visual del usuario** ni una prueba de navegación manual autenticada en escritorio.
 - **Próximos bloques:** EWEB.P2 Inspecciones, EWEB.P3 Formularios, EWEB.P4 Agenda/lectura, EWEB.P5 QA visual. La etapa móvil E1.P3 sigue abierta. Producción intacta.
 
-## 2026-10-08 — EWEB.P1.4 — Calidad de indicadores y estados [EN CURSO]
+## 2026-10-08 — EWEB.P1.4 — Calidad de indicadores y estados [VALIDADA EN QA]
 - Se auditó `HseControl.tsx`: KPI «Cierre en plazo» presentaba `0%` aun cuando no había cierres; etiqueta «En línea» era fija, incluso ante errores de lectura; cero informes también podía presentarse antes de completar consultas. Estas señales pueden inducir al usuario a conclusiones falsas.
 - Alcance del siguiente commit: distinguir `loading/ready/error`, no mostrar porcentaje sin denominador, reportar errores de lectura de manera visible y comprobar con unit tests. No introducir datos ficticios, nuevas tablas ni cambios de Auth/producción.
 - Dependencia: `EWEB.P1.3` verificada por Render QA sobre `5b8f1d3...`, `PR #3` sigue draft.
+
+
+### Resultado verificado EWEB.P1.4
+- `src/shared/hse/dashboard-metrics.ts`: los cero válidos aparecen **solo después** de obtener datos; «Cierre en plazo» devuelve «—» cuando no existen cierres, cuando falló la consulta o ante dato no numérico.
+- `HseControl.tsx`: estado explícito de consulta `loading / ready / error`, etiqueta veraz «Datos actualizados» (no «En línea» fijo), botón Actualizar con excepciones capturadas y estados vacíos mostrados únicamente si la consulta terminó correctamente.
+- `scripts/hse-dashboard-metrics.test.mjs`: 4 tests nuevos, incluidos regresión visual de estados, denominador de KPI y actualización recuperable, integrados a `npm run qa`.
+- `dep-db3qsml9fdbs73eslmf0` **LIVE** a las 2026-10-08T14:54:53Z, SHA funcional `6377f727ea144c2cc4865aae313f88e66132e83a`, Next.js compilado, typecheck y lint aprobados.
+- **Próxima parte exacta al decir «seguí»:** EWEB.P1.5 verificar web con sesión en Inicio e Informes, rutas directas, retorno, diseño escritorio/móvil y estado sin registros; comprobar Render y registrar aceptación. Después EWEB.P2 Inspecciones. Sin merge a producción.
