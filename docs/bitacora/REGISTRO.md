@@ -189,3 +189,13 @@
 - **No ejecutado:** prueba de navegación en navegador autenticado, verificación visual con captura nueva, pruebas cruzadas con otras empresas ni nueva APK.
 - **Infra:** solo Render Web QA `srv-db3pmdbncjis73bbrvig` con autoDeploy=no, sin cambios de Supabase ni Render producción, sin registros ficticios agregados.
 - **Estado:** EWEB.P1 IMPLEMENTADA Y VALIDADA POR BUILD/QA ESTRUCTURAL; validación visual pendiente. **Siguiente:** EWEB.P2 integrar Inspecciones al mismo shell, después EWEB.P3 Formularios, EWEB.P4 Agenda, EWEB.P5 aceptación visual.
+
+
+## 2026-10-08 — EWEB.P1.4 — Métricas confiables y estados explícitos
+- **Problema revisado antes de programar:** KPI «0% cierre en plazo» con cero cierres; distintivo «En línea» estático; cero informes y estados vacíos aunque la consulta aún estuviera cargando o hubiera fallado.
+- **Acción:** nueva lógica pura `src/shared/hse/dashboard-metrics.ts`, `HseControl.tsx` ahora administra estados `loading/ready/error`, muestra «—» en KPI no aplicable, mensajes de consulta y fallos visibles; botón Actualizar captura rechazos. CSS refleja fallos/carga sin falso estado «En línea».
+- **Commits de código:** `13c8a371` métricas, `d09e4615` integración, `181a72de` estilos, `0f89f629` 4 tests, `6377f727` integrados en `npm run qa`.
+- **QA:** Render Web QA `srv-db3pmdbncjis73bbrvig`, deploy `dep-db3qsml9fdbs73eslmf0` **LIVE** sobre `6377f727ea144c2cc4865aae313f88e66132e83a`, finalizado 2026-10-08T14:54:53Z. Compilación Next, 4 tests nuevos, TypeScript y ESLint completados sin errores.
+- **Seguridad:** no se escribieron registros de negocio ni se alteraron políticas RLS; se mantuvo `feat/hse-phases-1-5` sin cambios. PR #3 continúa borrador.
+- **QA pendiente:** revisión real de UI con sesión, navegación Inicio → Informes → informe, móvil web, logos y reportes de cero registros. No afirmar aceptación funcional E2E solo por Render.
+- **Próximo checkpoint:** EWEB.P1.5. Ver [desglose](EWEB_P1_INICIO_INFORMES_2026-10-08.md).
