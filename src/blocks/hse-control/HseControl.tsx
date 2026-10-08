@@ -25,7 +25,6 @@ export function HseControl({ mode = 'overview' }: { mode?: 'overview' | 'reports
   const [reportSearch, setReportSearch] = useState('');
   const [query, setQuery] = useState('');
   const latestQueryRef = useRef('');
-  latestQueryRef.current = query;
   const [filter, setFilter] = useState<Filter>('open');
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [email, setEmail] = useState('');
@@ -72,12 +71,7 @@ export function HseControl({ mode = 'overview' }: { mode?: 'overview' | 'reports
   useEffect(() => {
     if (mode !== 'overview' || !workspace || dataStatus !== 'ready') return;
     const searchText = query.trim();
-    if (!searchText) {
-      setFindings(baseFindings);
-      setSearchPending(false);
-      setSearchError(null);
-      return;
-    }
+    if (!searchText) return;
     let active = true;
     const timer = window.setTimeout(() => {
       setSearchPending(true);
@@ -123,7 +117,17 @@ export function HseControl({ mode = 'overview' }: { mode?: 'overview' | 'reports
     return !search || [report.title, report.report_type, report.status].some(value => (value || '').toLocaleLowerCase('es-AR').includes(search));
   }), [reports, reportSearch]);
 
-  async function signOut(){await hseSignOut();setSignedIn(false);setWorkspace(null);setFindings([]);setBaseFindings([]);setQuery('');setSearchError(null);setSummary(emptySummary);}
+  function changeSearch(value: string) {
+    latestQueryRef.current = value;
+    setQuery(value);
+    if (!value.trim()) {
+      setFindings(baseFindings);
+      setSearchPending(false);
+      setSearchError(null);
+    }
+  }
+
+  async function signOut(){await hseSignOut();setSignedIn(false);setWorkspace(null);setFindings([]);setBaseFindings([]);latestQueryRef.current='';setQuery('');setSearchError(null);setSummary(emptySummary);}
   function toggle(id:string){setSelected(current=>{const next=new Set(current);next.has(id)?next.delete(id):next.add(id);return next;});}
 
   async function createReport(){
@@ -248,7 +252,7 @@ export function HseControl({ mode = 'overview' }: { mode?: 'overview' | 'reports
         <section className={styles.contentGrid}>
           <div className={styles.listPanel}>
             <div className={styles.sectionHead}><div><span className={styles.eyebrow}>HALLAZGOS</span><h2>Seguimiento operativo</h2></div><span className={styles.resultCount}>{searchPending ? 'Buscando…' : `${visible.length} registros`}</span></div>
-            <div className={styles.toolbar}><input className={styles.search} value={query} onChange={e=>setQuery(e.target.value)} placeholder="Buscar código, sector, equipo o responsable…"/><div className={styles.filterRow}>{(['open','overdue','upcoming','critical','closed','all'] as Filter[]).map(item=><button key={item} className={`${styles.filter} ${filter===item?styles.filterActive:''}`} onClick={()=>setFilter(item)}>{({open:'Abiertos',overdue:'Vencidos',upcoming:'7 días',critical:'Críticos',closed:'Cerrados',all:'Todos'} as const)[item]}</button>)}</div></div>
+            <div className={styles.toolbar}><input className={styles.search} value={query} onChange={e=>changeSearch(e.target.value)} placeholder="Buscar código, sector, equipo o responsable…"/><div className={styles.filterRow}>{(['open','overdue','upcoming','critical','closed','all'] as Filter[]).map(item=><button key={item} className={`${styles.filter} ${filter===item?styles.filterActive:''}`} onClick={()=>setFilter(item)}>{({open:'Abiertos',overdue:'Vencidos',upcoming:'7 días',critical:'Críticos',closed:'Cerrados',all:'Todos'} as const)[item]}</button>)}</div></div>
             {error?<div className={styles.error} role="alert">{error}</div>:null}
             {searchError?<div className={styles.error} role="alert">{searchError}</div>:null}
             {dataStatus === 'loading' ? <div className={styles.empty} role="status">Actualizando hallazgos…</div> : null}
