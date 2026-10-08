@@ -120,3 +120,15 @@
 .inspectionError{color:#a9342a;font-size:12px}
 @media(max-width:760px){.inspectionChoices{display:grid;grid-template-columns:1fr;gap:7px}.inspectionChoice{width:100%}.inspectionSubmit>button{width:100%}.inspectionCardFooter{align-items:stretch}.inspectionCardFooter .secondary{width:100%}}
 @media(prefers-reduced-motion:reduce){.inspectionChoice{transition:none}}
+
+
+/* P3: reuse the existing versioned editor inside the one HSE web surface. */
+.formsContent{display:grid;gap:20px;min-width:0;max-width:1180px;margin:0 auto;width:100%}
+.formsContent>header{background:#e9eee6;padding:22px;border-radius:18px}
+.formsContent>header h1{color:#13271f;letter-spacing:-.5px}
+.formsEditorGrid{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(260px,.8fr);gap:16px}
+.formsContent input:focus-visible,.formsContent select:focus-visible,.formsContent button:focus-visible,.formsContent textarea:focus-visible{outline:2px solid #0f766e;outline-offset:2px}
+.formsContent input[type=checkbox]{accent-color:#0f766e}
+.formsContent>section{min-width:0}
+@media(max-width:960px){.formsEditorGrid{grid-template-columns:1fr}}
+@media(max-width:760px){.formsContent>header{padding:18px}.formsContent>header h1{font-size:25px!important}.formsContent>section{overflow-x:auto}}
