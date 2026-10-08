@@ -51,3 +51,26 @@
 .reportRowAction{display:flex;align-items:center;gap:16px;flex:none;white-space:nowrap;font-size:12px;font-weight:800;color:#0a6658}
 .reportStartLink{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:0 14px;border-radius:10px;background:#0d1715;color:#fff;text-decoration:none;font-size:12px;font-weight:800;margin-top:12px}
 @media(max-width:760px){.reportRow{padding:15px;align-items:flex-start;flex-direction:column;gap:12px}.reportRowAction{align-self:flex-end}}
+
+
+/* EWEB.P1.5 — Calm startup and an actual active navigation slider. */
+.bootFrame{min-height:100vh;background:#f3f4ef;color:#17211f;display:grid;grid-template-columns:252px minmax(0,1fr)}
+.bootAside{height:100vh;background:#0b1110;border-right:1px solid #1e2b27;padding:30px 22px;display:grid;align-content:start;gap:18px;animation:bootAppear .2s ease-out both}
+.bootLogo{height:54px;width:150px;border-radius:11px;background:#1a2924;margin-bottom:32px}
+.bootNavLine{height:35px;width:100%;border-radius:10px;background:#17231f}
+.bootNavLine:nth-child(3){width:85%}.bootNavLine:nth-child(4){width:74%}
+.bootMain{padding:34px;display:grid;align-content:start;gap:22px;animation:bootAppear .2s ease-out both}
+.bootHeaderLine{height:28px;width:min(245px,55%);border-radius:9px;background:#e1e7df}
+.bootHero{height:174px;width:100%;border-radius:24px;background:#e6eae4}
+.bootCards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:13px}
+.bootCards div{height:92px;border-radius:18px;background:#e9ede7}
+.bootCaption{color:#667570;font-size:12px;font-weight:700}
+@keyframes bootAppear{from{opacity:0}to{opacity:1}}
+@keyframes panelAppear{from{opacity:.5;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+.workspace{animation:panelAppear .22s ease-out both}
+.navItem{position:relative;transition:color .18s ease,background-color .18s ease,transform .18s ease}
+.navItem:hover{transform:translateX(2px)}
+.navItemActive:before{content:"";position:absolute;left:0;top:50%;width:3px;height:22px;transform:translateY(-50%);background:#f4a259;border-radius:0 4px 4px 0}
+.navItem:focus-visible{outline:2px solid #f4a259;outline-offset:2px}
+@media(max-width:760px){.bootFrame{display:block}.bootAside{display:none}.bootMain{padding:22px 14px}.bootHero{height:150px}.bootCards{grid-template-columns:repeat(2,minmax(0,1fr))}.bootCards div:last-child{display:none}}
+@media(prefers-reduced-motion:reduce){.bootAside,.bootMain,.workspace{animation:none}.navItem{transition:none}.navItem:hover{transform:none}}
