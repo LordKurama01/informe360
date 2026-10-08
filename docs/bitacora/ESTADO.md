@@ -218,3 +218,11 @@ La E1 se ejecuta aisladamente en `feat/hse-e1-offline-resilience-2026-10-08` con
 - Deploy `dep-db3s5qij9qps738rkao0` **LIVE** sobre `1504afea91e5e594bf07a7c24c3318ad57ea8f66`, finalizado 2026-10-08T16:22:41Z; tests, lint, TypeScript y build Next aprobados.
 - P2.1/P2.2/P2.3 desarrolladas. P2.4 (flujo real/RLS) y P2.5 (revisión visual completa) pendientes; Inicio/Informes mantienen aceptación visual P1.5 abierta.
 - Continuar con integridad de sitio y pruebas con sesión; no prometer APK/iOS ni alterar producción.
+
+
+## 2026-10-08 — EWEB.P2.4 — Iniciar, guardar y continuar inspecciones [QA RENDER LIVE]
+- Web HSE QA `https://informe360-hse-web-qa.onrender.com/app/hse/inspections`, deploy `dep-db3sg22jnfac738k47sg` **LIVE** sobre `954ff4a155f42108b624e3c07459c95947ce9dfa`. Pruebas nuevas del editor y guards aprobadas (5/5), TypeScript/ESLint y Next build completos.
+- Nuevos archivos `src/blocks/hse-control/HseInspectionRunPanel.tsx` y `src/app/app/hse/inspections/[runId]/page.tsx`. En `forms-browser.ts`: crear mediante RPC idempotente, recuperar versión/respuestas por org/sitio, guardar borrador, presentar tras validar y adjuntar fotografía privada.
+- Se encontró una regresión de test antiguo que exigía activo solo para listado de inspecciones; corregida y documentada. No se alteraron registros ni políticas de DB; PR #3 sigue draft, rama de producción no fusionada.
+- **Advertencia de seguridad verificable:** las RLS de actualización/borrado de form_answers y actualización de form_runs requieren endurecimiento de estados terminales y restricciones dentro de la empresa; aislamiento por sitio actualmente es del cliente, no de RLS. Ver [auditoría](EWEB_P2_4_AUDITORIA_RLS_2026-10-08.md).
+- **Próximo al decir «seguí»:** EWEB.P2.5 probar inicio → guardar → recuperar → presentar con cuenta real; verificar Storage firmado; preparar staging multiusuario y migración de inmutabilidad; inspección visual web, luego EWEB.P3 Formularios (shell todavía independiente). No declarar seguridad release aprobada hasta esos gates.
