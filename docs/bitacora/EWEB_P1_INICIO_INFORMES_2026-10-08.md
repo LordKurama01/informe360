@@ -30,3 +30,9 @@ Render Web QA `srv-db3pmdbncjis73bbrvig`; deploy `dep-db3qsml9fdbs73eslmf0` sobr
 - No se aplicó ninguna migración ni se crearon datos, cuentas o empresas.
 - APK/IPA y EWEB.P2–P5 siguen abiertos.
 - Al recibir «seguí»: revisar esta entrada, `ETAPAS.md` y `ESTADO.md`; comprobar QA `dep-db3qsml9fdbs73eslmf0`; registrar resultado; terminar EWEB.P1.5 y solo entonces comenzar Inspecciones EWEB.P2.
+
+
+## Cierre técnico de EWEB.P1.4 (2026-10-08)
+- Render QA `dep-db3qsml9fdbs73eslmf0` **LIVE**, SHA `6377f727ea144c2cc4865aae313f88e66132e83a`, completado a las `14:54:53Z`.
+- Pruebas HSE Dashboard (4/4), `npm run qa`, TypeScript web, lint y Next.js build pasaron. Resultados de prueba visibles en logs Render.
+- **EWEB.P1.4 VALIDADA EN QA**; EWEB.P1.5 permanece pendiente de aceptación visual con sesión. No modificar producción.
