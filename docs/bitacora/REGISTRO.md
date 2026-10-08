@@ -74,3 +74,16 @@
 - **Evidencia parcial del segundo deploy:** npm y pruebas HSE iniciales superadas; `tsc --noEmit`, lint y compilación Next avanzaron hasta compilación de páginas. **Resultado final todavía pendiente** al momento de esta entrada.
 - **Costo:** sitio estático gratuito sujeto a uso del workspace. No se activó plan de pago ni otra base.
 - **Siguiente:** inspeccionar resultado final de `dep-db3ft1egekts73ek6bcg` y logs, corregir fallos genuinos sin modificar producción. Registrar estado real de QA y recordar que export web **no** reemplaza builds ni pruebas físicas iOS/Android.
+
+
+## 2026-10-07 — E1.P4 — QA Render verificada y corrección de idempotencia
+- **Sitio nuevo:** [informe360-hse-e1-qa](https://informe360-hse-e1-qa.onrender.com), servicio Render `srv-db3fsnnavr4c739kgeag`, rama `feat/hse-e1-offline-resilience-2026-10-08`, autoDeploy desactivado, sin costos contratados ni cambios a producción.
+- **Deploy inicial fallido:** `dep-db3fsnvavr4c739kgf90`, npm 404 previo al build; solución: `SKIP_INSTALL_DEPS=true`, permitiendo normalizar lockfile antes del install.
+- **Primer deploy exitoso:** `dep-db3ft1egekts73ek6bcg`, status **LIVE**, commit `798b48992cbfbc4ab277ba9c740d44af9caf09ee`, Next QA, móvil TS y Expo web export.
+- **Corregido client_capture_id:** `10ea3b1fe21c29b2306dbbdd8b983739b69a2075` (reutiliza ID anterior tras captura online fallida; deduplicación local con aislamiento de dueño).
+- **Segundo deploy exitoso:** `dep-db3fucl9fdbs73dke9dg`, status **LIVE** (2026-10-08T02:27:29Z), commit `10ea3b1fe21c29b2306dbbdd8b983739b69a2075`; `npm run qa`, TypeScript Expo y `expo export --platform web` pasaron.
+- **Advertencia:** npm móvil reportó 28 advisories (10 moderate, 18 high): aún sin triage de dependencias afectadas.
+- **QA que NO se ejecutó:** APK Android, IPA iOS, instalación física, permisos de cámara/audio, flujo foto remota, aislamiento de usuarios en RLS real y comienzo de inspecciones 100% offline.
+- **Estatus:** E1.P4 **VALIDADA PARCIAL** solo para pipeline Render web/JS; **BLOQUEADA PARA LIBERACIÓN** nativa.
+- **Documento fuente:** [QA Render](QA_RENDER_2026-10-07.md).
+- **Siguiente paso:** E1.P2 subir imágenes privadas y reabrirlas, E1.P3 idempotencia y offline-start; E1.P4 pruebas en dispositivos, seguridad y auditoría de vulnerabilidades.
