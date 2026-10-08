@@ -87,3 +87,16 @@ RAG documental con citas, EPP/visión computacional, capacitación masiva, marke
 - **E1.UX.P3 — Branding APK/iOS [BLOQUEADA]:** reemplazar y verificar PNG inválidos antes de build nativo.
 - **E1.UX.P4 — QA Android/iOS [PENDIENTE]:** dispositivo físico, teclado, safe areas, estados error/loading y navegación; nunca equiparar Expo Web a UX nativa validada.
 - El diseño HSE debe priorizar campo, alto contraste, tipografía legible, una acción primaria, objetivos táctiles >=44pt, persistencia offline y ausencia de textos de demo prominentes.
+
+
+## EWEB — Unificación operativa del panel WEB Informe360 HSE (2026-10-08)
+
+**Objetivo:** un producto web consistente en Next.js. Toda opción de navegación del menú lateral mantiene carcasa, identidad, empresa/sitio activos y datos reales de Supabase. El preview React Native Expo no sustituye la web.
+
+- **EWEB.P1 — Inicio + Informes [IMPLEMENTADA; QA Render EN CURSO]:** eliminar CTA «Demo», impedir la generación accidental de datos ficticios desde HSE; sustituir los informes de ejemplo y la pantalla ajena al sistema por historial real `/app/hse/reports` dentro de `HseControl`, protegido por organización/sitio y RLS. Redirigir `/app/reports` **solo en instancia HSE QA** sin afectar otras superficies Informe360. Criterio: mismo menú/identidad; estado vacío honesto; actualización real; tests + Render.
+- **EWEB.P2 — Inspecciones [PENDIENTE]:** mantener datos reales y funciones existentes, pero integrar navegación, cabecera, menús, espaciados, responsive, estados vacíos/errores del panel HSE; no reconstruir el motor de checklists.
+- **EWEB.P3 — Formularios [PENDIENTE]:** reutilizar motor versionado ya existente, hacer coherentes menú, encabezado, controles y roles, sin segunda base ni datos de ejemplo.
+- **EWEB.P4 — Agenda + informes detallados [PENDIENTE]:** distinguir agenda del producto HSE de rutas legadas de otras apps y aplicar carcasa web común a seguimiento; la **vista de impresión** de informe puede ser deliberadamente documental, con vuelta clara al panel.
+- **EWEB.P5 — QA visual / funcional [PENDIENTE]:** accesibilidad, logo, escritorio 1366/1440/1920, móvil web 360–430, rutas profundas y refresh, sesión, RLS por empresa, informes de muestra **no**, pruebas Next en Render, regresión sin alterar producción.
+
+**Invariante:** no hay botones públicos de siembra de registros «Demo» en HSE. Los ambientes QA pueden tener una empresa de evaluación explícitamente identificada, pero solo registros guardados en DB real; nunca métricas fabricadas. No fusionar a `feat/hse-phases-1-5` auto-deploy hasta gates.
