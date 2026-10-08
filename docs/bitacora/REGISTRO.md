@@ -42,3 +42,17 @@
 - **Estado:** E0.P3 VALIDADA para **custodia documental**. QA funcional, build nativo, publicación de App y CI verde: **NO realizados**.
 - **Rollback:** eliminar/cerrar PR o revertir solo commits documentales de la rama hija; no hay rollback productivo porque producción no cambió.
 - **Próxima parte exacta:** **E1.P1 — Diagnóstico de CI heredado + auditoría diferencial offline**. Antes de programar: leer el árbol/HEAD vigente, conseguir evidencia de error CI o reproducir localmente, inspeccionar cobertura existente y proponer pruebas RED. No copiar app completa; preservar la app actual.
+
+---
+
+## 2026-10-07 — E1.P1 / E1.P2 / E1.P3 — Desarrollo aislado (cierre parcial)
+- **Branch:** `feat/hse-e1-offline-resilience-2026-10-08` desde rama de bitácora. PR [#3](https://github.com/LordKurama01/informe360/pull/3), draft. Sin merge ni deploy.
+- **E1.P1 [VALIDADA auditoría]:** lectura de código, CI, Render y Supabase. Informe: [E1 P1](E1_P1_DIAGNOSTICO_OFFLINE_2026-10-07.md).
+- **E1.P2 [EN CURSO]:** commits de primitiva serial `5abbd93`, colas `818ba63`/`c572739`, tests `367ac2d`, compatibilidad SQLite `498dc47`, recuperación/estado local `1ab74f3`/`bad7ece`, fotos locales `ae332f8`.
+- **E1.P3 [EN CURSO]:** propietario `a5c67c6`, sync single-flight `aee79e5`, provider `f8e1c83`, filtro de cuenta `59a2641`/`adcea72`, tests `f88aaf9`, scripts QA `b617e0b`.
+- **QA acotado:** 6/6 tests Node de lógica pura + `tsc --strict --noEmit` sobre dos módulos puros: PASS en entorno aislado. No se ejecutó QA full Expo ni pruebas físicas.
+- **CI:** [run E1](https://github.com/LordKurama01/informe360/actions/runs/37716323412) FAILURE con runner_name vacío y 0 steps, igual que baseline. Sin log causal; NO afirmar código compilado ni desplegable.
+- **Supabase:** ACTIVE_HEALTHY, RLS en tablas; índices únicos de capturas y formularios confirmados. Solo lectura. Sin SQL de escritura.
+- **Brecha crítica:** formularios con foto requieren reemplazar URIs locales por rutas de Storage privado verificables; aún NO completado. Legacy sin usuario queda sin upload automático para evitar contaminación intercuentas.
+- **Estado:** etapa E1 PARCIAL, sin gate de producción. Detalle: [avance E1](E1_AVANCE_2026-10-07.md).
+- **Siguiente acción exacta:** reabrir PR #3, inspeccionar diffs/HEAD; completar E1.P2 fotos remotas seguras y manejo de errores; E1.P3 idempotencia/recuperación legacy; E1.P4 QA completo y físico. Mantener rama Render intacta.
