@@ -53,7 +53,14 @@ NO reiniciar Informe360. NO importar otra app completa. Mantener una fuente de v
 
 ## 6. Punto exacto de reanudación
 
-- **Trabajo de este ciclo:** E0 — institucionalizar continuidad en GitHub; docs/bitácora y PR documental.
-- **Bloque funcional siguiente:** E1.P1 — auditoría del guardado local y sincronización preexistentes, inventario de pruebas y fallos; **no implementar todavía** hasta leer el registro y comprobar HEAD y CI.
-- **Estado de cierre:** leer la última entrada de [REGISTRO.md](REGISTRO.md). Si el PR de bitácora sigue abierto, tomar los archivos de la rama documental y mantenerlo separado de Render.
+- **Índice permanente:** [issue #2](https://github.com/LordKurama01/informe360/issues/2).
+- **PR documental:** [#1](https://github.com/LordKurama01/informe360/pull/1), abierto en modalidad **draft** contra `feat/hse-phases-1-5`; NO fusionado ni desplegado.
+- **Gate E0:** VALIDADO como documentación remota (cinco archivos existentes y PR/issue verificables). No implica aprobación funcional de la app.
+- **CI:** [run documental #224](https://github.com/LordKurama01/informe360/actions/runs/37715224223) = FAILURE; [run base HSE](https://github.com/LordKurama01/informe360/actions/runs/37714821289) = FAILURE antes de estos cambios. No fue posible obtener el error exacto desde logs (404 en conector). **Pendiente diagnosticar CI antes de declarar QA aprobada.**
+- **Integridad de la rama auto-deploy:** mismo HEAD `422f8bcbce65b3e68f892d51d37b1ed0999690c5` antes/después de crear docs y PR.
+
+
+- **Trabajo de este ciclo:** E0 — protocolo, bitácora y PR documental creados y verificados (sin merge).
+- **Bloque funcional siguiente:** E1.P1 — primero diagnosticar falla CI heredada, luego auditar guardado local y sincronización preexistentes, inventario de pruebas y fallos. **No implementar hasta leer el registro y comprobar HEAD, código y CI.**
+- **Estado de cierre:** leer la última entrada de [REGISTRO.md](REGISTRO.md). Si el PR de bitácora sigue abierto, tomar los archivos de la rama documental; mantenerlo separado de Render.
 - **Orden futura «seguí»:** verificar GitHub y estado real; completar el primer paso pendiente de ETAPAS, registrar resultado y siguiente paso. No pedir al usuario repetir este contexto.
