@@ -23,14 +23,15 @@
     "test:mobile:assets": "node scripts/check-mobile-brand-assets.mjs",
     "hse:whatsapp:link": "node scripts/link-hse-whatsapp-identity.mjs",
     "evidence:init": "node scripts/init-evidence.mjs",
-    "qa": "npm run test:structure && npm run test:hse && npm run test:hse:offline && npm run test:hse:sync && npm run test:hse:form-evidence && npm run test:forms && npm run test:inspections && npm run test:hse:whatsapp && npm run test:hse:web && npm run test:hse:branding && npm run test:hse:landing-brand && npm run test:hse:form-rls && npm run test:hse:runtime-readiness && npm run test:mobile:structure && npm run test:mobile:ui && npm run test:mobile:assets && npm run test:mobile:login && npm run test:mobile:onboarding && npm run test:hse:web-storage && npm run test:hse:platforms && npm run typecheck && npm run lint && npm run build",
+    "qa": "npm run test:structure && npm run test:hse && npm run test:hse:offline && npm run test:hse:sync && npm run test:hse:form-evidence && npm run test:forms && npm run test:inspections && npm run test:hse:whatsapp && npm run test:hse:web && npm run test:hse:reports && npm run test:hse:branding && npm run test:hse:landing-brand && npm run test:hse:form-rls && npm run test:hse:runtime-readiness && npm run test:mobile:structure && npm run test:mobile:ui && npm run test:mobile:assets && npm run test:mobile:login && npm run test:mobile:onboarding && npm run test:hse:web-storage && npm run test:hse:platforms && npm run typecheck && npm run lint && npm run build",
     "test:hse:offline": "node --experimental-strip-types --test scripts/hse-local-kv.test.mjs",
     "test:hse:sync": "node --experimental-strip-types --test scripts/hse-sync-scope.test.mjs",
     "test:hse:form-evidence": "node --experimental-strip-types --test scripts/hse-form-evidence.test.mjs",
     "test:mobile:login": "node scripts/check-mobile-login.mjs",
     "test:mobile:onboarding": "node scripts/check-mobile-onboarding.mjs",
     "test:hse:web-storage": "node --experimental-strip-types --test scripts/hse-web-storage.test.mjs",
-    "test:hse:platforms": "node scripts/check-hse-platform-separation.mjs"
+    "test:hse:platforms": "node scripts/check-hse-platform-separation.mjs",
+    "test:hse:reports": "node scripts/check-hse-reports-unification.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.45.4",
