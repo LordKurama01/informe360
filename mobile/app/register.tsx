@@ -47,11 +47,15 @@ export default function Register() {
     let mediaUri = capture.mediaUri;
     if (mediaUri && capture.inputType === 'photo') mediaUri = await persistCaptureFile(mediaUri, 'jpg');
     if (mediaUri && capture.inputType === 'audio') mediaUri = await persistCaptureFile(mediaUri, 'm4a');
-    await queueOfflineCapture({ ...capture, mediaUri, lastError: null });
-    await refreshPending();
-    await clearRawDraft();
-    Alert.alert('Guardado offline', 'La captura quedó segura en el teléfono. Se sincronizará cuando vuelva la conexión y quedará pendiente de revisión.');
-    router.replace('/(tabs)');
+    try {
+      await queueOfflineCapture({ ...capture, mediaUri, lastError: null });
+      await refreshPending();
+      await clearRawDraft();
+      Alert.alert('Guardado offline', 'El dispositivo confirmó el guardado. Se sincronizará cuando vuelva la conexión.');
+      router.replace('/(tabs)');
+    } catch (error) {
+      Alert.alert('No se pudo guardar', error instanceof Error ? error.message : 'El almacenamiento local no confirmó la captura. No salgas hasta intentar otra vez.');
+    }
   }
 
   async function submit(capture: OfflineCapture) {
