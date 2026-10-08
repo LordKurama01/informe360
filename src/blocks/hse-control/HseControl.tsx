@@ -254,7 +254,7 @@ export function HseControl({ mode = 'overview', inspectionRunId }: { mode?: 'ove
         <Link className={`${styles.navItem} ${mode === 'overview' ? styles.navItemActive : ''}`} href="/app/hse"><span>01</span>Inicio</Link>
         {mode === 'overview' ? <button className={styles.navItem} onClick={()=>setFilter('open')}><span>02</span>Hallazgos</button> : <Link className={styles.navItem} href="/app/hse"><span>02</span>Hallazgos</Link>}
         <Link className={`${styles.navItem} ${mode === 'inspections' || mode === 'inspection-run' ? styles.navItemActive : ''}`} aria-current={mode === 'inspections' || mode === 'inspection-run' ? 'page' : undefined} href="/app/hse/inspections"><span>03</span>Inspecciones</Link>
-        <Link className={styles.navItem} href="/app/hse/forms"><span>04</span>Formularios</Link>
+        <Link className={`${styles.navItem} ${mode === 'forms' ? styles.navItemActive : ''}`} aria-current={mode === 'forms' ? 'page' : undefined} href="/app/hse/forms"><span>04</span>Formularios</Link>
         <Link className={styles.navItem} href="/app/calendar"><span>05</span>Agenda</Link>
         <Link className={`${styles.navItem} ${mode === 'reports' ? styles.navItemActive : ''}`} href="/app/hse/reports" aria-current={mode === 'reports' ? 'page' : undefined}><span>06</span>Informes</Link>
       </nav>
@@ -269,7 +269,7 @@ export function HseControl({ mode = 'overview', inspectionRunId }: { mode?: 'ove
       </header>
 
       <div className={styles.workspace}>
-        {mode === 'inspection-run' && inspectionRunId ? <HseInspectionRunPanel workspace={workspace} runId={inspectionRunId}/> : mode === 'inspections' ? <>
+        {mode === 'forms' ? <HseFormsPanel workspace={workspace} templates={inspectionTemplates} onRefresh={async () => { setInspectionTemplates(await listFormTemplates(workspace)); }}/> : mode === 'inspection-run' && inspectionRunId ? <HseInspectionRunPanel workspace={workspace} runId={inspectionRunId}/> : mode === 'inspections' ? <>
           <section className={styles.hero}>
             <div>
               <span className={styles.eyebrowLight}>INSPECCIONES HSE</span>
