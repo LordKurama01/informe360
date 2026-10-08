@@ -208,3 +208,11 @@
 - **QA definitiva:** `dep-db3r3f8473hc73f1m5vg` **LIVE** sobre commit `837bd8791006fa3c23f596939211253f034c5314`, completado 2026-10-08T15:09:13Z; 3 tests específicos, QA completa Next, TypeScript, ESLint, build y arranque pasaron.
 - **EWEB.P1.5:** mejora técnica VALIDADA EN QA; aceptación visual con sesión **PENDIENTE**. No se alteraron datos Supabase, credenciales, ni producción.
 - **Siguiente:** inspección real del usuario de Inicio/Informes tras recargar; ajustar cualquier parpadeo remanente antes de EWEB.P2.
+
+
+## 2026-10-08 — EWEB.P2.1/P2.2 — Unificar Inspecciones sin reescribir motor
+- **Revisión previa:** `src/app/app/hse/inspections/page.tsx` tenía pantalla autónoma con estilos inline y enlaces de regreso; `src/services/hse/forms-browser.ts` ya consultaba Supabase y tenía importación explícita de plantillas estándar.
+- **Cambios guardados:** `8344318` helper `inspection-view.ts` con filtro por categoría y sitio; `e0e6e02` modo `inspections` en `HseControl`; `4169556` ruta unificada; `6e6f5f9` helper de estándares, `7931fb4` botón optativo y estado visible; `0caec6c` estilos de tarjetas; `f1a9baa` tres pruebas de aislamiento de sitio y estructura; `9837a84` test integrado a `npm run qa`.
+- **QA inicial:** Render web QA `informe360-hse-web-qa` `dep-db3s40jncjis73bjlevg` sobre `9837a84faa3e273e83a73962dd6d0185c5bc54b2`. Compilación Next completada; confirmar despliegue LIVE antes de cerrar.
+- **No se hizo:** merge a producción, migraciones Supabase, inserción de plantillas ni datos inventados. Cuenta y DB originales, PR #3 draft.
+- **Próximo:** confirmar Render QA, anotar prueba completa, terminar EWEB.P2.3 estados/filtros/continuación de ejecución y QA visual EWEB.P2.4–P2.5. Bitácora completa [EWEB.P2](EWEB_P2_INSPECCIONES_2026-10-08.md).
