@@ -56,3 +56,11 @@
 - **Brecha crítica:** formularios con foto requieren reemplazar URIs locales por rutas de Storage privado verificables; aún NO completado. Legacy sin usuario queda sin upload automático para evitar contaminación intercuentas.
 - **Estado:** etapa E1 PARCIAL, sin gate de producción. Detalle: [avance E1](E1_AVANCE_2026-10-07.md).
 - **Siguiente acción exacta:** reabrir PR #3, inspeccionar diffs/HEAD; completar E1.P2 fotos remotas seguras y manejo de errores; E1.P3 idempotencia/recuperación legacy; E1.P4 QA completo y físico. Mantener rama Render intacta.
+
+
+## 2026-10-07 — E1.P2 — Feedback de cola y revisión pre-merge
+- **Commit:** `aaf9a2d399912b50aae470a61e8161f916848c97` — `mobile/app/register.tsx` informa error real si SQLite no confirma la cola; no navega como si hubiera guardado.
+- **Continuidad:** `aa1ee4daf5403b0ea5f76a723421a3914b7e282c` actualiza el índice activo de bitácora a PR #3.
+- **PR #3:** 18 archivos modificados, sigue **draft**, sin merge. [Diff](https://github.com/LordKurama01/informe360/pull/3/files).
+- **Rama Render verificada:** `feat/hse-phases-1-5` aún en `422f8bcbce65b3e68f892d51d37b1ed0999690c5`. Sin cambios de runtime.
+- **Gate actual:** E1.P2 y E1.P3 **EN CURSO**, E1.P4 **BLOQUEADA** por CI sin runner y QA físico. Prioridad próxima: no guardar referencias locales como evidencia remota, luego pruebas reales.
