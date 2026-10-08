@@ -1,4 +1,6 @@
 import { supabase } from '../lib/supabase';
+import { preparePhotoAnswers } from './form-evidence';
+import { uploadFormPhoto } from './form-media';
 import type { Workspace } from './workspace';
 import type { FormRunBundle, FormTemplateSummary, HseFormAnswers, HseFormSchema } from '../types/forms';
 
@@ -45,12 +47,20 @@ export async function startFormRun(templateVersionId: string, siteId: string | n
 export async function saveFormAnswers(runId: string, answers: HseFormAnswers) {
   const [{ data: userData, error: userError }, { data: run, error: runError }] = await Promise.all([
     supabase.auth.getUser(),
-    supabase.from('form_runs').select('organization_id,status').eq('id', runId).single(),
+    supabase.from('form_runs').select('organization_id,status,template_version_id').eq('id', runId).single(),
   ]);
   if (userError || !userData.user) throw userError || new Error('Sesión vencida');
   if (runError) throw runError;
   if (!['draft','in_progress'].includes(run.status)) throw new Error('El formulario ya no admite cambios');
-  const rows = Object.entries(answers).map(([field_id, value_json]) => ({ organization_id: run.organization_id, form_run_id: runId, field_id, value_json, answered_by: userData.user.id }));
+  const { data: version, error: versionError } = await supabase
+    .from('form_template_versions').select('schema_json').eq('id', run.template_version_id).single();
+  if (versionError || !version) throw versionError || new Error('No se encontró la versión publicada.');
+  // Upload photo fields before upserting any answers. Local file URIs never reach Postgres.
+  const prepared = await preparePhotoAnswers(version.schema_json as HseFormSchema, answers, (key, uri) =>
+    uploadFormPhoto(run.organization_id, runId, key, uri));
+  const rows = Object.entries(prepared).map(([field_id, value_json]) => ({
+    organization_id: run.organization_id, form_run_id: runId, field_id, value_json, answered_by: userData.user.id,
+  }));
   if (!rows.length) return;
   const { error } = await supabase.from('form_answers').upsert(rows, { onConflict: 'form_run_id,field_id' });
   if (error) throw error;
