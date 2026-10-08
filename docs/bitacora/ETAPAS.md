@@ -122,7 +122,7 @@ RAG documental con citas, EPP/visión computacional, capacitación masiva, marke
 
 - **P2.1 — Unificación visual [IMPLEMENTADA]:** ruta `/app/hse/inspections` usa `HseControl mode="inspections"`, con la misma sesión, cabecera, menú activo, UX y colores que Inicio/Informes.
 - **P2.2 — Operativa existente [IMPLEMENTADA]:** plantillas versionadas y ejecuciones reales de Supabase, selección por organización y sitio, instalación optativa de biblioteca estándar; no carga automática de ejemplos.
-- **P2.3 — Interacción y estados [IMPLEMENTADA; QA EN CURSO]:** filtros de ejecución, búsqueda, estados de carga/error y capacidades de apertura/continuación de checklists con los endpoints disponibles.
+- **P2.3 — Interacción y estados [VALIDADA EN QA RENDER; aceptación visual PENDIENTE]:** filtros de ejecución, búsqueda, estados de carga/error y capacidades de apertura/continuación de checklists con los endpoints disponibles.
 - **P2.4 — Integridad y uso real [PENDIENTE]:** RLS/sitio, flujos de operaciones reales, acceso con cuenta autenticada, responsive y errores reproducibles.
 - **P2.5 — Validación y cierre [EN CURSO]:** tests HSE, Next y deploy QA de esta primera entrega, más revisión visual antes de aprobación.
 
@@ -130,3 +130,6 @@ RAG documental con citas, EPP/visión computacional, capacitación masiva, marke
 
 
 **Checkpoint EWEB.P2:** P2.1 y P2.2 están publicados en Render QA `dep-db3s40jncjis73bjlevg` **LIVE** sobre `9837a84faa3e273e83a73962dd6d0185c5bc54b2`. P2.3 añade búsqueda y filtros client-side (Todas/Pendientes/Presentadas), pruebas de aislamiento y vacíos honestos; deploy `dep-db3s5qij9qps738rkao0` en validación sobre `1504afea91e5e594bf07a7c24c3318ad57ea8f66`. P2.4/P2.5 requieren navegación y QA visual con sesión. Producción intacta.
+
+
+**Cierre técnico EWEB.P2.3:** Render `dep-db3s5qij9qps738rkao0` **LIVE**, commit `1504afea91e5e594bf07a7c24c3318ad57ea8f66`; nuevas pruebas de filtros y `npm run qa`, typecheck/lint y Next build aprobados. Se mantienen P2.4/P2.5 abiertas para uso real, permisos y calidad visual con sesión.
