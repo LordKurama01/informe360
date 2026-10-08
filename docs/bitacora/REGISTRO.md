@@ -99,3 +99,10 @@
 - **Supabase:** bucket privado `hse-evidence` verificado, no se realizaron cambios en DB ni migraciones. Se identificó revisión adicional de RLS en formularios como gate de seguridad; NO corregido ni validado aún.
 - **Estado:** E1.P2 IMPLEMENTADA EN CÓDIGO, QA NATIVA PENDIENTE, no integrar a producción. E1.P3 inicio offline pendiente.
 - **Próximo:** comprobar resultado exacto de Render QA y continuar E1.P3 con caché de plantillas/arranque offline y pruebas multiusuario.
+
+## 2026-10-07 — E1.P2 — Cierre del ciclo de QA Render
+- **Resultado confirmado API Render:** `dep-db3g6l7avr4c739lltog` LIVE, commit `941247fa11bc249ec90f0247473db414a2dbb500`, completado 2026-10-08T02:45:08Z. Pipeline `npm run qa`, TypeScript móvil y export Expo Web completos.
+- **Regresiones detectadas por QA y solucionadas:** test con campos omitidos y tipado de ancho en barra de pasos RN, ya documentados en [E1.P2](E1_P2_FOTOS_UX_NATIVE_2026-10-07.md).
+- **Ramas:** `feat/hse-phases-1-5` HEAD `422f8b...` sin cambios; PR #3 draft sin merge.
+- **Pendientes release E1:** prueba real de subida y vista firmada, iniciar inspecciones sin red, seguridad de RLS/estado, auditoría de dependencias, APK/IPA y QA físico. La prueba Render **no cierra E1.P4 nativa**.
+- **Siguiente:** E1.P3 plantillas cacheadas y creación de ejecuciones offline; volver a Render tras cambios; no desplegar a producción.
