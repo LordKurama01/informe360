@@ -78,7 +78,7 @@ export default function Onboarding() {
   if (checking || loading || workspace) {
     return <SafeAreaView edges={['top', 'left', 'right']} style={styles.loadingRoot}>
       <View style={styles.loadingMark}><Text style={styles.loadingMarkText}>HSE</Text></View>
-      <ActivityIndicator color="#6FD6C4" size="large"/>
+      <ActivityIndicator color="#FF9A2E" size="large"/>
       <Text style={styles.loadingTitle}>Abriendo tu espacio de trabajo</Text>
       <Text style={styles.loadingHint}>Estamos recuperando la empresa y el sitio asociados a tu cuenta.</Text>
     </SafeAreaView>;
@@ -116,14 +116,14 @@ export default function Onboarding() {
 const styles = StyleSheet.create({
   flex: { flex: 1 },
   safe: { flex: 1, backgroundColor: '#F2F5F5' },
-  loadingRoot: { flex: 1, justifyContent: 'center', alignItems: 'center', paddingHorizontal: 28, gap: 20, backgroundColor: '#10282D' },
-  loadingMark: { width: 66, height: 66, alignItems: 'center', justifyContent: 'center', borderRadius: 20, backgroundColor: '#0B6F67' },
+  loadingRoot: { flex: 1, justifyContent: 'center', alignItems: 'center', paddingHorizontal: 28, gap: 20, backgroundColor: theme.colors.dark },
+  loadingMark: { width: 66, height: 66, alignItems: 'center', justifyContent: 'center', borderRadius: 20, backgroundColor: theme.colors.primary },
   loadingMarkText: { color: '#FFFFFF', fontSize: 20, fontWeight: '900', letterSpacing: 0.8 },
   loadingTitle: { color: '#FFFFFF', fontSize: 19, fontWeight: '900', textAlign: 'center' },
   loadingHint: { color: '#AAC5C5', fontSize: 13, lineHeight: 20, textAlign: 'center' },
   scroll: { flexGrow: 1, paddingTop: 34, paddingBottom: 65, paddingHorizontal: 23, gap: 17, maxWidth: 560, width: '100%', alignSelf: 'center' },
   heading: { gap: 13, paddingTop: 16, paddingBottom: 7 },
-  kicker: { color: '#0B6F67', letterSpacing: 1.7, fontSize: 11, fontWeight: '900' },
+  kicker: { color: theme.colors.primary, letterSpacing: 1.7, fontSize: 11, fontWeight: '900' },
   title: { color: '#10232D', fontSize: 31, fontWeight: '900', lineHeight: 37, letterSpacing: -0.5 },
   intro: { color: '#62737D', fontSize: 15, lineHeight: 22 },
   enter: { minHeight: 58, backgroundColor: '#0B6F67', borderRadius: 14, alignItems: 'center', justifyContent: 'center', marginTop: 2 },
@@ -137,6 +137,6 @@ const styles = StyleSheet.create({
   form: { backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#E0E8EA', borderRadius: 20, padding: 18, gap: 11 },
   label: { color: '#344550', fontSize: 13, fontWeight: '800', marginTop: 3 },
   input: { height: 52, borderRadius: 12, borderWidth: 1, borderColor: '#DCE5E8', backgroundColor: '#F6F8F8', paddingHorizontal: 14, color: '#0B1720', fontSize: 15 },
-  createButton: { minHeight: 52, borderRadius: 13, borderWidth: 1, borderColor: '#CBDCDA', backgroundColor: '#E4F4F0', alignItems: 'center', justifyContent: 'center', marginTop: 5 },
-  createText: { color: '#07554F', fontSize: 14, fontWeight: '900' },
+  createButton: { minHeight: 52, borderRadius: 13, borderWidth: 1, borderColor: '#E4C7B5', backgroundColor: theme.colors.primarySoft, alignItems: 'center', justifyContent: 'center', marginTop: 5 },
+  createText: { color: theme.colors.primaryDark, fontSize: 14, fontWeight: '900' },
 });

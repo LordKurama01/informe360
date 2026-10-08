@@ -117,3 +117,12 @@
 - **Protección:** Render `informe360-hse` producción no alterado; PR #3 sigue borrador y sin merge.
 - **Gate pendiente:** comprobar visual en teléfono, onboarding coherente, reparación de íconos APK/iOS, compilación nativa y flujos Auth con credenciales de prueba.
 - **Punto de reanudación:** https://github.com/LordKurama01/informe360/blob/feat/hse-e1-offline-resilience-2026-10-08/docs/bitacora/E1_UX_LOGIN_2026-10-07.md ; después avanzar E1.P3 offline.
+
+
+## 2026-10-08 — E1 hardening — marca y QA
+- **Candidato:** `fix/hse-release-hardening-2026-10-08`, PR #4 hacia la rama E1 QA. Producción no fue modificada.
+- **Cambios:** landing web desktop/móvil con marca HSE; paleta móvil industrial; login/onboarding coherentes; PNG nativos reparados reutilizando assets existentes; nuevos tests de marca y assets agregados a `npm run qa`.
+- **Render QA:** `informe360-hse-hardening-qa`, deploy `dep-db3hgs5g1s2s73ag2ju0`, SHA probado `1168c390f97829798164fc9b5e0d155c7e906e69`: BUILD y DEPLOY SUCCEEDED.
+- **PASS:** contratos HSE, formularios, inspecciones, branding, landing, UI móvil, assets PNG, login, onboarding, typecheck, lint, Next build, TypeScript móvil y Expo Web export.
+- **Pendientes:** 28 advisories npm móviles (10 moderate, 18 high), QA físico Android/iOS y pruebas de seguridad/runtime. No se aplicó actualización forzada de dependencias.
+- **Integración:** PR #4 aún no fusionado. Siguiente: integrar solamente a E1 QA y repetir el gate antes de evaluar producción.
