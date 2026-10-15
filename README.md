@@ -1,104 +1,71 @@
-# Informe360 AI Agent - Build with Gemini XPRIZE Edition
+<p align="left"><img src="https://raw.githubusercontent.com/LordKurama01/theprestige-group/main/branding/tpg-diamondgold.png" alt="Diamante original de The Prestige Group" width="56" /> <strong>The Prestige Group</strong></p>
 
-Versión nueva de concurso iniciada el **02/06/2026**, basada en investigación previa del problema, pero con implementación, repo, Gemini, deploy, base de datos, ventas y evidencia creadas dentro del período del hackathon.
+# Informe360 — Informes de campo asistidos por IA
 
-## Qué hace
+**De observaciones dispersas a informes estructurados, editables y accionables.**
 
-Informe360 AI Agent convierte información desordenada de campo en documentación profesional:
+Informe360 está orientado a profesionales y equipos que registran inspecciones, incidentes o desvíos y necesitan documentarlos de forma consistente. El repositorio contiene una implementación desarrollada alrededor de **Next.js**, **TypeScript** e integración con herramientas de IA.
 
-- observaciones,
-- fotos,
-- audios transcriptos,
-- incidentes,
-- desvíos,
-- checklists,
+## El problema
 
-Y genera con Gemini:
+Fotos, notas, checklists y registros de campo suelen quedar en soportes separados. Consolidar toda esa información manualmente retrasa la entrega del informe y dificulta seguir las acciones.
 
-- informe profesional editable,
-- hallazgos,
-- nivel de riesgo sugerido,
-- normativa relacionada para revisar,
-- acciones SMART,
-- calendario de seguimiento,
-- PDF profesional,
-- logs de IA para evidencia XPRIZE.
+## Qué incorpora el proyecto
 
-## Oferta comercial inicial
+- Captura y organización de observaciones, incidentes, desvíos y listas de verificación.
+- Estructuración asistida por IA para elaborar hallazgos e informes editables.
+- Propuesta de acciones correctivas y seguimiento.
+- Generación de documentos/PDF y componentes de calendario y control.
+- Módulos de evidencia y trazabilidad del proceso de IA.
 
-**Acceso fundador completo:** $30.000 ARS / mes.  
-Disponible para usuarios registrados y pagos hasta el **30/08/2026**.  
-Precio fundador válido hasta **diciembre 2026**.  
-Desde enero 2027: **$50.000 ARS / mes**.  
-Usuarios posteriores al 30/08/2026 entran directamente al precio regular.
+**Alcance:** la existencia de módulos y rutas en el código no constituye por sí sola una validación de integraciones externas o una garantía de funcionamiento en producción.
 
-## Stack
+## Arquitectura técnica
 
-- Next.js 16 + TypeScript
-- Gemini API
-- Supabase
-- Google Auth / Gmail
-- Google Calendar integration preparada
-- Vercel
-- PDF HTML printable
-- Tracking propio
-- Dashboard Control interno
+| Capa | Tecnología / estructura |
+| --- | --- |
+| Aplicación | Next.js 16, React 19, TypeScript |
+| IA | Integraciones del proyecto con Gemini |
+| Datos | Integración con Supabase contemplada en el proyecto |
+| Organización | Bloques separados para auth, informes, PDF, calendario y control |
+| QA | Scripts de estructura, lint, typecheck y build |
 
-## Arquitectura
+La organización está documentada en [Arquitectura modular](docs/ARQUITECTURA_MODULAR.md).
 
-Arquitectura modular extrema por bloques. Cada dominio tiene carpeta propia y layouts desktop/mobile separados cuando hace falta.
-
-Ver: `docs/ARQUITECTURA_MODULAR.md`
-
-## Comandos
+## Desarrollo local
 
 ```bash
 npm install
 npm run dev
 ```
 
-QA local:
+### Validaciones disponibles
 
 ```bash
+npm run test:structure
+npm run typecheck
+npm run lint
+npm run build
+# Orquestación del paquete:
 npm run qa
 ```
 
-Deploy:
+Son **comandos disponibles**, no resultados de pruebas ejecutadas durante esta actualización del README. Las integraciones externas requieren configuración propia. Usar [`.env.example`](.env.example) como referencia; **no subir valores reales al repositorio**.
 
-```powershell
-cd "C:\Proyectos\Informe360-XPRIZE"
-vercel --prod --force
-```
+## Historia del proyecto
 
-## Variables obligatorias para producción
+El repositorio incluye trabajo iniciado en 2026 y documentación de una versión orientada al **Build with Gemini XPRIZE**. Ese contexto histórico no implica premios, selección, elegibilidad confirmada ni resultados comerciales verificados.
 
-Copiar `.env.example` a `.env.local` y completar:
+La evolución y sus decisiones se pueden consultar en el historial de commits y [la documentación técnica](docs/). Se retiraron de esta portada las ofertas comerciales con fechas antiguas para evitar presentar precios no vigentes.
 
-- `GEMINI_API_KEY`
-- `NEXT_PUBLIC_SUPABASE_URL`
-- `NEXT_PUBLIC_SUPABASE_ANON_KEY`
-- `SUPABASE_SERVICE_ROLE_KEY`
-- Google OAuth cuando se conecte auth real
+## Estado y próximos controles
 
-## Nota de elegibilidad / origen
+- **Verificado en repositorio:** existencia de scripts en `package.json`, documentación de arquitectura y estructura de proyecto Next.js.
+- **No verificado en esta pasada documental:** entorno productivo, integraciones activas, estado de login ni éxito de QA.
+- **Siguiente validación técnica:** ejecutar `npm run qa` en un entorno controlado antes de anunciar una versión de producción.
 
-Frase oficial sugerida:
+[**Portfolio del grupo**](https://github.com/LordKurama01/theprestige-group) · [**Instrucciones**](AGENTS.md) · [**Bitácora**](BITACORA.md)
 
-> Informe360 AI Agent started as a new Build with Gemini XPRIZE implementation on June 2, 2026, based on prior domain research and product exploration. The competition version, Gemini API integration, Google Cloud deployment, database, customer validation, revenue evidence, and AI logs were created during the hackathon period.
+---
 
-
-## V2 final judge-proof
-
-Esta versión suma patrones de ganadores XPRIZE/Gemini: AI Decision Trail, métricas de impacto, Google Stack Center, Maps, Gmail API preparada, Vertex AI documentado, dashboard de evidencia más fuerte y demo case para video de 3 minutos.
-
-Rutas clave:
-
-- `/` Landing.
-- `/login` Google Auth preparado.
-- `/app/reports/new` Crear informe con Gemini.
-- `/app/maps` Inspecciones / Google Maps.
-- `/control` Dashboard interno.
-- `/control/google` Google Stack Center.
-- `/control/decision-trail` AI Decision Trail.
-- `/control/xprize` Evidencia XPRIZE.
-- `/demo` Caso demo.
+<sub><img src="https://raw.githubusercontent.com/LordKurama01/theprestige-group/main/branding/tpg-diamondgold.png" alt="" width="18" /> The Prestige Group · Software y automatización.</sub>
